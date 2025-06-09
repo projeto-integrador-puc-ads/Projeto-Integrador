@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "110293716922",
+    "project_id": "medicamentosapp-4cfb5",
+    "storage_bucket": "medicamentosapp-4cfb5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:110293716922:android:88cfa5f71f999b0bb8d783",
+        "android_client_info": {
+          "package_name": "com.dosecerta.medicamentosapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBy68FluQcZCCjkw0Z3J4Smqw73Pivp0tw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

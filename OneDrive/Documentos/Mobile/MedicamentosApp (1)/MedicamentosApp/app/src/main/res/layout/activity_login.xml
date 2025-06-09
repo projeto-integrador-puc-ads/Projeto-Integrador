@@ -1,0 +1,78 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background">
+
+    <!-- Texto de boas-vindas -->
+    <TextView
+        android:id="@+id/tvBemVindo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bem-vindo ao DoseCerta!"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:fontFamily="@font/poppins"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp" />
+
+    <!-- Ícone circular do usuário -->
+    <ImageView
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:src="@android:drawable/ic_menu_myplaces"
+        android:background="@drawable/circle_background"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:padding="20dp"
+        />
+
+    <!-- Área branca curva inferior -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/rounded_bottom_white"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/edittext_rounded"
+            android:paddingStart="16dp"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etSenha"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Senha"
+            android:inputType="textPassword"
+            android:background="@drawable/edittext_rounded"
+            android:paddingStart="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Entrar"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:background="@drawable/button_purple"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvCadastrar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Não tem conta? Cadastre-se"
+            android:textColor="#7B1FA2"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</RelativeLayout>
