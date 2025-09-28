@@ -1,4 +1,4 @@
-package br.edu.pucgo.ads.projeto_intregador;
+package br.pucgo.ads.projeto_intregador;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
