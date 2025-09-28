@@ -8,7 +8,7 @@
 		<version>3.5.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>br.edu.pucgo.ads</groupId>
+	<groupId>br.pucgo.ads</groupId>
 	<artifactId>projeto-integrador</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>projeto-integrador</name>
@@ -76,15 +76,24 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>backend/src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>backend/src/main/resources</directory>
+			</resource>
+		</resources>
+		<testSourceDirectory>backend/src/test/java</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
