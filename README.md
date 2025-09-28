@@ -14,9 +14,9 @@
 O projeto foi estruturado para permitir desenvolvimento colaborativo entre **6 grupos** da turma, onde cada grupo trabalha de forma independente em funcionalidades específicas:
 
 ```
-📁 plataforma-idoso/
+📁 projeto-integrador
 ├── 📁 backend/
-│   └── 📁 br.pucgo.ads.plataformaidoso/
+│   └── 📁 br.pucgo.ads.projetointegrador
 │       ├── 📁 grupo1/ (controller, service, repository, entity, dto)
 │       ├── 📁 grupo2/ (controller, service, repository, entity, dto)
 │       ├── 📁 grupo3/ (controller, service, repository, entity, dto)

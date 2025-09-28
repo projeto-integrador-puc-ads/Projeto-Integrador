@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.edu.pucgo.ads</groupId>
-	<artifactId>projeto-intregador</artifactId>
+	<artifactId>projeto-integrador</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>projeto-intregador</name>
+	<name>projeto-integrador</name>
 	<description>Projeto Integrador PUC-GO ADS: Plataforma de auxílio ao idoso</description>
 	<url/>
 	<licenses>
