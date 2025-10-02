@@ -34,12 +34,4 @@ O projeto foi estruturado para permitir desenvolvimento colaborativo entre **6 g
 - **Isolamento:** Um grupo não interfere no código de outro grupo
 - **Compartilhamento:** Entidades comuns (ex: Usuario) ficam na pasta `comum`
 - **APIs independentes:** Cada grupo cria seus próprios endpoints REST
-- **Frontend unificado:** Interface única que consome todas as APIs dos grupos
-
-### Funcionalidades por Grupo
-- **Grupo 1:** Gestão de Tarefas Diárias
-- **Grupo 2:** Jogos Cognitivos
-- **Grupo 3:** Lembretes de Medicamentos
-- **Grupo 4:** Rede de Cuidadores
-- **Grupo 5:** Monitoramento de Saúde
-- **Grupo 6:** Comunicação e Socialização
+- **Frontend unificado:** Interface única que consome todas as APIs dos projetos.
