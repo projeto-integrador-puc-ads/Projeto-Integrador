@@ -1,4 +1,5 @@
-import { AppBar, Box, Container, Fab, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Container, Fab, Modal, Toolbar, Typography} from '@mui/material';
+import { deepPurple } from '@mui/material/colors';
 import LoginIcon from '@mui/icons-material/Login';
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
@@ -27,7 +28,6 @@ function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void
           p: 3,
           borderRadius: 2,
           minWidth: 320,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
         }}
       >
         <Typography variant="h2" gutterBottom>
@@ -64,7 +64,8 @@ function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void
 }
 
 export default function AppLayout() {
-  const [open, setOpen] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
@@ -93,6 +94,17 @@ export default function AppLayout() {
           <Typography variant="h2" sx={{ flex: 1 }}>
             UNATI
           </Typography>
+
+          {/* Avatar no canto direito */}
+          <Avatar
+            sx={{
+              bgcolor: deepPurple[500],
+              cursor: 'pointer',
+            }}
+            onClick={() => setOpenProfile(true)}
+          >
+            M
+          </Avatar>
         </Toolbar>
       </AppBar>
 
@@ -108,14 +120,59 @@ export default function AppLayout() {
       <Fab
         color="primary"
         aria-label="Fazer login"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpenLogin(true)}
         sx={{ position: 'fixed', right: 24, bottom: 24 }}
       >
         <LoginIcon />
       </Fab>
 
-      {/* Mock Login Dialog */}
-      <LoginDialogMock open={open} onClose={() => setOpen(false)} />
+      {/* Modal de Login */}
+      <LoginDialogMock open={openLogin} onClose={() => setOpenLogin(false)} />
+
+      {/* Modal de Perfil */}
+      <Modal open={openProfile} onClose={() => setOpenProfile(false)}>
+        <Box
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            p: 4,
+            borderRadius: 3,
+            boxShadow: 24,
+            minWidth: 320,
+            maxWidth: '90vw',
+          }}
+        >
+          <Typography variant="h5" fontWeight={700} mb={2}>
+            Meu Perfil
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Aqui você poderá visualizar e editar suas informações pessoais, como nome,
+            e-mail e foto de perfil.
+          </Typography>
+          <Box
+            component="button"
+            onClick={() => setOpenProfile(false)}
+            sx={{
+              mt: 3,
+              width: '100%',
+              p: 1.2,
+              bgcolor: 'primary.main',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 2,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: 600,
+            }}
+          >
+            Fechar
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 }
