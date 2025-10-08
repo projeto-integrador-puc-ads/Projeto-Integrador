@@ -6,9 +6,9 @@ import UsuariosPage from '@/features/grupo1/pages/UsuariosPage';
 function Home() {
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', margin: 0 }}>UNADE — Plataforma de Auxílio ao Idoso</h1>
+      <h1 style={{ fontSize: '2rem', margin: 0 }}>Plataforma de Auxílio ao Idoso</h1>
       <p style={{ fontSize: '1.125rem', lineHeight: 1.7, color: '#345' }}>
-        Bem-vindo(a)! Esta é uma plataforma para promover autonomia, bem-estar e inclusão.
+        Bem-vindo(a)! Esta é uma plataforma para promover bem-estar e inclusão.
       </p>
       <h2 style={{ fontSize: '1.6rem' }}>Módulos</h2>
       <ModuleGrid />

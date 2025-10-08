@@ -3,7 +3,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import { setAuthToken } from '@/lib/http';
-
+import logo_unati_horizontal from '../assets/logo_unati_horizontal.png';
 
 function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
@@ -68,21 +68,43 @@ export default function AppLayout() {
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
-      {/* Top App Bar */}
-      <AppBar position="sticky" elevation={0} color="transparent" sx={{ borderBottom: '1px solid #e5eaf2' }}>
+      {/* Top App Bar fixa */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        color="transparent"
+        sx={{
+          borderBottom: '1px solid #e5eaf2',
+          backdropFilter: 'blur(8px)',
+          bgcolor: 'rgba(255,255,255,0.85)',
+        }}
+      >
         <Toolbar>
+          {/* Logo UNATI */}
+          <Box
+            component="img"
+            src={logo_unati_horizontal}
+            alt="Logo UNATI"
+            sx={{
+              height: 48,
+              mr: 2,
+            }}
+          />
           <Typography variant="h2" sx={{ flex: 1 }}>
-            UNADE
+            UNATI
           </Typography>
         </Toolbar>
       </AppBar>
 
-      {/* Main content */}
+      {/* Espaçamento para compensar a AppBar fixa */}
+      <Toolbar />
+
+      {/* Conteúdo principal */}
       <Container sx={{ py: 3 }}>
         <Outlet />
       </Container>
 
-      {/* Floating Login Button */}
+      {/* Botão flutuante de login */}
       <Fab
         color="primary"
         aria-label="Fazer login"

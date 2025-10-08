@@ -41,6 +41,12 @@ export function ModuleGrid() {
       desc: 'Dicas rápidas e ajuda no dia a dia.',
       to: '/grupo5/ajudador',
     },
+        {
+      icon: <HelpOutlineIcon sx={{ fontSize: 40 }} />,
+      title: 'Ajudador',
+      desc: 'Dicas rápidas e ajuda no dia a dia.',
+      to: '/grupo6/ajudador',
+    },
   ];
 
   return (
