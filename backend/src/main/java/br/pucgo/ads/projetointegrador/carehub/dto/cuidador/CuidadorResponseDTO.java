@@ -1,0 +1,31 @@
+package br.pucgo.ads.projetointegrador.carehub.dto.cuidador;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CuidadorResponseDTO {
+    private Long id;
+    private String nome;
+    private String email;
+    private String telefone;
+    private String experiencia;
+    private List<String> especialidades;
+    private String localizacao;
+    private Cuidador.Disponibilidade disponibilidade;
+    private BigDecimal avaliacaoMedia;
+    private Integer totalAvaliacoes;
+    private String biografia;
+    private String fotoPerfil;
+    private Boolean ativo;
+    private LocalDateTime criadoEm;
+}
