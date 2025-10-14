@@ -1,15 +1,14 @@
-package br.pucgo.ads.projetointegrador.plataforma.service;
+package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
-import br.pucgo.ads.projetointegrador.plataforma.dto.lembranca.LembrancaRequestDTO;
-import br.pucgo.ads.projetointegrador.plataforma.dto.lembranca.LembrancaResponseDTO;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Lembranca;
-import br.pucgo.ads.projetointegrador.plataforma.repository.LembrancaRepository;
+import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.entity.Lembranca;
+import br.pucgo.ads.projetointegrador.remember.repository.LembrancaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +45,7 @@ public class LembrancaService {
      * @param identificador O ID da lembrança.
      * @return Os dados da lembrança encontrada.
      */
-    public LembrancaResponseDTO buscarLembrancaPorIdentificador(UUID identificador) {
+    public LembrancaResponseDTO buscarLembrancaPorIdentificador(Long identificador) {
         Lembranca lembranca = lembrancaRepository.findById(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Lembrança não encontrada com o ID: " + identificador));
         return new LembrancaResponseDTO(lembranca);
@@ -57,7 +56,7 @@ public class LembrancaService {
      * @param identificadorUsuario O ID do usuário.
      * @return Uma lista com as lembranças do usuário.
      */
-    public List<LembrancaResponseDTO> listarLembrancasPorUsuario(UUID identificadorUsuario) {
+    public List<LembrancaResponseDTO> listarLembrancasPorUsuario(Long identificadorUsuario) {
         List<Lembranca> lembrancas = lembrancaRepository.findAllByIdentificadorUsuarioOrderByDataAcontecimentoDesc(identificadorUsuario);
         return lembrancas.stream()
                 .map(LembrancaResponseDTO::new)
@@ -70,7 +69,7 @@ public class LembrancaService {
      * @param requestDTO Os novos dados para a lembrança.
      * @return A lembrança com os dados atualizados.
      */
-    public LembrancaResponseDTO atualizarLembranca(UUID identificador, LembrancaRequestDTO requestDTO) {
+    public LembrancaResponseDTO atualizarLembranca(Long identificador, LembrancaRequestDTO requestDTO) {
         Lembranca lembrancaExistente = lembrancaRepository.findById(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Lembrança não encontrada com o ID: " + identificador));
 
@@ -88,7 +87,7 @@ public class LembrancaService {
      * Deleta uma lembrança pelo seu identificador.
      * @param identificador O ID da lembrança a ser deletada.
      */
-    public void deletarLembranca(UUID identificador) {
+    public void deletarLembranca(Long identificador) {
         if (!lembrancaRepository.existsById(identificador)) {
             throw new RecursoNaoEncontradoException("Lembrança não encontrada com o ID: " + identificador);
         }

@@ -1,19 +1,19 @@
-package br.pucgo.ads.projetointegrador.plataforma.dto.lembranca;
+package br.pucgo.ads.projetointegrador.remember.dto.lembranca;
 
-import br.pucgo.ads.projetointegrador.plataforma.dto.midia.MidiaResponseDTO;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Lembranca;
+import br.pucgo.ads.projetointegrador.remember.dto.midia.MidiaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.entity.Lembranca;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
 public class LembrancaResponseDTO {
 
-    private UUID identificador;
-    private UUID identificadorUsuario;
+    private Long identificadorLembranca;
+    private Long identificadorUsuario;
     private String titulo;
     private LocalDate dataAcontecimento;
     private String pessoasPresentes;
@@ -28,7 +28,7 @@ public class LembrancaResponseDTO {
      * @param lembranca A entidade a ser convertida.
      */
     public LembrancaResponseDTO(Lembranca lembranca) {
-        this.identificador = lembranca.getIdentificadorLembranca();
+        this.identificadorLembranca = lembranca.getIdentificadorLembranca();
         this.identificadorUsuario = lembranca.getIdentificadorUsuario();
         this.titulo = lembranca.getTitulo();
         this.dataAcontecimento = lembranca.getDataAcontecimento();

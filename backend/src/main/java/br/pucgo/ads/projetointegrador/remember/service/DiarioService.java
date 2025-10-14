@@ -1,18 +1,14 @@
-package br.pucgo.ads.projetointegrador.plataforma.service;
+package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
-import br.pucgo.ads.projetointegrador.plataforma.dto.diario.DiarioRequestDTO;
-import br.pucgo.ads.projetointegrador.plataforma.dto.diario.DiarioResponseDTO;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Diario;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Midia;
-import br.pucgo.ads.projetointegrador.plataforma.repository.DiarioRepository;
-import br.pucgo.ads.projetointegrador.plataforma.repository.MidiaRepository;
-import jakarta.transaction.Transactional;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.entity.Diario;
+import br.pucgo.ads.projetointegrador.remember.repository.DiarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +43,7 @@ public class DiarioService {
      * @param identificador O ID do diário.
      * @return Os dados do diário encontrado.
      */
-    public DiarioResponseDTO buscarDiarioPorId(UUID identificador) {
+    public DiarioResponseDTO buscarDiarioPorId(Long identificador) {
         Diario diario = diarioRepository.findById(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Diário não encontrado com o ID: " + identificador));
         return new DiarioResponseDTO(diario);
@@ -58,7 +54,7 @@ public class DiarioService {
      * @param identificadorUsuario O ID do usuário.
      * @return Uma lista com as páginas do diário do usuário.
      */
-    public List<DiarioResponseDTO> listarDiariosPorUsuario(UUID identificadorUsuario) {
+    public List<DiarioResponseDTO> listarDiariosPorUsuario(Long identificadorUsuario) {
         List<Diario> diarios = diarioRepository.findAllByIdentificadorUsuarioOrderByDataEscritaDesc(identificadorUsuario);
         return diarios.stream()
                 .map(DiarioResponseDTO::new)
@@ -71,7 +67,7 @@ public class DiarioService {
      * @param requestDTO Os novos dados para o diário.
      * @return O diário com os dados atualizados.
      */
-    public DiarioResponseDTO atualizarDiario(UUID identificador, DiarioRequestDTO requestDTO) {
+    public DiarioResponseDTO atualizarDiario(Long identificador, DiarioRequestDTO requestDTO) {
         Diario diarioExistente = diarioRepository.findById(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Diário não encontrado com o ID: " + identificador));
 
@@ -87,7 +83,7 @@ public class DiarioService {
      * Deleta uma página do diário pelo seu identificador.
      * @param identificador O ID do diário a ser deletado.
      */
-    public void deletarDiario(UUID identificador) {
+    public void deletarDiario(Long identificador) {
         if (!diarioRepository.existsById(identificador)) {
             throw new RecursoNaoEncontradoException("Diário não encontrado com o ID: " + identificador);
         }

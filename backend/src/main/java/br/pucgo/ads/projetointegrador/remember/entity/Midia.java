@@ -1,4 +1,4 @@
-package br.pucgo.ads.projetointegrador.plataforma.entity;
+package br.pucgo.ads.projetointegrador.remember.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "midia")
@@ -16,14 +15,14 @@ import java.util.UUID;
 public class Midia {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID identificadorMidia;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long identificadorMidia;
 
     @Column(name = "id_lembranca")
-    private UUID identificadorLembranca;
+    private Long identificadorLembranca;
 
     @Column(name = "id_diario")
-    private UUID identificadorDiario;
+    private Long identificadorDiario;
 
     @Column(name = "url_arquivo", nullable = false, length = 512)
     private String urlArquivo;

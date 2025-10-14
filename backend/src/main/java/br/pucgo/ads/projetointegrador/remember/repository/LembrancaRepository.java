@@ -1,0 +1,14 @@
+package br.pucgo.ads.projetointegrador.remember.repository;
+
+import br.pucgo.ads.projetointegrador.remember.entity.Lembranca;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface LembrancaRepository extends JpaRepository<Lembranca, Long> {
+
+    List<Lembranca> findAllByIdentificadorUsuarioOrderByDataAcontecimentoDesc(Long identificadorUsuario);
+
+}

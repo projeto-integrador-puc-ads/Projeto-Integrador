@@ -1,4 +1,4 @@
-package br.pucgo.ads.projetointegrador.plataforma.dto.lembranca;
+package br.pucgo.ads.projetointegrador.remember.dto.lembranca;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,13 +7,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 public class LembrancaRequestDTO {
 
     @NotNull(message = "O identificador do usuário é obrigatório.")
-    private UUID identificadorUsuario;
+    private Long identificadorUsuario;
 
     @NotBlank(message = "O título não pode estar em branco.")
     @Size(max = 255, message = "O título não pode exceder 255 caracteres.")

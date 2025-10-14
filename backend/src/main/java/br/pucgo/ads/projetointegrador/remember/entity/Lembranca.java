@@ -1,5 +1,6 @@
-package br.pucgo.ads.projetointegrador.plataforma.entity;
+package br.pucgo.ads.projetointegrador.remember.entity;
 
+import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "lembranca")
@@ -19,11 +19,11 @@ import java.util.UUID;
 public class Lembranca {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID identificadorLembranca;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long identificadorLembranca;
 
     @Column(name = "id_usuario", nullable = false)
-    private UUID identificadorUsuario;
+    private Long identificadorUsuario;
 
     @Column(nullable = false)
     private String titulo;

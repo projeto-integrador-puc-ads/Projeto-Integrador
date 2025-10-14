@@ -1,8 +1,8 @@
-package br.pucgo.ads.projetointegrador.plataforma.controller;
+package br.pucgo.ads.projetointegrador.remember.controller;
 
-import br.pucgo.ads.projetointegrador.plataforma.dto.lembranca.LembrancaRequestDTO;
-import br.pucgo.ads.projetointegrador.plataforma.dto.lembranca.LembrancaResponseDTO;
-import br.pucgo.ads.projetointegrador.plataforma.service.LembrancaService;
+import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.service.LembrancaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/lembrancas")
@@ -30,25 +29,28 @@ public class LembrancaController {
     }
 
     @GetMapping("/{identificador}")
-    public ResponseEntity<LembrancaResponseDTO> buscarLembrancaPorId(@PathVariable UUID identificador) {
+    public ResponseEntity<LembrancaResponseDTO> buscarLembrancaPorId(@PathVariable Long identificador) {
         LembrancaResponseDTO lembranca = lembrancaService.buscarLembrancaPorIdentificador(identificador);
         return ResponseEntity.ok(lembranca);
     }
 
     @GetMapping("/usuario/{identificadorUsuario}")
-    public ResponseEntity<List<LembrancaResponseDTO>> listarLembrancasPorUsuario(@PathVariable UUID identificadorUsuario) {
+    public ResponseEntity<List<LembrancaResponseDTO>> listarLembrancasPorUsuario(@PathVariable Long identificadorUsuario) {
         List<LembrancaResponseDTO> lembrancas = lembrancaService.listarLembrancasPorUsuario(identificadorUsuario);
         return ResponseEntity.ok(lembrancas);
     }
 
     @PutMapping("/{identificador}")
-    public ResponseEntity<LembrancaResponseDTO> atualizarLembranca(@PathVariable UUID identificador, @Valid @RequestBody LembrancaRequestDTO requestDTO) {
+    public ResponseEntity<LembrancaResponseDTO> atualizarLembranca(
+            @PathVariable Long identificador,
+            @Valid @RequestBody LembrancaRequestDTO requestDTO
+    ) {
         LembrancaResponseDTO lembrancaAtualizada = lembrancaService.atualizarLembranca(identificador, requestDTO);
         return ResponseEntity.ok(lembrancaAtualizada);
     }
 
     @DeleteMapping("/{identificador}")
-    public ResponseEntity<Void> deletarLembranca(@PathVariable UUID identificador) {
+    public ResponseEntity<Void> deletarLembranca(@PathVariable Long identificador) {
         lembrancaService.deletarLembranca(identificador);
         return ResponseEntity.noContent().build();
     }

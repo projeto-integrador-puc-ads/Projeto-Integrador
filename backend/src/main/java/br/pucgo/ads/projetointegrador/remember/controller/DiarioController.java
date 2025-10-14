@@ -1,8 +1,8 @@
-package br.pucgo.ads.projetointegrador.plataforma.controller;
+package br.pucgo.ads.projetointegrador.remember.controller;
 
-import br.pucgo.ads.projetointegrador.plataforma.dto.diario.DiarioRequestDTO;
-import br.pucgo.ads.projetointegrador.plataforma.dto.diario.DiarioResponseDTO;
-import br.pucgo.ads.projetointegrador.plataforma.service.DiarioService;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.service.DiarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/diarios")
@@ -30,25 +29,28 @@ public class DiarioController {
     }
 
     @GetMapping("/{identificador}")
-    public ResponseEntity<DiarioResponseDTO> buscarDiarioPorId(@PathVariable UUID identificador) {
+    public ResponseEntity<DiarioResponseDTO> buscarDiarioPorId(@PathVariable Long identificador) {
         DiarioResponseDTO diario = diarioService.buscarDiarioPorId(identificador);
         return ResponseEntity.ok(diario);
     }
 
     @GetMapping("/usuario/{identificadorUsuario}")
-    public ResponseEntity<List<DiarioResponseDTO>> listarDiariosPorUsuario(@PathVariable UUID identificadorUsuario) {
+    public ResponseEntity<List<DiarioResponseDTO>> listarDiariosPorUsuario(@PathVariable Long identificadorUsuario) {
         List<DiarioResponseDTO> diarios = diarioService.listarDiariosPorUsuario(identificadorUsuario);
         return ResponseEntity.ok(diarios);
     }
 
     @PutMapping("/{identificador}")
-    public ResponseEntity<DiarioResponseDTO> atualizarDiario(@PathVariable UUID identificador, @Valid @RequestBody DiarioRequestDTO requestDTO) {
+    public ResponseEntity<DiarioResponseDTO> atualizarDiario(
+            @PathVariable Long identificador,
+            @Valid @RequestBody DiarioRequestDTO requestDTO
+    ) {
         DiarioResponseDTO diarioAtualizado = diarioService.atualizarDiario(identificador, requestDTO);
         return ResponseEntity.ok(diarioAtualizado);
     }
 
     @DeleteMapping("/{identificador}")
-    public ResponseEntity<Void> deletarDiario(@PathVariable UUID identificador) {
+    public ResponseEntity<Void> deletarDiario(@PathVariable Long identificador) {
         diarioService.deletarDiario(identificador);
         return ResponseEntity.noContent().build();
     }
