@@ -1,0 +1,34 @@
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content {
+  flex-grow: 1; /* Faz o conteúdo principal ocupar todo o espaço disponível */
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a tela */
+}
+
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #ccc;
+  background-color: white;
+}
+
+.bottom-nav a {
+  text-decoration: none;
+  color: grey;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Estilo para o link ativo (página atual) */
+.bottom-nav a.active {
+  color: teal;
+  font-weight: bold;
+}

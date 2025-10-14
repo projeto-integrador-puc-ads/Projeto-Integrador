@@ -1,0 +1,25 @@
+.list-page {
+  padding: 20px;
+}
+
+.list-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.list-page-message {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 18px;
+  color: grey;
+}
+
+.list-page-message.error {
+  color: red;
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
