@@ -11,5 +11,4 @@ import java.util.List;
 public interface UsuarioConquistaRepository extends JpaRepository<UsuarioConquista, UsuarioConquistaKey> {
 
     List<UsuarioConquista> findByUsuarioConquistaKey_IdentificadorUsuario(Long identificadorUsuario);
-
 }
