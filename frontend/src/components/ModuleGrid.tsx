@@ -27,7 +27,7 @@ export function ModuleGrid() {
       icon: <ShoppingCartIcon sx={{ fontSize: 40 }} />,
       title: 'Lista de Compras',
       desc: 'Organize compras do mês.',
-      to: '/grupo3/compras',
+      to: '/lista-compras/',
     },
     {
       icon: <HistoryIcon sx={{ fontSize: 40 }} />,
