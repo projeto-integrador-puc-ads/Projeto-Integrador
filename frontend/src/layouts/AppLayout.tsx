@@ -7,7 +7,7 @@ import { setAuthToken } from '@/lib/http';
 
 function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
-
+    
   return (
     <Box
       sx={{
