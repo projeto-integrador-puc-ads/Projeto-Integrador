@@ -1,98 +1,113 @@
-import { AppBar, Box, Container, Fab, Toolbar, Typography } from '@mui/material';
-import LoginIcon from '@mui/icons-material/Login';
-import { Outlet } from 'react-router-dom';
+import { AppBar, Avatar, Box, Container, Modal, Toolbar, Typography, Button } from '@mui/material';
+import { deepPurple } from '@mui/material/colors';
+import { Outlet, Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { setAuthToken } from '@/lib/http';
-
-
-function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <Box
-      sx={{
-        position: 'fixed',
-        inset: 0,
-        bgcolor: 'rgba(0,0,0,0.4)',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: 9999,
-      }}
-      onClick={onClose}
-    >
-      <Box
-        onClick={(e) => e.stopPropagation()}
-        sx={{
-          bgcolor: 'background.paper',
-          p: 3,
-          borderRadius: 2,
-          minWidth: 320,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-        }}
-      >
-        <Typography variant="h2" gutterBottom>
-          Entrar
-        </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          Este é um login de exemplo (mock). Clique em "Confirmar" para simular autenticação.
-        </Typography>
-
-        <Box
-          component="button"
-          onClick={() => {
-            setAuthToken('token-demo');
-            onClose();
-          }}
-          sx={{
-            mt: 2,
-            p: 1.5,
-            borderRadius: 2,
-            border: 'none',
-            bgcolor: 'primary.main',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '1.0625rem',
-            fontWeight: 700,
-            width: '100%',
-          }}
-        >
-          Confirmar
-        </Box>
-      </Box>
-    </Box>
-  );
-}
+import logo_unati_horizontal from '../assets/logo_unati_horizontal.png';
 
 export default function AppLayout() {
-  const [open, setOpen] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
-      {/* Top App Bar */}
-      <AppBar position="sticky" elevation={0} color="transparent" sx={{ borderBottom: '1px solid #e5eaf2' }}>
+      {/* Top App Bar fixa */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        color="transparent"
+        sx={{
+          borderBottom: '1px solid #e5eaf2',
+          backdropFilter: 'blur(8px)',
+          bgcolor: 'rgba(255,255,255,0.85)',
+        }}
+      >
         <Toolbar>
-          <Typography variant="h2" sx={{ flex: 1 }}>
-            UNADE
-          </Typography>
+          {/* Logo UNATI */}
+          <Box component={RouterLink as any} to="/home" sx={{ display: 'inline-flex', alignItems: 'center', mr: 2 }}>
+            <Box
+              component="img"
+              src={logo_unati_horizontal}
+              alt="Logo UNATI"
+              sx={{ height: 48 }}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }} />
+
+          {/* Botão Área do administrador */}
+          <Button
+            variant="outlined"
+            color="primary"
+            component={RouterLink as any}
+            to="/admin"
+            sx={{ mr: 2 }}
+          >
+            Área do administrador
+          </Button>
+
+          {/* Avatar no canto direito */}
+          <Avatar
+            sx={{
+              bgcolor: deepPurple[500],
+              cursor: 'pointer',
+            }}
+            onClick={() => setOpenProfile(true)}
+          >
+            M
+          </Avatar>
         </Toolbar>
       </AppBar>
 
-      {/* Main content */}
+      {/* Espaçamento para compensar a AppBar fixa */}
+      <Toolbar />
+
+      {/* Conteúdo principal */}
       <Container sx={{ py: 3 }}>
         <Outlet />
       </Container>
 
-      {/* Floating Login Button */}
-      <Fab
-        color="primary"
-        aria-label="Fazer login"
-        onClick={() => setOpen(true)}
-        sx={{ position: 'fixed', right: 24, bottom: 24 }}
-      >
-        <LoginIcon />
-      </Fab>
-
-      {/* Mock Login Dialog */}
-      <LoginDialogMock open={open} onClose={() => setOpen(false)} />
+      {/* Modal de Perfil */}
+      <Modal open={openProfile} onClose={() => setOpenProfile(false)}>
+        <Box
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            p: 4,
+            borderRadius: 3,
+            boxShadow: 24,
+            minWidth: 320,
+            maxWidth: '90vw',
+          }}
+        >
+          <Typography variant="h5" fontWeight={700} mb={2}>
+            Meu Perfil
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Aqui você poderá visualizar e editar suas informações pessoais, como nome,
+            e-mail e foto de perfil.
+          </Typography>
+          <Box
+            component="button"
+            onClick={() => setOpenProfile(false)}
+            sx={{
+              mt: 3,
+              width: '100%',
+              p: 1.2,
+              bgcolor: 'primary.main',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 2,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: 600,
+            }}
+          >
+            Fechar
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 }
