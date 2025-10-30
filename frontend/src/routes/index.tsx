@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout';
 import { ModuleGrid } from '@/components/ModuleGrid';
 import UsuariosPage from '@/features/grupo1/pages/UsuariosPage';
 import ListaComprasPage from "@/features/lista-compras/pages/ListaComprasPage.tsx";
+import CreateListaPage from "@/features/lista-compras/pages/CreateListaPage.tsx";
 
 function Home() {
   return (
@@ -24,6 +25,7 @@ export function AppRoutes() {
         <Route index element={<Home />} />
         <Route path="usuarios" element={<UsuariosPage />} />
           <Route path="lista-compras" element={<ListaComprasPage />} /> {/* ✅ nova rota */}
+          <Route path="lista-compras/nova" element={<CreateListaPage />} /> {/* ✅ nova rota */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
