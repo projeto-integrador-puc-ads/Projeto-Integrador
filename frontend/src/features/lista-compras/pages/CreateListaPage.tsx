@@ -7,7 +7,6 @@ import {
     Button,
     Card,
     CardActionArea,
-    CardContent,
     List,
     ListItem,
     ListItemText,
@@ -22,6 +21,8 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
 
 /** ==== Tipos mockados, alinhados ao banco ==== */
 type Produto = {
@@ -82,6 +83,8 @@ const normalize = (s: string) => s.trim().toLowerCase();
 
 /** ======================= */
 export default function CreateListaPage() {
+    const navigate = useNavigate();
+
     const [catalogo, setCatalogo] = useState<Produto[]>(mockProdutos);
     const [listaItens, setListaItens] = useState<ListaItemVM[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -183,8 +186,20 @@ export default function CreateListaPage() {
 
     return (
         <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 900, mx: 'auto' }}>
+            {/* Header com botão Voltar */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Button
+                    variant="text"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate(-1)}
+                    sx={{ textTransform: 'none' }}
+                >
+                    Voltar
+                </Button>
+            </Stack>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-                🛒 Criar Nova Lista de Compras
+                Criar Nova Lista de Compras
             </Typography>
             <Typography color="text.secondary" sx={{ mb: 3 }}>
                 Monte sua lista adicionando itens ou use um modelo pronto.
@@ -225,7 +240,7 @@ export default function CreateListaPage() {
                                         justifyContent: 'center',
                                     }}
                                 >
-                                    <ContentCopyIcon sx={{ color: 'primary.main' }} />
+                                    <ContentCopyIcon sx={{ color: 'white' }} />
                                 </Box>
                                 <Box>
                                     <Typography fontWeight={600}>{t.titulo}</Typography>
@@ -246,7 +261,7 @@ export default function CreateListaPage() {
                     mb: 3,
                     borderRadius: 2,
                     boxShadow: 2,
-                    backgroundColor: '#fafafa',
+                    backgroundColor: '#ffffff', // corrigido
                 }}
             >
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
@@ -290,7 +305,7 @@ export default function CreateListaPage() {
             <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
                 Itens da lista
             </Typography>
-            <List sx={{ bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+            <List sx={{ backgroundColor: '#ffffff', borderRadius: 2, boxShadow: 1 }}>
                 {listaItens.length === 0 && (
                     <Typography color="text.secondary" sx={{ p: 2 }}>
                         Sua lista está vazia. Adicione itens acima ou escolha um modelo pronto.
@@ -326,9 +341,10 @@ export default function CreateListaPage() {
                 ))}
             </List>
 
-            {/* Ações */}
             <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-                <Button variant="outlined">Salvar como rascunho</Button>
+                <Button variant="outlined" onClick={() => navigate(-1)}>
+                    Salvar como rascunho
+                </Button>
                 <Button variant="contained" startIcon={<RecommendIcon />}>
                     Finalizar lista
                 </Button>
