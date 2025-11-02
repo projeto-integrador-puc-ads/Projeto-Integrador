@@ -10,7 +10,10 @@ import EditCuidadorPage from '@/features/admin/pages/EditCuidadorPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
-import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico'; 
+import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
+import ReceituarioPage from '@/features/admin/pages/ReceituarioPage';
+import IniciarConsulta from '@/features/admin/pages/IniciarConsultaPage';
+import MedicoDashboard from '@/features/admin/pages/MedicoDashboard';
 
 function Home() {
   return (
@@ -49,6 +52,11 @@ export function AppRoutes() {
 
         {/* Nova rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
+        <Route path="atendimento/receituario" element={<ReceituarioPage />} />
+
+        {/* Página inicial do médico */}
+        <Route path="medico" element={<IniciarConsulta />} />
+        <Route path="atendimento/dashboard" element={<MedicoDashboard />} />
 
         {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />

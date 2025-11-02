@@ -6,7 +6,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // ✅ Novo ícone
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Ícone original
+import PersonSearchIcon from '@mui/icons-material/PersonSearch'; // Novo ícone para iniciar consulta
 import { useNavigate } from 'react-router-dom';
 
 export function ModuleGrid() {
@@ -38,12 +39,18 @@ export function ModuleGrid() {
       to: '/grupo4/consultas',
     },
 
-    // ✅ Novo módulo: Atendimento Médico
     {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
       title: 'Atendimento Médico',
       desc: 'Registre informações de consultas e diagnósticos.',
       to: '/atendimento',
+    },
+
+    {
+      icon: <PersonSearchIcon sx={{ fontSize: 40 }} color="primary" />,
+      title: 'Iniciar Consulta',
+      desc: 'Selecione o paciente para iniciar o atendimento.',
+      to: '/medico', // Caminho da página IniciarConsulta
     },
 
     {
