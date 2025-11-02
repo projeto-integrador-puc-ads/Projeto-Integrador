@@ -1,6 +1,8 @@
 import { Box } from '@mui/material';
 import { ModuleCard } from './ModuleCard';
+import MedicationIcon from '@mui/icons-material/Medication';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import DescriptionIcon from '@mui/icons-material/Description'; // ícone para Pedir Exames
 import { useNavigate } from 'react-router-dom';
 
 export function ModuleGridMedico({ paciente }: { paciente: string }) {
@@ -10,10 +12,15 @@ export function ModuleGridMedico({ paciente }: { paciente: string }) {
     {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
       title: 'Receituário',
-      desc: 'Registre informações de consultas e prescrições.',
-      to: '/atendimento/receituario',
+      desc: 'Adicionar medicamentos para o paciente.',
+      onClick: () => navigate('/atendimento/receituario', { state: { paciente } }),
     },
-    // Futuramente você pode adicionar outros módulos do médico aqui
+    {
+      icon: <DescriptionIcon sx={{ fontSize: 40 }} color="primary" />,
+      title: 'Pedir Exames',
+      desc: 'Solicitar exames para o paciente.',
+      onClick: () => navigate('/atendimento/exames', { state: { paciente } }),
+    },
   ];
 
   return (
@@ -22,7 +29,7 @@ export function ModuleGridMedico({ paciente }: { paciente: string }) {
         display: 'grid',
         gridTemplateColumns: {
           xs: '1fr',
-          sm: '1fr',
+          sm: '1fr 1fr',
         },
         gap: 2,
         mt: 2,
@@ -34,9 +41,7 @@ export function ModuleGridMedico({ paciente }: { paciente: string }) {
           icon={m.icon}
           title={m.title}
           description={m.desc}
-          onClick={() =>
-            navigate(m.to, { state: { paciente } }) // Passa o paciente selecionado
-          }
+          onClick={m.onClick}
         />
       ))}
     </Box>
