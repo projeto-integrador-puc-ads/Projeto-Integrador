@@ -4,6 +4,7 @@ import MedicationIcon from '@mui/icons-material/Medication';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import DescriptionIcon from '@mui/icons-material/Description'; // ícone para Pedir Exames
 import { useNavigate } from 'react-router-dom';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 
 export function ModuleGridMedico({ paciente }: { paciente: string }) {
   const navigate = useNavigate();
@@ -20,6 +21,12 @@ export function ModuleGridMedico({ paciente }: { paciente: string }) {
       title: 'Pedir Exames',
       desc: 'Solicitar exames para o paciente.',
       onClick: () => navigate('/atendimento/exames', { state: { paciente } }),
+    },
+    {
+      icon: <FitnessCenterIcon sx={{ fontSize: 40 }} color="secondary" />,
+      title: 'Recomendação de Exercícios',
+      desc: 'Sugira exercícios para o paciente.',
+      onClick: () => navigate('/atendimento/exercicios', { state: { paciente } }),
     },
   ];
 
