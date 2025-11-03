@@ -1,0 +1,48 @@
+[33mcommit 09d334adbd491ee1b103ffd0088a36e134e59ebd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Merge: 681336e 5b65989
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 19:33:56 2025 -0300
+
+    Merge develop into main - Resolving conflicts
+
+[33mcommit 681336ec17f3b3a75f60ad13748bfc1fe26a86f2[m
+Author: Cauê Oliveira <104538312+caueobm@users.noreply.github.com>
+Date:   Sun Sep 28 19:27:29 2025 -0300
+
+    Initial commit
+
+[33mcommit 5b659896f9721fd951efb666e5404c486533ae95[m[33m ([m[1;31morigin/develop[m[33m)[m
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 19:10:23 2025 -0300
+
+    API Funcionando
+
+[33mcommit eecb109b3dad6a6e167bdf412f5390bc7394e27b[m
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 18:20:56 2025 -0300
+
+    CRUD padrão TESTE
+
+[33mcommit 65269f2c4310ed393c643d971c3c402030cc3dc4[m
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 17:44:02 2025 -0300
+
+    Criando pastas iniciais para os grupos
+
+[33mcommit da1003fd3fb4b705751deecf76c3fd8c3df13d0c[m
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 17:26:02 2025 -0300
+
+    alteração de pastas
+
+[33mcommit c3ea83cbb8a4e5dffe1c55aaabfbb7fbf7f594ba[m
+Author: caueobm <caue.obm@gmail.com>
+Date:   Sun Sep 28 16:54:36 2025 -0300
+
+    First Commit
+
+[33mcommit 3bb1145d6ccb09564f39e044a31e09c432756262[m
+Author: Cauê Oliveira <104538312+caueobm@users.noreply.github.com>
+Date:   Sun Sep 28 16:40:09 2025 -0300
+
+    Initial commit
