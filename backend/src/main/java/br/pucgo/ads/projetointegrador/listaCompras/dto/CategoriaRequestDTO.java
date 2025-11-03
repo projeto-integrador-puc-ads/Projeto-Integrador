@@ -17,6 +17,4 @@ public class CategoriaRequestDTO {
 
     @Size(max = 255)
     private String descricao;
-
-    private Boolean ativo;
 }

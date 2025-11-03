@@ -23,9 +23,6 @@ public class Categoria {
     @Column
     private String descricao;
 
-    @Column(nullable = false)
-    private Boolean ativo = true;
-
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
@@ -36,9 +33,6 @@ public class Categoria {
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
         dataAtualizacao = LocalDateTime.now();
-        if (ativo == null) {
-            ativo = true;
-        }
     }
 
     @PreUpdate

@@ -30,9 +30,6 @@ public class Produto {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @Column(nullable = false)
-    private Boolean ativo = true;
-
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
@@ -43,9 +40,6 @@ public class Produto {
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
         dataAtualizacao = LocalDateTime.now();
-        if (ativo == null) {
-            ativo = true;
-        }
     }
 
     @PreUpdate

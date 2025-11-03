@@ -1,19 +1,21 @@
 package br.pucgo.ads.projetointegrador.listaCompras.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class CategoriaResponseDTO {
+@AllArgsConstructor
+public class ItemListaResponseDTO {
 
     private Long id;
-    private String nome;
-    private String descricao;
+    private Long compraListaId;
+    private ProdutoResponseDTO produto;
+    private Double quantidade;
+    private Boolean comprado;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
 }
