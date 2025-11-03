@@ -36,7 +36,7 @@ export function ModuleGrid() {
       icon: <HistoryIcon sx={{ fontSize: 40 }} />,
       title: 'Histórico de Consultas',
       desc: 'Acompanhe suas consultas médicas.',
-      to: '/grupo4/consultas',
+      to: '/historico_consultas',
     },
 
     {
@@ -50,7 +50,7 @@ export function ModuleGrid() {
       icon: <PersonSearchIcon sx={{ fontSize: 40 }} color="primary" />,
       title: 'Iniciar Consulta',
       desc: 'Selecione o paciente para iniciar o atendimento.',
-      to: '/medico', // Caminho da página IniciarConsulta
+      to: '/medico',
     },
 
     {

@@ -16,6 +16,7 @@ import IniciarConsulta from '@/features/admin/pages/Medico/IniciarConsultaPage';
 import MedicoDashboard from '@/features/admin/pages/Medico/MedicoDashboard';
 import PedirExamesPage from '@/features/admin/pages/Medico/PedirExamesPage';
 import RecomendacaoExerciciosPage from '@/features/admin/pages/Medico/RecomendacaoExerciciosPage';
+import HistoricoConsultasPage from '@/features/atendimento/HistoricoConsultasPage';
 
 function Home() {
   return (
@@ -57,6 +58,7 @@ export function AppRoutes() {
         <Route path="atendimento/receituario" element={<ReceituarioPage />} />
         <Route path="atendimento/exames" element={<PedirExamesPage />} />
         <Route path="atendimento/exercicios" element={<RecomendacaoExerciciosPage />} />
+        <Route path="/historico_consultas" element={<HistoricoConsultasPage />} />
 
         {/* Página inicial do médico */}
         <Route path="medico" element={<IniciarConsulta />} />
