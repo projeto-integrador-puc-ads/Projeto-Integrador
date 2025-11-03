@@ -10,7 +10,6 @@ import EditCuidadorPage from '@/features/admin/pages/EditCuidadorPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
-import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico'; 
 
 function Home() {
   return (
@@ -34,8 +33,6 @@ export function AppRoutes() {
       {/* Áreas autenticadas */}
       <Route element={<AppLayout />}>
         <Route path="/home" element={<Home />} />
-
-        {/* Rotas administrativas */}
         <Route path="admin" element={<AdminPage />} />
         <Route path="admin/usuarios" element={<AdminUsuariosPage />} />
         <Route path="admin/medicos" element={<AdminMedicosPage />} />
@@ -43,14 +40,7 @@ export function AppRoutes() {
         <Route path="admin/usuarios/:id/edit" element={<EditUsuarioPage />} />
         <Route path="admin/medicos/:id/edit" element={<EditMedicoPage />} />
         <Route path="admin/cuidadores/:id/edit" element={<EditCuidadorPage />} />
-
-        {/* Rotas gerais */}
         <Route path="usuarios" element={<UsuariosPage />} />
-
-        {/* Nova rota: Atendimento Médico */}
-        <Route path="atendimento" element={<AtendimentoMedico />} />
-
-        {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>

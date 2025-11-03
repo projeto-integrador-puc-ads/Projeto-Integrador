@@ -1,0 +1,389 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "Projeto Integrador - Usuario API",
+		"description": "Collection para testar todos os endpoints da API de Usuários do Projeto Integrador PUC-GO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Usuarios",
+			"item": [
+				{
+					"name": "1. Criar Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"João Silva Santos\",\n    \"email\": \"joao.silva@email.com\",\n    \"telefone\": \"(62) 99999-9999\",\n    \"dataNascimento\": \"15/03/1960\",\n    \"tipoUsuario\": \"IDOSO\",\n    \"ativo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Criar um novo usuário no sistema"
+					}
+				},
+				{
+					"name": "2. Criar Usuario Cuidador",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Maria Fernanda Costa\",\n    \"email\": \"maria.cuidadora@email.com\",\n    \"telefone\": \"(62) 98888-8888\",\n    \"dataNascimento\": \"22/07/1985\",\n    \"tipoUsuario\": \"CUIDADOR\",\n    \"ativo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Criar um usuário do tipo CUIDADOR"
+					}
+				},
+				{
+					"name": "3. Criar Usuario Familiar",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Ana Paula Silva\",\n    \"email\": \"ana.familiar@email.com\",\n    \"telefone\": \"(62) 97777-7777\",\n    \"dataNascimento\": \"10/12/1975\",\n    \"tipoUsuario\": \"FAMILIAR\",\n    \"ativo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Criar um usuário do tipo FAMILIAR"
+					}
+				},
+				{
+					"name": "4. Criar Profissional de Saude",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Dr. Carlos Eduardo Medeiros\",\n    \"email\": \"dr.carlos@hospital.com\",\n    \"telefone\": \"(62) 96666-6666\",\n    \"dataNascimento\": \"05/09/1978\",\n    \"tipoUsuario\": \"PROFISSIONAL_SAUDE\",\n    \"ativo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Criar um usuário do tipo PROFISSIONAL_SAUDE"
+					}
+				},
+				{
+					"name": "5. Listar Todos os Usuarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Retorna todos os usuários cadastrados no sistema"
+					}
+				},
+				{
+					"name": "6. Listar Usuarios Ativos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/ativos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"ativos"
+							]
+						},
+						"description": "Retorna apenas os usuários com status ativo"
+					}
+				},
+				{
+					"name": "7. Buscar Usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						},
+						"description": "Busca um usuário específico pelo ID (altere o número conforme necessário)"
+					}
+				},
+				{
+					"name": "8. Buscar Usuario por Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/email/joao.silva@email.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"email",
+								"joao.silva@email.com"
+							]
+						},
+						"description": "Busca um usuário pelo endereço de email"
+					}
+				},
+				{
+					"name": "9. Buscar Usuarios por Tipo - IDOSO",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/tipo/IDOSO",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"tipo",
+								"IDOSO"
+							]
+						},
+						"description": "Busca todos os usuários do tipo IDOSO"
+					}
+				},
+				{
+					"name": "10. Buscar Usuarios por Tipo - CUIDADOR",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/tipo/CUIDADOR",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"tipo",
+								"CUIDADOR"
+							]
+						},
+						"description": "Busca todos os usuários do tipo CUIDADOR"
+					}
+				},
+				{
+					"name": "11. Buscar Usuarios por Tipo - FAMILIAR",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/tipo/FAMILIAR",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"tipo",
+								"FAMILIAR"
+							]
+						},
+						"description": "Busca todos os usuários do tipo FAMILIAR"
+					}
+				},
+				{
+					"name": "12. Buscar Usuarios por Tipo - PROFISSIONAL_SAUDE",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/tipo/PROFISSIONAL_SAUDE",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"tipo",
+								"PROFISSIONAL_SAUDE"
+							]
+						},
+						"description": "Busca todos os usuários do tipo PROFISSIONAL_SAUDE"
+					}
+				},
+				{
+					"name": "13. Buscar Usuarios por Nome",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/buscar?nome=João",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nome",
+									"value": "João"
+								}
+							]
+						},
+						"description": "Busca usuários que contenham o nome especificado"
+					}
+				},
+				{
+					"name": "14. Atualizar Usuario",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"João Silva Santos - Atualizado\",\n    \"email\": \"joao.silva.novo@email.com\",\n    \"telefone\": \"(62) 99999-1111\",\n    \"dataNascimento\": \"15/03/1960\",\n    \"tipoUsuario\": \"IDOSO\",\n    \"ativo\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						},
+						"description": "Atualiza os dados de um usuário existente (altere o ID conforme necessário)"
+					}
+				},
+				{
+					"name": "15. Desativar Usuario (Soft Delete)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/1/desativar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1",
+								"desativar"
+							]
+						},
+						"description": "Desativa um usuário (soft delete) - mantém no banco mas marca como inativo"
+					}
+				},
+				{
+					"name": "16. Deletar Usuario Permanentemente",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						},
+						"description": "Remove permanentemente um usuário do banco de dados"
+					}
+				}
+			],
+			"description": "Endpoints para gerenciar usuários da plataforma"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "spring_security_password",
+			"value": "ddd3ff38-4579-46f9-b3af-71f1ff39ef73",
+			"type": "string"
+		}
+	]
+}
