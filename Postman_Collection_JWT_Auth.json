@@ -39,7 +39,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"João Silva Santos\",\n    \"username\": \"joao.silva\",\n    \"email\": \"joao.silva@email.com\",\n    \"password\": \"senha123456\"\n}"
+							"raw": "{\n    \"name\": \"João Silva Santos\",\n    \"username\": \"joao.silva\",\n    \"email\": \"joao.silva@email.com\",\n    \"password\": \"senha123456\",\n    \"roleType\": \"IDOSO\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/signup",
@@ -84,7 +84,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Maria Fernanda Costa\",\n    \"username\": \"maria.cuidadora\",\n    \"email\": \"maria.cuidadora@email.com\",\n    \"password\": \"senha123456\"\n}"
+							"raw": "{\n    \"name\": \"Maria Fernanda Costa\",\n    \"username\": \"maria.cuidadora\",\n    \"email\": \"maria.cuidadora@email.com\",\n    \"password\": \"senha123456\",\n    \"roleType\": \"CUIDADOR\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/signup",
@@ -98,6 +98,141 @@
 							]
 						},
 						"description": "Registrar um novo cuidador no sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "2.1 Signup - Registrar FAMILIAR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log(\"✅ Familiar cadastrado com sucesso!\");",
+									"} else {",
+									"    console.log(\"❌ Erro no cadastro:\", pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Carlos Roberto Silva\",\n    \"username\": \"carlos.familiar\",\n    \"email\": \"carlos.familiar@email.com\",\n    \"password\": \"senha123456\",\n    \"roleType\": \"FAMILIAR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Registrar um familiar no sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "2.2 Signup - Sem Role (usa ROLE_USER padrão)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log(\"✅ Usuário cadastrado com ROLE_USER!\");",
+									"} else {",
+									"    console.log(\"❌ Erro no cadastro:\", pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Teste Sem Role\",\n    \"username\": \"teste.user\",\n    \"email\": \"teste.user@email.com\",\n    \"password\": \"senha123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Cadastro sem informar roleType - recebe ROLE_USER por padrão"
+					},
+					"response": []
+				},
+				{
+					"name": "2.3 Signup - Tentativa BLOQUEADA (ADMIN)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 403) {",
+									"    console.log(\"✅ Bloqueio funcionando! Não pode se cadastrar como ADMIN\");",
+									"} else {",
+									"    console.log(\"❌ FALHA DE SEGURANÇA! Conseguiu se cadastrar como ADMIN\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Hacker Tentando Admin\",\n    \"username\": \"hacker.admin\",\n    \"email\": \"hacker@evil.com\",\n    \"password\": \"senha123456\",\n    \"roleType\": \"ROLE_ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Teste de segurança - deve retornar 403 FORBIDDEN ao tentar se cadastrar como ADMIN"
 					},
 					"response": []
 				},

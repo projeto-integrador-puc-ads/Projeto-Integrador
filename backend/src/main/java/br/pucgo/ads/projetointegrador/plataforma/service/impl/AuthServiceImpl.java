@@ -69,9 +69,26 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(signupDto.getEmail());
         user.setPassword(passwordEncoder.encode(signupDto.getPassword()));
 
-        // Get roles (assume USER by default)
+        //  SEGURANÇA: Validar role com whitelist
         HashSet<RoleType> roles = new HashSet<>();
-        roles.add(RoleType.ROLE_USER);
+        
+        if (signupDto.getRoleType() != null) {
+            // Whitelist: apenas roles públicas são permitidas no cadastro
+            if (signupDto.getRoleType() == RoleType.IDOSO ||
+                signupDto.getRoleType() == RoleType.CUIDADOR ||
+                signupDto.getRoleType() == RoleType.FAMILIAR) {
+                
+                roles.add(signupDto.getRoleType());
+            } else {
+                // Bloqueia tentativas de se cadastrar como ADMIN ou PROFISSIONAL_SAUDE
+                throw new ApiException(HttpStatus.FORBIDDEN, 
+                    "You cannot register with this user type. Allowed types: IDOSO, CUIDADOR, FAMILIAR");
+            }
+        } else {
+            // Se não informou, usa ROLE_USER como padrão
+            roles.add(RoleType.ROLE_USER);
+        }
+        
         user.setRoles(roles);
 
         userRepository.save(user);

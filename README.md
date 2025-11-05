@@ -2,6 +2,21 @@
 
 **PUC GO (ADS)** - Uma plataforma digital desenvolvida para auxiliar idosos em seu dia a dia, promovendo autonomia, bem-estar e inclusão.
 
+---
+
+## ⚠️ **AVISO IMPORTANTE - SEGURANÇA**
+
+### 🔓 **Modo Desenvolvimento Ativo**
+
+As rotas da API estão **temporariamente LIBERADAS** (sem proteção JWT) para facilitar o desenvolvimento:
+- ✅ Todos os grupos podem criar e testar suas APIs sem configurar autenticação
+- ✅ Frontend pode fazer requests diretos
+- ⚠️ **NÃO USAR EM PRODUÇÃO ASSIM!**
+
+📖 **Antes de produção, consulte:** `ANTES_DE_PRODUCAO.md`
+
+---
+
 ## 🏗️ Arquitetura do Projeto
 
 ### Tecnologias
@@ -49,13 +64,26 @@ O **Grupo Plataforma** é responsável pela autenticação centralizada. Todos o
    Authorization: Bearer {seu-token-jwt}
    ```
 
+2. **Enviar o token JWT** em todas as requisições:
+   ```
+   Authorization: Bearer {seu-token-jwt}
+   ```
+
 3. **Consultar dados de usuários:**
    - `GET /api/users/{id}` - Dados do usuário
    - `GET /api/users/email/{email}` - Buscar por email
 
 #### Tipos de Usuário (RoleType):
-- `IDOSO`
-- `CUIDADOR`
-- `FAMILIAR`
-- `PROFISSIONAL_SAUDE`
-- `ADMIN`
+- `ROLE_USER` - Usuário padrão (atribuído automaticamente)
+- `IDOSO` - ✅ Pode ser escolhido no cadastro
+- `CUIDADOR` - ✅ Pode ser escolhido no cadastro
+- `FAMILIAR` - ✅ Pode ser escolhido no cadastro
+- `PROFISSIONAL_SAUDE` - 🔒 Apenas admin pode atribuir
+- `ROLE_ADMIN` - 🔒 Apenas admin pode atribuir
+
+> 📖 **Documentação completa:** Veja `SISTEMA_ROLES.md` para detalhes sobre segurança e validações.
+
+#### ⚠️ Rotas Temporariamente Liberadas (Desenvolvimento):
+
+Durante o desenvolvimento, as rotas estão **SEM proteção JWT** para facilitar a criação de telas.  
+**Antes de produção:** Descomentar as anotações `@PreAuthorize` em `UserController.java`

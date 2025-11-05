@@ -32,10 +32,9 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "user_roles", 
-        joinColumns = @JoinColumn(name = "user_id"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"})
+        joinColumns = @JoinColumn(name = "user_id")
     )
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role", length = 50)
     private Set<RoleType> roles = new HashSet<>();
 }

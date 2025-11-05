@@ -31,22 +31,26 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos de autenticação
+                // ✅ Endpoints PÚBLICOS (sem autenticação)
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // Endpoints dos outros grupos (protegidos)
-                .requestMatchers("/api/grupo1/**").authenticated()
-                .requestMatchers("/api/grupo2/**").authenticated()
-                .requestMatchers("/api/grupo3/**").authenticated()
-                .requestMatchers("/api/grupo4/**").authenticated()
-                .requestMatchers("/api/grupo5/**").authenticated()
-                .requestMatchers("/api/grupo6/**").authenticated()
+                // ⚠️ TEMPORÁRIO: Rotas dos grupos LIBERADAS para desenvolvimento
+                // TODO: Trocar .permitAll() por .authenticated() antes de produção
+                .requestMatchers("/api/grupo1/**").permitAll()
+                .requestMatchers("/api/grupo2/**").permitAll()
+                .requestMatchers("/api/grupo3/**").permitAll()
+                .requestMatchers("/api/grupo4/**").permitAll()
+                .requestMatchers("/api/grupo5/**").permitAll()
+                .requestMatchers("/api/grupo6/**").permitAll()
                 
-                // Endpoints de gerenciamento de usuários
-                .requestMatchers("/api/users/**").authenticated()
+                // ⚠️ TEMPORÁRIO: Endpoints de usuários LIBERADOS para desenvolvimento
+                // TODO: Trocar .permitAll() por .authenticated() antes de produção
+                .requestMatchers("/api/users/**").permitAll()
                 
-                // Qualquer outra requisição precisa autenticação
-                .anyRequest().authenticated()
+                // ⚠️ TEMPORÁRIO: Qualquer outra rota LIBERADA (desenvolvimento)
+                // Isso permite que grupos criem novas rotas sem configurar aqui
+                // TODO: Trocar .permitAll() por .authenticated() antes de produção
+                .anyRequest().permitAll()
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint)
