@@ -9,7 +9,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoMedicamentoDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.service.PrescricaoMedicamentoService;
 
 @RestController
-@RequestMapping("/prescricao_medicamento")
+@RequestMapping("/api/diario_saude/prescricao_medicamento")
 public class PrescricaoMedicamentoController {
 
     @Autowired

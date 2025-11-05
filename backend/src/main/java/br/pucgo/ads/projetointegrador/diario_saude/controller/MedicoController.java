@@ -9,7 +9,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.MedicoDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.service.MedicoService;
 
 @RestController
-@RequestMapping(value = "/medico")
+@RequestMapping(value = "/api/diario_saude/medico")
 public class MedicoController {
 
     @Autowired

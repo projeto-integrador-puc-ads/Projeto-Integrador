@@ -9,7 +9,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoExercicioDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.service.PrescricaoExercicioService;
 
 @RestController
-@RequestMapping(value = "/prescricao_exercicio")
+@RequestMapping(value = "/api/diario_saude/prescricao_exercicio")
 public class PrescricaoExercicioController {
 
     @Autowired

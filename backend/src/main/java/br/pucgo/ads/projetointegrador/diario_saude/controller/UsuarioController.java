@@ -17,7 +17,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.UsuarioDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.service.UsuarioService;
 
 @RestController
-@RequestMapping(value = "/usuario")
+@RequestMapping(value = "/api/diario_saude/usuario")
 public class UsuarioController {
 
     @Autowired

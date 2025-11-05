@@ -10,14 +10,12 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoExameDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.ExameEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoExameEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoMedicaEntity;
-import br.pucgo.ads.projetointegrador.diario_saude.entity.UsuarioEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.repository.ExameRepository;
 import br.pucgo.ads.projetointegrador.diario_saude.repository.PrescricaoMedicaRepository;
-import br.pucgo.ads.projetointegrador.diario_saude.repository.UsuarioRepository;
 import br.pucgo.ads.projetointegrador.diario_saude.service.PrescricaoExameService;
 
 @RestController
-@RequestMapping("/prescricao/exame")
+@RequestMapping("/api/diario_saude/prescricao/exame")
 public class PrescricaoExameController {
 
     @Autowired
