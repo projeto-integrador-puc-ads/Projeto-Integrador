@@ -1,22 +1,30 @@
 // API endpoints para a feature remember
 // Exemplo inicial para integração com o backend
 
-import { http } from '../../../lib/http';
+import http from "../../../lib/http";
 
 export const getConquistas = async () => {
-  return http.get('/remember/conquistas');
+  return http.get("/remember/conquistas");
 };
 
 export const getDiarios = async () => {
-  return http.get('/remember/diarios');
+  return http.get("/remember/diarios");
 };
 
 export const getLembrancas = async () => {
-  return http.get('/remember/lembrancas');
+  return http.get("/remember/lembrancas");
 };
 
 export const getPerguntasCognitivas = async () => {
-  return http.get('/remember/perguntas-cognitivas');
+  return http.get("/remember/perguntas-cognitivas");
 };
 
-// Adicione outros endpoints conforme necessário
+// Salvar novo diário
+export const postDiario = async (data: {
+  titulo: string;
+  conteudo: string;
+  identificadorUsuario: number;
+}) => {
+  // Ajuste o identificadorUsuario conforme a lógica de autenticação
+  return http.post("/api/diarios", data);
+};
