@@ -1,8 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
-import br.pucgo.ads.projetointegrador.plataforma.repository.UsuarioRepository;
 import br.pucgo.ads.projetointegrador.remember.domain.StatusPergunta;
 import br.pucgo.ads.projetointegrador.remember.dto.Pergunta.RespostaPerguntaUsuarioRequestDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.Pergunta.RespostaPerguntaUsuarioResponseDTO;
@@ -20,7 +18,6 @@ public class RespostaPerguntaUsuarioService {
 
     private final RespostaPerguntaUsuarioRepository respostaRepository;
     private final PerguntaCognitivaRepository perguntaRepository;
-    private final UsuarioRepository usuarioRepository;
 
     /**
      * Salva a resposta de um usuário a uma pergunta cognitiva e atualiza o status da pergunta.
