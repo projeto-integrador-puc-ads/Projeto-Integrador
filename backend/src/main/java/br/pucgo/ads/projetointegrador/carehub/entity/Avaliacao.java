@@ -11,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "carehub_avaliacoes")
+@Table(name = "ch_avaliacao")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +38,6 @@ public class Avaliacao {
     private String comentario;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "data_avaliacao", nullable = false, updatable = false)
     private LocalDateTime dataAvaliacao;
 }

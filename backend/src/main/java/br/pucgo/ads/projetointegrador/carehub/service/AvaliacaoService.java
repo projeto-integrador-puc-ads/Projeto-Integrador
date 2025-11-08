@@ -32,11 +32,21 @@ public class AvaliacaoService {
 
     @Transactional
     public AvaliacaoResponseDTO criarAvaliacao(Long clienteId, AvaliacaoRequestDTO dto) {
-        Cuidador cuidador = cuidadorRepository.findById(dto.getCuidadorId())
+        Cuidador cuidador = cuidadorRepository.findById(java.util.Objects.requireNonNull(dto.getCuidadorId()))
                 .orElseThrow(() -> new RuntimeException("Cuidador não encontrado"));
 
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = clienteRepository.findById(java.util.Objects.requireNonNull(clienteId))
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + clienteId));
+
+        // Validação 1: Verificar se já avaliou
+        if (avaliacaoRepository.existsByClienteIdAndCuidadorId(clienteId, dto.getCuidadorId())) {
+            throw new RuntimeException("Você já avaliou este cuidador");
+        }
+
+        // Validação 2: Verificar se teve agendamento concluído
+        if (!avaliacaoRepository.existsAgendamentoConcluido(clienteId, dto.getCuidadorId())) {
+            throw new RuntimeException("Você só pode avaliar cuidadores que já te atenderam");
+        }
 
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setCuidador(cuidador);
@@ -52,6 +62,21 @@ public class AvaliacaoService {
         return toResponseDTO(avaliacao);
     }
 
+    @Transactional(readOnly = true)
+    public boolean podeAvaliar(Long clienteId, Long cuidadorId) {
+        java.util.Objects.requireNonNull(clienteId, "Cliente ID cannot be null");
+        java.util.Objects.requireNonNull(cuidadorId, "Cuidador ID cannot be null");
+        
+        // Não pode avaliar se já avaliou
+        if (avaliacaoRepository.existsByClienteIdAndCuidadorId(clienteId, cuidadorId)) {
+            return false;
+        }
+        
+        // Só pode avaliar se teve agendamento concluído
+        return avaliacaoRepository.existsAgendamentoConcluido(clienteId, cuidadorId);
+    }
+
+    @Transactional(readOnly = true)
     public List<AvaliacaoResponseDTO> listarAvaliacoesCuidador(Long cuidadorId) {
         return avaliacaoRepository.findByCuidadorIdOrderByDataAvaliacaoDesc(cuidadorId).stream()
                 .map(this::toResponseDTO)
@@ -60,7 +85,7 @@ public class AvaliacaoService {
 
     @Transactional
     public void deletarAvaliacao(Long avaliacaoId) {
-        Avaliacao avaliacao = avaliacaoRepository.findById(avaliacaoId)
+    Avaliacao avaliacao = avaliacaoRepository.findById(java.util.Objects.requireNonNull(avaliacaoId))
                 .orElseThrow(() -> new RuntimeException("Avaliação não encontrada"));
 
         Cuidador cuidador = avaliacao.getCuidador();

@@ -7,11 +7,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "carehub_cuidadores")
+@Table(name = "ch_cuidador")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -21,18 +21,30 @@ public class Cuidador extends Usuario {
     @Column(columnDefinition = "TEXT")
     private String experiencia;
 
-    @ElementCollection
-    @CollectionTable(name = "carehub_cuidador_especialidades", joinColumns = @JoinColumn(name = "cuidador_id"))
-    @Column(name = "especialidade")
-    private List<String> especialidades = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+        name = "ch_cuidador_especialidade",
+        joinColumns = @JoinColumn(name = "cuidador_id"),
+        inverseJoinColumns = @JoinColumn(name = "especialidade_id")
+    )
+    private Set<Especialidade> especialidades = new HashSet<>();
 
-    @Column(length = 100)
-    private String localizacao;
+    // Cidade e UF
+    @Column(length = 128)
+    private String cidade;
 
-    @Enumerated(EnumType.STRING)
-    private Disponibilidade disponibilidade;
+    @Column(length = 2)
+    private String estado;
 
-    @Column(precision = 3, scale = 2)
+    // Disponibilidade simples (true/false)
+    @Column(nullable = false)
+    private Boolean disponibilidade = true;
+
+    // Taxa hora e média de avaliação
+    @Column(name = "taxa_hora", precision = 10, scale = 2)
+    private BigDecimal taxaHora;
+
+    @Column(name = "avaliacao_media", precision = 3, scale = 2)
     private BigDecimal avaliacaoMedia = BigDecimal.ZERO;
 
     @Column
@@ -43,12 +55,4 @@ public class Cuidador extends Usuario {
 
     @Column(length = 255)
     private String fotoPerfil;
-
-    public enum Disponibilidade {
-        INTEGRAL,
-        MEIO_PERIODO,
-        NOTURNO,
-        FINS_DE_SEMANA,
-        EVENTUAL
-    }
 }

@@ -5,12 +5,19 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useNavigate } from 'react-router-dom';
 
 export function ModuleGrid() {
   const navigate = useNavigate();
 
   const items = [
+    {
+      icon: <FavoriteIcon sx={{ fontSize: 40 }} />,
+      title: 'CareHub',
+      desc: 'Cuidadores, agendamentos, prontuários e chat.',
+      to: '/carehub',
+    },
     {
       icon: <MedicationIcon sx={{ fontSize: 40 }} />,
       title: 'Medicamentos',

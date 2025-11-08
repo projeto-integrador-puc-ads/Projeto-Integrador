@@ -7,15 +7,19 @@ import org.springframework.web.bind.annotation.*;
 
 import br.pucgo.ads.projetointegrador.carehub.dto.prontuario.ProntuarioRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.prontuario.ProntuarioResponseDTO;
+import br.pucgo.ads.projetointegrador.carehub.exception.ForbiddenException;
+import br.pucgo.ads.projetointegrador.carehub.service.AgendamentoService;
 import br.pucgo.ads.projetointegrador.carehub.service.ProntuarioService;
 
 @RestController
 @RequestMapping("/api/carehub/prontuarios")
-@CrossOrigin(origins = "*")
 public class ProntuarioController {
 
     @Autowired
     private ProntuarioService prontuarioService;
+
+    @Autowired
+    private AgendamentoService agendamentoService;
 
     @PostMapping
     public ResponseEntity<ProntuarioResponseDTO> criarProntuario(
@@ -28,8 +32,20 @@ public class ProntuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<ProntuarioResponseDTO> atualizarProntuario(
             @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long cuidadorId,
             @Valid @RequestBody ProntuarioRequestDTO dto
     ) {
+        // Buscar prontuário para obter o clienteId
+        ProntuarioResponseDTO prontuarioAtual = prontuarioService.buscarPorId(id);
+        Long clienteId = prontuarioAtual.getClienteId();
+        
+        // Validar se cuidador pode editar prontuário hoje
+        if (!agendamentoService.podeEditarProntuario(cuidadorId, clienteId)) {
+            throw new ForbiddenException(
+                "Você só pode editar prontuários durante atendimentos agendados para hoje"
+            );
+        }
+        
         ProntuarioResponseDTO prontuario = prontuarioService.atualizarProntuario(id, dto);
         return ResponseEntity.ok(prontuario);
     }
@@ -44,5 +60,14 @@ public class ProntuarioController {
     public ResponseEntity<ProntuarioResponseDTO> buscarPorCliente(@PathVariable Long clienteId) {
         ProntuarioResponseDTO prontuario = prontuarioService.buscarPorClienteId(clienteId);
         return ResponseEntity.ok(prontuario);
+    }
+
+    @GetMapping("/pode-editar/{clienteId}")
+    public ResponseEntity<Boolean> verificarPodeEditar(
+            @PathVariable Long clienteId,
+            @RequestHeader("X-User-Id") Long cuidadorId
+    ) {
+        boolean podeEditar = agendamentoService.podeEditarProntuario(cuidadorId, clienteId);
+        return ResponseEntity.ok(podeEditar);
     }
 }

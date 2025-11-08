@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/registros")
-@CrossOrigin(origins = "*")
 public class RegistroAcompanhamentoController {
 
     @Autowired

@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/avaliacoes")
-@CrossOrigin(origins = "*")
 public class AvaliacaoController {
 
     @Autowired
@@ -38,5 +37,14 @@ public class AvaliacaoController {
     public ResponseEntity<Void> deletarAvaliacao(@PathVariable Long id) {
         avaliacaoService.deletarAvaliacao(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/pode-avaliar/{cuidadorId}")
+    public ResponseEntity<Boolean> verificarPodeAvaliar(
+            @PathVariable Long cuidadorId,
+            @RequestHeader("X-User-Id") Long clienteId
+    ) {
+        boolean podeAvaliar = avaliacaoService.podeAvaliar(clienteId, cuidadorId);
+        return ResponseEntity.ok(podeAvaliar);
     }
 }

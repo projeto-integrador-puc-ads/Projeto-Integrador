@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 
 @Data
 @NoArgsConstructor
@@ -18,8 +17,8 @@ public class CuidadorRequestDTO {
     private String telefone;
     private String experiencia;
     private List<String> especialidades;
-    private String localizacao;
-    private Cuidador.Disponibilidade disponibilidade;
+    private String localizacao; // "Cidade-UF" ou apenas cidade
+    private Boolean disponibilidade;
     private String biografia;
     private String fotoPerfil;
 }

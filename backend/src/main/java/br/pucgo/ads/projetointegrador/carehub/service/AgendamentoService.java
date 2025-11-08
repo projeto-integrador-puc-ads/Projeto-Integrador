@@ -15,6 +15,7 @@ import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,10 +32,13 @@ public class AgendamentoService {
 
     @Transactional
     public AgendamentoResponseDTO criarAgendamento(AgendamentoRequestDTO dto) {
-        Cuidador cuidador = cuidadorRepository.findById(dto.getCuidadorId())
+        Long cuidadorId = Objects.requireNonNull(dto.getCuidadorId(), "Cuidador ID cannot be null");
+        Long clienteId = Objects.requireNonNull(dto.getClienteId(), "Cliente ID cannot be null");
+        
+        Cuidador cuidador = cuidadorRepository.findById(cuidadorId)
                 .orElseThrow(() -> new RuntimeException("Cuidador não encontrado"));
 
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         Agendamento agendamento = new Agendamento();
@@ -52,6 +56,8 @@ public class AgendamentoService {
 
     @Transactional
     public AgendamentoResponseDTO atualizarStatus(Long id, String status) {
+        Objects.requireNonNull(id, "Agendamento ID cannot be null");
+        
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
@@ -78,6 +84,16 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
+    public AgendamentoResponseDTO buscarPorId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID do agendamento não pode ser nulo");
+        }
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+        return toResponseDTO(agendamento);
+    }
+
+    @Transactional(readOnly = true)
     public List<AgendamentoResponseDTO> listarPorCuidadorEPeriodo(Long cuidadorId, LocalDateTime inicio, LocalDateTime fim) {
         return agendamentoRepository.findByCuidadorAndPeriodo(cuidadorId, inicio, fim)
                 .stream()
@@ -85,13 +101,45 @@ public class AgendamentoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<AgendamentoResponseDTO> listarProximos(Long userId, int dias) {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime limite = agora.plusDays(dias);
+        
+        // Busca agendamentos futuros tanto como cliente quanto como cuidador
+        List<Agendamento> agendamentos = agendamentoRepository
+                .findProximosAgendamentos(userId, agora, limite);
+        
+        return agendamentos.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void cancelarAgendamento(Long id) {
+        Objects.requireNonNull(id, "Agendamento ID cannot be null");
+        
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
         agendamento.setStatus(Agendamento.StatusAgendamento.CANCELADO);
         agendamentoRepository.save(agendamento);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean podeEditarProntuario(Long cuidadorId, Long clienteId) {
+        Objects.requireNonNull(cuidadorId, "Cuidador ID cannot be null");
+        Objects.requireNonNull(clienteId, "Cliente ID cannot be null");
+        
+        LocalDateTime inicioHoje = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime fimHoje = inicioHoje.plusDays(1);
+        
+        return agendamentoRepository.existsAgendamentoAtivoHoje(
+            cuidadorId, 
+            clienteId, 
+            inicioHoje, 
+            fimHoje
+        );
     }
 
     private AgendamentoResponseDTO toResponseDTO(Agendamento agendamento) {
@@ -105,8 +153,8 @@ public class AgendamentoService {
         dto.setDataHoraFim(agendamento.getDataHoraFim());
         dto.setStatus(agendamento.getStatus().name());
         dto.setObservacoes(agendamento.getObservacoes());
-        dto.setTipoAtendimento(agendamento.getTipoAtendimento());
-        dto.setDataCriacao(agendamento.getDataCriacao());
+    dto.setTipoAtendimento(agendamento.getTipoAtendimento());
+    dto.setDataSolicitacao(agendamento.getDataSolicitacao());
         return dto;
     }
 }

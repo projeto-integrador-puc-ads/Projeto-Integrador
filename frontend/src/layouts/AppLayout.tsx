@@ -3,6 +3,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import { setAuthToken } from '@/lib/http';
+import { ProfileSelector } from '@/components/ProfileSelector';
 
 
 function LoginDialogMock({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -68,6 +69,9 @@ export default function AppLayout() {
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
+      {/* Profile Selector (Dev Mode) */}
+      <ProfileSelector />
+      
       {/* Top App Bar */}
       <AppBar position="sticky" elevation={0} color="transparent" sx={{ borderBottom: '1px solid #e5eaf2' }}>
         <Toolbar>

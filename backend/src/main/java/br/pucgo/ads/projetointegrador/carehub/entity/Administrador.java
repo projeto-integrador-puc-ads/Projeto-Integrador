@@ -7,16 +7,19 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "carehub_administradores")
+@Table(name = "ch_administrador")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Administrador extends Usuario {
 
-    @Column(length = 50)
+    @Column(length = 128)
     private String departamento;
 
-    @Column(nullable = false)
+    @Column(name = "nivel_acesso", length = 64)
+    private String nivelAcesso;
+
+    @Column(name = "super_admin", nullable = false)
     private Boolean superAdmin = false;
 }

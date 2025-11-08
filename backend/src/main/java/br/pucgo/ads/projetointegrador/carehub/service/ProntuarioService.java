@@ -11,6 +11,8 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Prontuario;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ProntuarioRepository;
 
+import java.util.Objects;
+
 @Service
 public class ProntuarioService {
 
@@ -22,7 +24,9 @@ public class ProntuarioService {
 
     @Transactional
     public ProntuarioResponseDTO criarProntuario(ProntuarioRequestDTO dto) {
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+        Long clienteId = Objects.requireNonNull(dto.getClienteId(), "Cliente ID cannot be null");
+        
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         Prontuario prontuario = new Prontuario();
@@ -30,8 +34,8 @@ public class ProntuarioService {
         prontuario.setDataNascimento(dto.getDataNascimento());
         prontuario.setHistoricoMedico(dto.getHistoricoMedico());
         prontuario.setMedicamentosUso(dto.getMedicamentosUso());
-        prontuario.setAlergias(dto.getAlergias());
-        prontuario.setContatosEmergencia(dto.getContatosEmergencia());
+    prontuario.setAlergias(dto.getAlergias());
+    prontuario.setContatoEmergencia(dto.getContatoEmergencia());
         prontuario.setObservacoesGerais(dto.getObservacoesGerais());
         prontuario.setTipoSanguineo(dto.getTipoSanguineo());
         prontuario.setNecessidadesEspeciais(dto.getNecessidadesEspeciais());
@@ -43,14 +47,16 @@ public class ProntuarioService {
 
     @Transactional
     public ProntuarioResponseDTO atualizarProntuario(Long id, ProntuarioRequestDTO dto) {
+        Objects.requireNonNull(id, "Prontuario ID cannot be null");
+        
         Prontuario prontuario = prontuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prontuário não encontrado"));
 
         prontuario.setDataNascimento(dto.getDataNascimento());
         prontuario.setHistoricoMedico(dto.getHistoricoMedico());
         prontuario.setMedicamentosUso(dto.getMedicamentosUso());
-        prontuario.setAlergias(dto.getAlergias());
-        prontuario.setContatosEmergencia(dto.getContatosEmergencia());
+    prontuario.setAlergias(dto.getAlergias());
+    prontuario.setContatoEmergencia(dto.getContatoEmergencia());
         prontuario.setObservacoesGerais(dto.getObservacoesGerais());
         prontuario.setTipoSanguineo(dto.getTipoSanguineo());
         prontuario.setNecessidadesEspeciais(dto.getNecessidadesEspeciais());
@@ -62,6 +68,8 @@ public class ProntuarioService {
 
     @Transactional(readOnly = true)
     public ProntuarioResponseDTO buscarPorId(Long id) {
+        Objects.requireNonNull(id, "Prontuario ID cannot be null");
+        
         Prontuario prontuario = prontuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prontuário não encontrado"));
         return toResponseDTO(prontuario);
@@ -82,8 +90,8 @@ public class ProntuarioService {
         dto.setDataNascimento(prontuario.getDataNascimento());
         dto.setHistoricoMedico(prontuario.getHistoricoMedico());
         dto.setMedicamentosUso(prontuario.getMedicamentosUso());
-        dto.setAlergias(prontuario.getAlergias());
-        dto.setContatosEmergencia(prontuario.getContatosEmergencia());
+    dto.setAlergias(prontuario.getAlergias());
+    dto.setContatoEmergencia(prontuario.getContatoEmergencia());
         dto.setObservacoesGerais(prontuario.getObservacoesGerais());
         dto.setTipoSanguineo(prontuario.getTipoSanguineo());
         dto.setNecessidadesEspeciais(prontuario.getNecessidadesEspeciais());

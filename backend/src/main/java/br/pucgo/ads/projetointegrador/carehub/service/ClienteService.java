@@ -11,6 +11,7 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +30,8 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO buscarPorId(Long id) {
+        Objects.requireNonNull(id, "Cliente ID cannot be null");
+        
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
         return toResponseDTO(cliente);
@@ -36,6 +39,8 @@ public class ClienteService {
 
     @Transactional
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
+        Objects.requireNonNull(id, "Cliente ID cannot be null");
+        
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
@@ -45,16 +50,18 @@ public class ClienteService {
         if (dto.getTelefone() != null) cliente.setTelefone(dto.getTelefone());
         if (dto.getNecessidades() != null) cliente.setNecessidades(dto.getNecessidades());
         if (dto.getEndereco() != null) cliente.setEndereco(dto.getEndereco());
-        if (dto.getTelefoneEmergencia() != null) cliente.setTelefoneEmergencia(dto.getTelefoneEmergencia());
         if (dto.getContatoEmergencia() != null) cliente.setContatoEmergencia(dto.getContatoEmergencia());
         if (dto.getTipoCliente() != null) cliente.setTipoCliente(dto.getTipoCliente());
 
+        Objects.requireNonNull(cliente, "Cliente cannot be null");
         cliente = clienteRepository.save(cliente);
         return toResponseDTO(cliente);
     }
 
     @Transactional
     public void deletar(Long id) {
+        Objects.requireNonNull(id, "Cliente ID cannot be null");
+        
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
         cliente.setAtivo(false);
@@ -69,7 +76,6 @@ public class ClienteService {
         dto.setTelefone(cliente.getTelefone());
         dto.setNecessidades(cliente.getNecessidades());
         dto.setEndereco(cliente.getEndereco());
-        dto.setTelefoneEmergencia(cliente.getTelefoneEmergencia());
         dto.setContatoEmergencia(cliente.getContatoEmergencia());
         dto.setTipoCliente(cliente.getTipoCliente());
         dto.setAtivo(cliente.getAtivo());

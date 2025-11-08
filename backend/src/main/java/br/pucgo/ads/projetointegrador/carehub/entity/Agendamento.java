@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "carehub_agendamentos")
+@Table(name = "ch_agendamento")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,23 +33,20 @@ public class Agendamento {
     private LocalDateTime dataHoraFim;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 32)
     private StatusAgendamento status;
 
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    @Column(name = "tipo_atendimento", length = 50)
+    @Column(name = "tipo_atendimento", length = 64)
     private String tipoAtendimento; // Ex: Acompanhamento, Consulta médica, Emergência
 
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
-
-    @Column(name = "data_atualizacao")
-    private LocalDateTime dataAtualizacao;
+    @Column(name = "data_solicitacao")
+    private LocalDateTime dataSolicitacao;
 
     public enum StatusAgendamento {
-        AGENDADO,
+    PENDENTE,
         CONFIRMADO,
         EM_ANDAMENTO,
         CONCLUIDO,
@@ -58,15 +55,11 @@ public class Agendamento {
 
     @PrePersist
     protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
-        dataAtualizacao = LocalDateTime.now();
-        if (status == null) {
-            status = StatusAgendamento.AGENDADO;
+        if (dataSolicitacao == null) {
+            dataSolicitacao = LocalDateTime.now();
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        dataAtualizacao = LocalDateTime.now();
+        if (status == null) {
+            status = StatusAgendamento.PENDENTE;
+        }
     }
 }

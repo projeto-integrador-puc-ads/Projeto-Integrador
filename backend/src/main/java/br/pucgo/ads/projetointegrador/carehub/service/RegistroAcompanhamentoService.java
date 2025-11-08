@@ -1,17 +1,18 @@
 package br.pucgo.ads.projetointegrador.carehub.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import br.pucgo.ads.projetointegrador.carehub.dto.registro.RegistroAcompanhamentoRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.registro.RegistroAcompanhamentoResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.RegistroAcompanhamentoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,19 +26,22 @@ public class RegistroAcompanhamentoService {
 
     @Transactional
     public RegistroAcompanhamentoResponseDTO criarRegistro(Long cuidadorId, RegistroAcompanhamentoRequestDTO dto) {
-        Agendamento agendamento = agendamentoRepository.findById(dto.getAgendamentoId())
-                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+        Long agendamentoId = Objects.requireNonNull(dto.getAgendamentoId(), "Agendamento ID cannot be null");
+        
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new RuntimeException("Agendamento nao encontrado"));
 
-        // Validar se o cuidador pertence ao agendamento
         if (!agendamento.getCuidador().getId().equals(cuidadorId)) {
-            throw new RuntimeException("Cuidador não autorizado para este agendamento");
+            throw new RuntimeException("Cuidador nao autorizado para este agendamento");
         }
 
         RegistroAcompanhamento registro = new RegistroAcompanhamento();
         registro.setAgendamento(agendamento);
         registro.setCuidador(agendamento.getCuidador());
         registro.setCliente(agendamento.getCliente());
-        registro.setDataHoraRegistro(dto.getDataHoraRegistro());
+        registro.setDataHoraRegistro(
+                dto.getDataHoraRegistro() != null ? dto.getDataHoraRegistro() : LocalDateTime.now()
+        );
         registro.setPressaoArterial(dto.getPressaoArterial());
         registro.setGlicemia(dto.getGlicemia());
         registro.setMedicamentosAdministrados(dto.getMedicamentosAdministrados());
@@ -45,7 +49,7 @@ public class RegistroAcompanhamentoService {
         registro.setAtividadesRealizadas(dto.getAtividadesRealizadas());
         registro.setObservacoes(dto.getObservacoes());
         registro.setIntercorrencias(dto.getIntercorrencias());
-        registro.setHumorEstado(dto.getHumorEstado());
+        registro.setSinaisVitais(dto.getSinaisVitais());
 
         registro = registroRepository.save(registro);
 
@@ -78,8 +82,10 @@ public class RegistroAcompanhamentoService {
 
     @Transactional(readOnly = true)
     public RegistroAcompanhamentoResponseDTO buscarPorId(Long id) {
+        Objects.requireNonNull(id, "Registro ID cannot be null");
+        
         RegistroAcompanhamento registro = registroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Registro nao encontrado"));
         return toResponseDTO(registro);
     }
 
@@ -99,7 +105,7 @@ public class RegistroAcompanhamentoService {
         dto.setAtividadesRealizadas(registro.getAtividadesRealizadas());
         dto.setObservacoes(registro.getObservacoes());
         dto.setIntercorrencias(registro.getIntercorrencias());
-        dto.setHumorEstado(registro.getHumorEstado());
+        dto.setSinaisVitais(registro.getSinaisVitais());
         dto.setDataCriacao(registro.getDataCriacao());
         return dto;
     }

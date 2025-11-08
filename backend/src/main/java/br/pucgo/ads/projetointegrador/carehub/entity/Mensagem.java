@@ -9,7 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "carehub_mensagens")
+@Table(name = "ch_mensagem")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,7 +31,7 @@ public class Mensagem {
     private String conteudo;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "data_envio", nullable = false, updatable = false)
     private LocalDateTime dataEnvio;
 
     @Column(nullable = false)

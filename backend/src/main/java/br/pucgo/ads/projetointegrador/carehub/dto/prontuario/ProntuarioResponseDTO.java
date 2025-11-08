@@ -19,7 +19,7 @@ public class ProntuarioResponseDTO {
     private String historicoMedico;
     private String medicamentosUso;
     private String alergias;
-    private String contatosEmergencia;
+    private String contatoEmergencia;
     private String observacoesGerais;
     private String tipoSanguineo;
     private String necessidadesEspeciais;

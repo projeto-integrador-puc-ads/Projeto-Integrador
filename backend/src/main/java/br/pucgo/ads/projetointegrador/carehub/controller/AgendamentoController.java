@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/agendamentos")
-@CrossOrigin(origins = "*")
 public class AgendamentoController {
 
     @Autowired
@@ -50,6 +49,12 @@ public class AgendamentoController {
         return ResponseEntity.ok(agendamentos);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<AgendamentoResponseDTO> buscarPorId(@PathVariable Long id) {
+        AgendamentoResponseDTO agendamento = agendamentoService.buscarPorId(id);
+        return ResponseEntity.ok(agendamento);
+    }
+
     @GetMapping("/cuidador/{cuidadorId}/periodo")
     public ResponseEntity<List<AgendamentoResponseDTO>> listarPorCuidadorEPeriodo(
             @PathVariable Long cuidadorId,
@@ -57,6 +62,15 @@ public class AgendamentoController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim
     ) {
         List<AgendamentoResponseDTO> agendamentos = agendamentoService.listarPorCuidadorEPeriodo(cuidadorId, inicio, fim);
+        return ResponseEntity.ok(agendamentos);
+    }
+
+    @GetMapping("/proximos")
+    public ResponseEntity<List<AgendamentoResponseDTO>> listarProximos(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam(defaultValue = "7") int dias
+    ) {
+        List<AgendamentoResponseDTO> agendamentos = agendamentoService.listarProximos(userId, dias);
         return ResponseEntity.ok(agendamentos);
     }
 

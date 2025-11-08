@@ -1,6 +1,5 @@
 package br.pucgo.ads.projetointegrador.carehub.dto.cliente;
 
-import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,6 @@ public class ClienteRequestDTO {
     private String telefone;
     private String necessidades;
     private String endereco;
-    private String telefoneEmergencia;
     private String contatoEmergencia;
-    private Cliente.TipoCliente tipoCliente;
+    private String tipoCliente;
 }

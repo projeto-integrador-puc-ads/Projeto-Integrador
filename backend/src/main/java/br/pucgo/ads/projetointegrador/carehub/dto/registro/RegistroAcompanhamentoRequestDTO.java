@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RegistroAcompanhamentoRequestDTO {
 
-    @NotNull(message = "Agendamento é obrigatório")
+    @NotNull(message = "Agendamento e obrigatorio")
     private Long agendamentoId;
 
     private LocalDateTime dataHoraRegistro;
@@ -22,9 +22,9 @@ public class RegistroAcompanhamentoRequestDTO {
     private String alimentacao;
     private String atividadesRealizadas;
 
-    @NotNull(message = "Observações são obrigatórias")
+    @NotNull(message = "Observacoes sao obrigatorias")
     private String observacoes;
 
     private String intercorrencias;
-    private String humorEstado;
+    private String sinaisVitais;
 }

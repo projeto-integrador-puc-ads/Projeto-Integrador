@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +18,9 @@ public class CuidadorResponseDTO {
     private String telefone;
     private String experiencia;
     private List<String> especialidades;
-    private String localizacao;
-    private Cuidador.Disponibilidade disponibilidade;
+    private String cidade;
+    private String estado;
+    private Boolean disponibilidade;
     private BigDecimal avaliacaoMedia;
     private Integer totalAvaliacoes;
     private String biografia;

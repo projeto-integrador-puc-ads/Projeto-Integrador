@@ -9,8 +9,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "carehub_usuarios")
+@Entity(name = "UsuarioCareHub")
+@Table(name = "ch_usuario")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,17 +34,18 @@ public class Usuario {
     @Column(nullable = false)
     private Perfil perfil;
 
-    @Column(length = 20)
+    @Column(length = 32)
     private String telefone;
 
     @Column(nullable = false)
     private Boolean ativo = true;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
     @UpdateTimestamp
+    @Column(name = "data_atualizacao")
     private LocalDateTime atualizadoEm;
 
     public enum Perfil {

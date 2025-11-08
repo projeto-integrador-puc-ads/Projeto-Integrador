@@ -23,7 +23,7 @@ public class ProntuarioRequestDTO {
 
     private String medicamentosUso;
     private String alergias;
-    private String contatosEmergencia;
+    private String contatoEmergencia;
     private String observacoesGerais;
     private String tipoSanguineo;
     private String necessidadesEspeciais;

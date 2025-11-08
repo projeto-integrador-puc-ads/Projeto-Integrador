@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "carehub_prontuarios")
+@Table(name = "ch_prontuario")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +20,7 @@ public class Prontuario {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "cliente_id", nullable = false, unique = true)
     private Cliente cliente;
 
     @Column(name = "data_nascimento")
@@ -35,13 +35,13 @@ public class Prontuario {
     @Column(columnDefinition = "TEXT")
     private String alergias;
 
-    @Column(columnDefinition = "TEXT")
-    private String contatosEmergencia;
+    @Column(name = "contato_emergencia", length = 255)
+    private String contatoEmergencia;
 
     @Column(columnDefinition = "TEXT")
     private String observacoesGerais;
 
-    @Column(name = "tipo_sanguineo", length = 5)
+    @Column(name = "tipo_sanguineo", length = 3)
     private String tipoSanguineo;
 
     @Column(name = "necessidades_especiais", columnDefinition = "TEXT")

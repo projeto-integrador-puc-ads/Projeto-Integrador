@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/clientes")
-@CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
 public class ClienteController {
 

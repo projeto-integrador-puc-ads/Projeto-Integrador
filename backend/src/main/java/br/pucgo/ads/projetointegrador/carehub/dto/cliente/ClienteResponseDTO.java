@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,9 +16,8 @@ public class ClienteResponseDTO {
     private String telefone;
     private String necessidades;
     private String endereco;
-    private String telefoneEmergencia;
     private String contatoEmergencia;
-    private Cliente.TipoCliente tipoCliente;
+    private String tipoCliente;
     private Boolean ativo;
     private LocalDateTime criadoEm;
 }

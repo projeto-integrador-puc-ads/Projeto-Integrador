@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "carehub_clientes")
+@Table(name = "ch_cliente")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -17,20 +17,12 @@ public class Cliente extends Usuario {
     @Column(columnDefinition = "TEXT")
     private String necessidades;
 
-    @Column(length = 100)
+    @Column(length = 255)
     private String endereco;
 
-    @Column(length = 20)
-    private String telefoneEmergencia;
-
-    @Column(length = 100)
+    @Column(name = "contato_emergencia", length = 255)
     private String contatoEmergencia;
 
-    @Enumerated(EnumType.STRING)
-    private TipoCliente tipoCliente;
-
-    public enum TipoCliente {
-        IDOSO,
-        FAMILIAR
-    }
+    @Column(name = "tipo_cliente", length = 64)
+    private String tipoCliente;
 }

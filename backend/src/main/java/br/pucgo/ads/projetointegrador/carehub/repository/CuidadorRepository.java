@@ -16,14 +16,28 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     
     List<Cuidador> findByAtivoTrue();
     
-    @Query("SELECT c FROM Cuidador c WHERE c.ativo = true " +
-           "AND (:localizacao IS NULL OR LOWER(c.localizacao) LIKE LOWER(CONCAT('%', :localizacao, '%'))) " +
-           "AND (:especialidade IS NULL OR :especialidade MEMBER OF c.especialidades) " +
-           "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)")
+    @Query(value = "SELECT u.id, u.nome, u.email, u.senha, u.perfil, u.telefone, u.ativo, u.data_criacao, u.data_atualizacao, " +
+           "c.experiencia, c.disponibilidade, c.taxa_hora, c.biografia, c.foto_perfil, " +
+           "c.cidade, c.estado, c.avaliacao_media, c.total_avaliacoes " +
+           "FROM ch_cuidador c " +
+           "JOIN ch_usuario u ON c.id = u.id " +
+           "WHERE u.ativo = true " +
+           "AND (:localizacao IS NULL OR " +
+           "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +
+           "LOWER(c.estado::text) = LOWER(:localizacao)) " +
+           "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
+           "ORDER BY c.avaliacao_media DESC NULLS LAST",
+           countQuery = "SELECT COUNT(*) FROM ch_cuidador c " +
+           "JOIN ch_usuario u ON c.id = u.id " +
+           "WHERE u.ativo = true " +
+           "AND (:localizacao IS NULL OR " +
+           "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +
+           "LOWER(c.estado::text) = LOWER(:localizacao)) " +
+           "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
+           nativeQuery = true)
     Page<Cuidador> buscarComFiltros(
             @Param("localizacao") String localizacao,
-            @Param("especialidade") String especialidade,
-            @Param("disponibilidade") Cuidador.Disponibilidade disponibilidade,
+            @Param("disponibilidade") Boolean disponibilidade,
             Pageable pageable
     );
 }
