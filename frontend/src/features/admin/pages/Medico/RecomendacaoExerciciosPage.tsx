@@ -7,7 +7,6 @@ import {
   ListItem,
   ListItemText,
   IconButton,
-  Box,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +22,8 @@ export default function RecomendacaoExerciciosPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const pacienteNome = location.state?.paciente || 'Paciente não selecionado';
+  const paciente = location.state?.paciente;
+  const pacienteNome = paciente?.nome || 'Paciente não selecionado';
 
   const [exercicios, setExercicios] = useState<string[]>([]);
   const [novoExercicio, setNovoExercicio] = useState('');
@@ -67,7 +67,6 @@ export default function RecomendacaoExerciciosPage() {
           <AddIcon /> <Typography ml={1}>Adicionar Exercício</Typography>
         </IconButton>
 
-        {/* Popup para adicionar exercício */}
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
           <DialogTitle>Adicionar Exercício</DialogTitle>
           <DialogContent>

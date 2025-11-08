@@ -23,7 +23,8 @@ export default function PedirExamesPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const pacienteNome = location.state?.paciente || 'Paciente não selecionado';
+  const paciente = location.state?.paciente;
+  const pacienteNome = paciente?.nome || 'Paciente não selecionado';
 
   const [exames, setExames] = useState<string[]>([]);
   const [novoExame, setNovoExame] = useState('');
@@ -67,7 +68,6 @@ export default function PedirExamesPage() {
           <AddIcon /> <Typography ml={1}>Adicionar Exame</Typography>
         </IconButton>
 
-        {/* Popup para adicionar exame */}
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
           <DialogTitle>Adicionar Exame</DialogTitle>
           <DialogContent>

@@ -3,34 +3,15 @@ import { Box, Container, Paper, Typography, List, ListItem, ListItemText } from 
 import { ModuleGridMedico } from '@/components/ModuleGridMedico';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-type Paciente = {
-  nome: string;
-  idade: number;
-  peso: number;
-  altura: number;
-  alergias: string;
-  doencas: string;
-};
-
 export default function DashboardMedico() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const pacienteNome = location.state?.paciente || 'Paciente não selecionado';
+  const paciente = location.state?.paciente;
 
-  // Paciente simulado
-  const paciente = {
-    nome: pacienteNome,
-    idade: 68,
-    peso: 72,
-    altura: 1.72,
-    alergias: 'Nenhuma',
-    doencas: 'Hipertensão',
-  };
-
-  // Redireciona se nenhum paciente selecionado
-  if (!location.state?.paciente) {
+  if (!paciente) {
     navigate('/medico');
+    return null;
   }
 
   return (
@@ -40,17 +21,15 @@ export default function DashboardMedico() {
           variant="h4"
           fontWeight="bold"
           mb={4}
-          align="center" // centraliza o texto
+          align="center"
         >
           Dashboard Médico
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+          
           {/* Painel do Paciente */}
-          <Paper
-            elevation={3}
-            sx={{ p: 3, borderRadius: 3, flex: '1 1 300px', minWidth: 250 }}
-          >
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, flex: '1 1 300px', minWidth: 250 }}>
             <Typography variant="h5" fontWeight="bold" mb={2}>
               Informações do Paciente
             </Typography>
@@ -68,21 +47,19 @@ export default function DashboardMedico() {
                 <ListItemText primary={`Altura: ${paciente.altura} m`} />
               </ListItem>
               <ListItem>
-                <ListItemText primary={`Alergias: ${paciente.alergias}`} />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary={`Doenças: ${paciente.doencas}`} />
+                <ListItemText primary={`Alergias: ${paciente.alergias || "Nenhuma"}`} />
               </ListItem>
             </List>
           </Paper>
 
-          {/* Painel de Funções / Módulos */}
+          {/* Painel Modular */}
           <Box sx={{ flex: '2 1 600px' }}>
             <Typography variant="h5" fontWeight="bold" mb={2}>
               Funções
             </Typography>
-            <ModuleGridMedico paciente={paciente.nome} />
+            <ModuleGridMedico paciente={paciente} />
           </Box>
+
         </Box>
       </Paper>
     </Container>

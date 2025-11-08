@@ -1,12 +1,20 @@
 import { Box } from '@mui/material';
 import { ModuleCard } from './ModuleCard';
-import MedicationIcon from '@mui/icons-material/Medication';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import DescriptionIcon from '@mui/icons-material/Description'; // ícone para Pedir Exames
-import { useNavigate } from 'react-router-dom';
+import DescriptionIcon from '@mui/icons-material/Description';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import { useNavigate } from 'react-router-dom';
 
-export function ModuleGridMedico({ paciente }: { paciente: string }) {
+type Paciente = {
+  id_usuario: number;
+  nome: string;
+  idade: number;
+  peso: number;
+  altura: number;
+  alergias?: string;
+};
+
+export function ModuleGridMedico({ paciente }: { paciente: Paciente }) {
   const navigate = useNavigate();
 
   const items = [
@@ -34,10 +42,7 @@ export function ModuleGridMedico({ paciente }: { paciente: string }) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: '1fr 1fr',
-        },
+        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
         gap: 2,
         mt: 2,
       }}

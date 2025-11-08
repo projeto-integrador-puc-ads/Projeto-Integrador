@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -12,26 +12,69 @@ import {
   Box,
 } from '@mui/material';
 
-// Lista mock de pacientes
-const PACIENTES = [
-  { id: 1, nome: 'João da Silva' },
-  { id: 2, nome: 'Maria Souza' },
-  { id: 3, nome: 'Carlos Santos' },
-];
-
 export default function IniciarConsulta() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [selectedPaciente, setSelectedPaciente] = useState('');
+  const [selectedPaciente, setSelectedPaciente] = useState(null);
+  const [pacientes, setPacientes] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Filtra pacientes pelo nome
-  const filtered = PACIENTES.filter(p =>
+  // Simula usuário logado no localStorage
+  useEffect(() => {
+    const usuarioSimulado = {
+      id_usuario: 1,
+      nome: "Dr. Lucas Gabriel",
+      email: "lucas@email.com",
+      role: "MEDICO"
+    };
+    const tokenSimulado = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjI1MzcxOTMsImV4cCI6MTc2MzE0MTk5M30.yE5nfEbrvnsnfZfte-mi1VRFnEyLdI77SLH4RmIsEo8P2Hd46lWACmCzEsWiUc0g";
+
+    if (!localStorage.getItem('usuarioLogado')) {
+      localStorage.setItem('usuarioLogado', JSON.stringify(usuarioSimulado));
+    }
+    if (!localStorage.getItem('token')) {
+      localStorage.setItem('token', tokenSimulado);
+    }
+  }, []);
+
+  const token = localStorage.getItem('token');
+
+  const API_URL = "http://localhost:8080/api/diario_saude/usuario";
+
+  //Buscar pacientes da API ao carregar
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        setPacientes(result);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      }
+    };
+
+    if (token) fetchData();
+  }, [token]);
+
+  //Filtrar
+  const filtered = pacientes.filter(p =>
     p.nome.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleStartConsulta = () => {
     if (!selectedPaciente) return;
-    // Redireciona para ReceituarioPage passando o paciente
     navigate('/atendimento/dashboard', { state: { paciente: selectedPaciente } });
   };
 
@@ -39,6 +82,12 @@ export default function IniciarConsulta() {
     <Container maxWidth="sm" sx={{ py: 5 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
         <Typography variant="h4" mb={3}>Iniciar Consulta</Typography>
+
+        {error && (
+          <Typography color="error" mb={2}>
+            Erro ao carregar pacientes: {error}
+          </Typography>
+        )}
 
         <TextField
           fullWidth
@@ -51,9 +100,9 @@ export default function IniciarConsulta() {
         <List>
           {filtered.map(p => (
             <ListItemButton
-              key={p.id}
-              selected={selectedPaciente === p.nome}
-              onClick={() => setSelectedPaciente(p.nome)}
+              key={p.id_usuario}
+              selected={selectedPaciente?.id_usuario === p.id_usuario}
+              onClick={() => setSelectedPaciente(p)}
             >
               <ListItemText primary={p.nome} />
             </ListItemButton>

@@ -21,8 +21,8 @@ public class PrescricaoMedicaController {
     }
 
     @PostMapping
-    public void inserir(@RequestBody PrescricaoMedicaDTO dto){
-        service.inserir(dto);
+    public PrescricaoMedicaDTO inserir(@RequestBody PrescricaoMedicaDTO dto){
+        return service.inserir(dto);
     }
 
     @PutMapping

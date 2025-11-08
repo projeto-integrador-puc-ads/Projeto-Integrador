@@ -1,5 +1,6 @@
 package br.pucgo.ads.projetointegrador.diario_saude.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,17 +27,39 @@ public class PrescricaoMedicaService {
         return repo.findAll().stream().map(PrescricaoMedicaDTO::new).toList();
     }
 
-    public void inserir(PrescricaoMedicaDTO dto){
+    public PrescricaoMedicaDTO inserir(PrescricaoMedicaDTO dto) {
         PrescricaoMedicaEntity entity = new PrescricaoMedicaEntity(dto);
-        entity.setMedico(medicoRepo.findById(dto.getId_medico()).get());
-        entity.setUsuario(usuarioRepo.findById(dto.getId_usuario()).get());
-        repo.save(entity);
+
+        entity.setMedico(
+            medicoRepo.findById(dto.getId_medico())
+                .orElseThrow(() -> new RuntimeException("Médico não encontrado com ID " + dto.getId_medico()))
+        );
+
+        entity.setUsuario(
+            usuarioRepo.findById(dto.getId_usuario())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado com ID " + dto.getId_usuario()))
+        );
+
+        // ⚡ Define a data da prescrição como hoje
+        entity.setData_prescricao(LocalDate.now().toString());
+
+        return new PrescricaoMedicaDTO(repo.save(entity));
     }
 
-    public PrescricaoMedicaDTO alterar(PrescricaoMedicaDTO dto){
+
+    public PrescricaoMedicaDTO alterar(PrescricaoMedicaDTO dto) {
         PrescricaoMedicaEntity entity = new PrescricaoMedicaEntity(dto);
-        entity.setMedico(medicoRepo.findById(dto.getId_medico()).get());
-        entity.setUsuario(usuarioRepo.findById(dto.getId_usuario()).get());
+
+        entity.setMedico(
+            medicoRepo.findById(dto.getId_medico())
+                .orElseThrow(() -> new RuntimeException("Médico não encontrado com ID " + dto.getId_medico()))
+        );
+
+        entity.setUsuario(
+            usuarioRepo.findById(dto.getId_usuario())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado com ID " + dto.getId_usuario()))
+        );
+
         return new PrescricaoMedicaDTO(repo.save(entity));
     }
 
