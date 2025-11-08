@@ -38,10 +38,11 @@ export default function IniciarConsulta() {
   }, []);
 
   const token = localStorage.getItem('token');
+  const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || "null");
 
   const API_URL = "http://localhost:8080/api/diario_saude/usuario";
 
-  //Buscar pacientes da API ao carregar
+  // Buscar pacientes da API ao carregar
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -68,14 +69,47 @@ export default function IniciarConsulta() {
     if (token) fetchData();
   }, [token]);
 
-  //Filtrar
+  // Filtrar pacientes
   const filtered = pacientes.filter(p =>
     p.nome.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleStartConsulta = () => {
+  // Iniciar consulta: criar prescrição e redirecionar
+  const handleStartConsulta = async () => {
     if (!selectedPaciente) return;
-    navigate('/atendimento/dashboard', { state: { paciente: selectedPaciente } });
+
+    if (!token) {
+      alert("Token não encontrado. Faça login primeiro.");
+      return;
+    }
+
+    try {
+      const payload = {
+        id_medico: usuario.id_usuario,
+        id_usuario: selectedPaciente.id_usuario,
+        descricao: "Consulta iniciada", // texto inicial
+      };
+
+      const response = await fetch("http://localhost:8080/api/diario_saude/prescricao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+      
+      const prescricao = await response.json();
+
+      // Redireciona para o dashboard, passando paciente e prescrição
+      navigate('/atendimento/dashboard', { state: { paciente: selectedPaciente, prescricao } });
+
+    } catch (err) {
+      console.error("❌ Erro ao iniciar consulta:", err);
+      alert("Erro ao iniciar a consulta.");
+    }
   };
 
   return (
