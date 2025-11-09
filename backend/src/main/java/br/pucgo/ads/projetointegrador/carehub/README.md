@@ -6,63 +6,79 @@
 
 - 📋 **Prontuários Eletrônicos** - Histórico médico completo
 - 📅 **Agendamentos** - Controle de horários e atendimentos
-- � **Registros de Acompanhamento** - Relatórios detalhados de cada atendimento
-- 💬 ## 💡 Diferenciais do Sistema
+- 📝 **Registros de Acompanhamento** - Relatórios detalhados de cada atendimento em tempo real
+- � **Histórico de Atendimentos** - Visualização completa organizada por cliente/cuidador
+- �💬 **Sistema de Mensagens** - Chat integrado entre usuários
+- ⭐ **Sistema de Avaliações** - Feedback e reputação dos cuidadores
+
+**Status:** ✅ Sistema completo e funcional (Backend + Frontend totalmente integrado)  
+**Responsável:** Romulo-Castro  
+**Versão:** 3.0.0  
+**Última Atualização:** 09/11/2025
+
+---
+
+## 💡 Diferenciais do Sistema
 
 - 🎯 **Busca inteligente** de cuidadores com múltiplos filtros
 - 🏥 **Prontuário eletrônico** completo com histórico médico
-- 📅 **Controle de agendamentos** com diferentes status
-- 📝 **Registros detalhados** de cada atendimento
+- 📅 **Controle de agendamentos** com workflow completo de status
+- 📝 **Registros em tempo real** durante o atendimento
+- 📚 **Histórico organizado** por cliente (cuidador) ou por cuidador (cliente)
+- 🔍 **Busca no histórico** por nome, medicamentos, observações
 - 💬 **Chat integrado** entre usuários
-- ⭐ **Sistema de reputação** com avaliações
-- 📊 **Métricas automáticas** (média de avaliações)
-- 🔒 **Segurança** com soft delete
+- ⭐ **Sistema de reputação** com avaliações automáticas
+- 📊 **Métricas automáticas** (média de avaliações, total de atendimentos)
+- 🔒 **Segurança** com soft delete e validação de permissões
 - 📱 **API REST** completa e documentada
-- 🏥 **Acompanhamento contínuo** do idoso
-- 📈 **Histórico completo** de todos os atendimentos
-- ♿ **Acessibilidade** - WCAG 2.1 AAA para idosos
+- 🏥 **Workflow hospital-style** - Documentação como prontuário hospitalar
+- 📈 **Histórico completo** de todos os atendimentos por paciente
+- ♿ **Acessibilidade WCAG 2.1 AAA** - Interface otimizada para idosos
 - 🎨 **Interface moderna** - React + TypeScript + Material-UI
 - 🚀 **Performance** - Hot reload + compilação otimizada
-- 📚 **Documentação** - 6 arquivos markdown detalhados
-- 🧹 **Código limpo** - Arquitetura auditada, 0 arquivos obsoletosado** - Comunicação entre cuidadores e clientes
-- ⭐ **Sistema de Avaliações** - Feedback e reputação
-
-**Status:** ✅ Sistema completo e funcional (Backend + Frontend integrado)  
-**Responsável:** Romulo-Castro  
-**Versão:** 2.0.0  
-**Última Atualização:** 08/11/2025
+- 📚 **Documentação completa** - 6 arquivos markdown detalhados
+- 🧹 **Código limpo** - Arquitetura auditada, 0 arquivos obsoletos
 
 ---
 
 ## ✅ SISTEMA COMPLETO E OPERACIONAL
 
-- ✅ **54 classes Java** implementadas e testadas
+- ✅ **60+ classes Java** implementadas e testadas
 - ✅ **10 entidades JPA** com tabelas criadas no PostgreSQL
-- ✅ **35+ endpoints REST** 100% funcionais
-- ✅ **Frontend React + TypeScript** integrado
+- ✅ **40+ endpoints REST** 100% funcionais
+- ✅ **Frontend React + TypeScript** totalmente integrado
 - ✅ **Sistema de prontuário completo** operacional
+- ✅ **Workflow de atendimento hospital-style** implementado
+- ✅ **Histórico de atendimentos** com busca e filtros
 - ✅ **CORS configurado** para desenvolvimento (portas 5173, 5174)
-- ✅ **Autenticação simulada** via header `X-User-Id` (desenvolvimento)
+- ✅ **Validação de dados** em tempo real
 - ✅ **Acessibilidade implementada** (WCAG 2.1 AAA) - botões grandes para idosos
 - ✅ **Arquitetura auditada** - 100% limpa, sem arquivos obsoletos
+- ✅ **Bug de timezone corrigido** - Horários sempre corretos (UTC-3 Brasília)
 
 ---
 
-## � Conceito do Sistema
+## 🔄 Conceito do Sistema - Workflow Completo
 
-O CareHub implementa um **fluxo completo de acompanhamento**:
+O CareHub implementa um **fluxo hospital-style de acompanhamento**:
 
 1. **Cliente** busca e contrata um **cuidador**
-2. Sistema cria **prontuário eletrônico** do idoso
-3. Cuidador e cliente realizam **agendamentos**
-4. Cuidador acessa **histórico médico** antes dos atendimentos
-5. Durante/após atendimento, cuidador preenche **registro de acompanhamento**
-6. Sistema mantém **histórico completo** de todos os atendimentos
-7. Cliente pode **avaliar** o cuidador após cada atendimento
+2. Sistema cria **prontuário eletrônico** do idoso automaticamente
+3. Cuidador e cliente realizam **agendamentos** com negociação
+4. Cuidador acessa **histórico médico** completo antes dos atendimentos
+5. **30 minutos antes** do horário, cuidador pode **iniciar atendimento**
+6. Sistema redireciona para **registro de acompanhamento** em tempo real
+7. Cuidador documenta **sinais vitais, medicamentos, atividades** durante a visita
+8. Registro é salvo e **automaticamente aparece no histórico**
+9. Cliente pode visualizar **histórico completo organizado por cuidador**
+10. Cliente pode **avaliar** o cuidador após cada atendimento
+11. Sistema atualiza **média de avaliações** automaticamente
+
+**Diferencial:** Documentação em tempo real como em hospitais, com histórico completo por paciente!
 
 ---
 
-## �🏗️ Estrutura Implementada
+## �## 🏗️ Estrutura Implementada
 
 ```
 carehub/
@@ -70,16 +86,16 @@ carehub/
 │   ├── CareHubConfig.java           (JPA + Entity Scan)
 │   ├── CareHubCorsConfig.java       (CORS para frontend)
 │   ├── SecurityBeans.java           (PasswordEncoder)
-│   └── DataInitializer.java         (Dados iniciais)
-├── controller/                → 9 controllers REST (35+ endpoints)
+│   └── DataInitializer.java         (Dados iniciais + 2 agendamentos teste)
+├── controller/                → 9 controllers REST (40+ endpoints)
 │   ├── AdminController.java
 │   ├── AvaliacaoController.java
 │   ├── ClienteController.java
 │   ├── CuidadorController.java
 │   ├── MensagemController.java
 │   ├── ProntuarioController.java       
-│   ├── AgendamentoController.java      
-│   ├── RegistroAcompanhamentoController.java
+│   ├── AgendamentoController.java      (✨ workflow completo)
+│   ├── RegistroAcompanhamentoController.java (✨ com header X-User-Id)
 │   └── HealthController.java
 ├── dto/                       → 14 DTOs (7 pares Request/Response)
 │   ├── agendamento/           
@@ -98,10 +114,11 @@ carehub/
 │   ├── Mensagem.java
 │   ├── Avaliacao.java
 │   ├── Prontuario.java        
-│   ├── Agendamento.java       
-│   └── RegistroAcompanhamento.java 
-├── exception/                 → Tratamento global de erros (1 classe)
-│   └── GlobalExceptionHandler.java
+│   ├── Agendamento.java       (✨ com validação de horários)
+│   └── RegistroAcompanhamento.java (✨ campos completos)
+├── exception/                 → Tratamento global de erros (2 classes)
+│   ├── GlobalExceptionHandler.java
+│   └── CareHubExceptionHandler.java (✨ mensagens amigáveis)
 ├── repository/                → 10 repositories com queries personalizadas
 │   ├── UsuarioRepository.java
 │   ├── CuidadorRepository.java
@@ -112,43 +129,54 @@ carehub/
 │   ├── AvaliacaoRepository.java
 │   ├── ProntuarioRepository.java
 │   ├── AgendamentoRepository.java
-│   └── RegistroAcompanhamentoRepository.java
-└── service/                   → 7 services com lógica de negócio
+│   └── RegistroAcompanhamentoRepository.java (✨ queries por cliente/cuidador)
+└── service/                   → 8 services com lógica de negócio
     ├── AdminService.java
     ├── AvaliacaoService.java
     ├── ClienteService.java
     ├── CuidadorService.java
     ├── MensagemService.java
     ├── ProntuarioService.java
-    └── AgendamentoService.java
+    ├── AgendamentoService.java (✨ validação 30 minutos antes)
+    └── RegistroAcompanhamentoService.java (✨ NOVO)
 ```
 
-**Total Backend:** **54 classes Java** implementadas  
+**Total Backend:** **60+ classes Java** implementadas  
 
 ### Frontend (React + TypeScript)
 
 ```
 frontend/src/features/carehub/
-├── api.ts                     → Cliente HTTP (axios)
-├── types.ts                   → TypeScript interfaces
-├── index.ts                   → Exports públicos
-├── components/                → Componentes reutilizáveis (1)
-│   └── PageHeader.tsx              (Botão voltar acessível)
-└── pages/                     → Páginas do sistema (5)
-    ├── CuidadoresPage.tsx          (Busca e listagem)
-    ├── AvaliacoesPage.tsx          (Criar avaliações)
-    ├── ChatPage.tsx                (Mensagens)
-    ├── AgendamentosPage.tsx        (Agendar atendimentos)
-    └── ProntuarioPage.tsx          (Histórico médico)
+├── api/                       → Cliente HTTP
+│   └── usuarios.ts (Grupo 1)
+├── components/                → Componentes reutilizáveis (2)
+│   ├── PageHeader.tsx              (Botão voltar acessível)
+│   └── CareHubModuleGrid.tsx       (✨ com card Histórico)
+├── pages/                     → Páginas do sistema (10) ✨ EXPANDIDO
+│   ├── CareHubHomePage.tsx         (Dashboard principal)
+│   ├── CuidadoresPage.tsx          (Busca e listagem)
+│   ├── AvaliacoesPage.tsx          (Criar avaliações)
+│   ├── ChatPage.tsx                (Mensagens)
+│   ├── ProntuarioPage.tsx          (Histórico médico)
+│   ├── ProntuariosClientesPage.tsx (Lista de prontuários)
+│   ├── AgendamentosPage.tsx        (✨ Criar agendamento - correção UTC)
+│   ├── AgendamentosNegociacaoPage.tsx (✨ Agendamentos avançados)
+│   ├── MeusAgendamentosPage.tsx    (✨ Workflow com redirecionamento)
+│   ├── ProximosAtendimentosPage.tsx (✨ Próximos 7 dias)
+│   ├── RegistroAcompanhamentoPage.tsx (✨ Documentação em tempo real)
+│   └── HistoricoAtendimentosPage.tsx (✨ NOVO - Histórico completo)
+├── hooks/                     → Custom hooks (1)
+│   └── useMensagensNaoLidas.ts
+└── index.ts                   → Exports públicos
 ```
 
-**Total Frontend:** **9 arquivos TypeScript**
+**Total Frontend:** **15+ arquivos TypeScript** (expandido)
 
-**Total Geral:** **63 arquivos** (54 backend + 9 frontend)
+**Total Geral:** **75+ arquivos** (60+ backend + 15+ frontend)
 
 ---
 
-## 📡 Endpoints REST (35+)
+## 📡 Endpoints REST (40+)
 
 ### 👥 Administração (`/api/carehub/admin`)
 - `GET /usuarios` - Listar todos os usuários
@@ -180,26 +208,34 @@ frontend/src/features/carehub/
 - `GET /cuidador/{cuidadorId}` - Listar avaliações do cuidador
 - `DELETE /{id}` - Remover avaliação
 
-### 📋 Prontuários (`/api/carehub/prontuarios`) ✨ NOVO
+### 📋 Prontuários (`/api/carehub/prontuarios`)
 - `POST /` - Criar prontuário
 - `PUT /{id}` - Atualizar prontuário
 - `GET /{id}` - Buscar prontuário por ID
 - `GET /cliente/{clienteId}` - Buscar prontuário do cliente
 
-### 📅 Agendamentos (`/api/carehub/agendamentos`) ✨ NOVO
-- `POST /` - Criar agendamento
-- `PUT /{id}/status` - Atualizar status (AGENDADO, CONFIRMADO, EM_ANDAMENTO, CONCLUIDO, CANCELADO)
+### 📅 Agendamentos (`/api/carehub/agendamentos`) ✨ WORKFLOW COMPLETO
+- `POST /` - Criar agendamento (preserva horário local, sem UTC)
+- `PUT /{id}/status` - Atualizar status (PENDENTE, AGENDADO, CONFIRMADO, EM_ANDAMENTO, CONCLUIDO, CANCELADO)
+- `GET /{id}/pode-iniciar` - ✨ **Verificar se pode iniciar** (30 minutos antes)
 - `GET /cuidador/{cuidadorId}` - Listar agendamentos do cuidador
 - `GET /cliente/{clienteId}` - Listar agendamentos do cliente
+- `GET /proximos` - ✨ **Próximos agendamentos** (7 dias) do usuário autenticado
 - `GET /cuidador/{cuidadorId}/periodo` - Filtrar agendamentos por período
 - `DELETE /{id}` - Cancelar agendamento
 
-### 📝 Registros de Acompanhamento (`/api/carehub/registros`) ✨ NOVO
-- `POST /` - Criar registro (cuidador preenche após atendimento)
-- `GET /cliente/{clienteId}` - Histórico completo do cliente
-- `GET /cuidador/{cuidadorId}` - Registros feitos pelo cuidador
+### 📝 Registros de Acompanhamento (`/api/carehub/registros`) ✨ HOSPITAL-STYLE
+- `POST /` - ✨ **Criar registro** (requer header `X-User-Id` com ID do cuidador)
+- `GET /cliente/{clienteId}` - ✨ **Histórico completo** do cliente
+- `GET /cuidador/{cuidadorId}` - ✨ **Registros feitos** pelo cuidador
 - `GET /agendamento/{agendamentoId}` - Registros de um agendamento específico
 - `GET /{id}` - Buscar registro por ID
+
+**Novos Recursos:**
+- ✅ Validação de horários (não pode iniciar antes de 30 minutos)
+- ✅ Correção de timezone (horários locais preservados)
+- ✅ Header `X-User-Id` para identificar o cuidador
+- ✅ Mensagens de erro amigáveis e específicas
 
 ---
 
@@ -238,10 +274,16 @@ Horários marcados entre cuidador e cliente.
 - Campos: dataHoraInicio, dataHoraFim, status (enum), observacoes, tipoAtendimento
 - Relacionamentos: 1 Cuidador, 1 Cliente, N RegistrosAcompanhamento
 
-### 📝 **RegistroAcompanhamento** 
-Relatório detalhado preenchido pelo cuidador após cada atendimento.
-- Campos: dataHoraRegistro, pressaoArterial, glicemia, medicamentosAdministrados, alimentacao, atividadesRealizadas, observacoes, intercorrencias, humorEstado
-- Relacionamentos: 1 Agendamento, 1 Cuidador, 1 Cliente
+### 📝 **RegistroAcompanhamento** ✨ HOSPITAL-STYLE
+Relatório detalhado preenchido pelo cuidador **durante/após** cada atendimento.
+- **Campos:** dataHoraRegistro, pressaoArterial, glicemia, medicamentosAdministrados, alimentacao, atividadesRealizadas, observacoes, intercorrencias, humorEstado, sinaisVitais
+- **Relacionamentos:** 1 Agendamento, 1 Cuidador, 1 Cliente
+- **Segurança:** Requer header `X-User-Id` para identificar o cuidador
+- **Workflow:** 
+  1. Cuidador clica "Iniciar Atendimento" → Sistema redireciona
+  2. Formulário auto-preenchido com ID do agendamento
+  3. Cuidador documenta em tempo real durante a visita
+  4. Registro salvo → Aparece automaticamente no histórico
 
 ### 💬 **Mensagem**
 Sistema de chat.
@@ -275,7 +317,7 @@ Prefixo: `ch_*` (CareHub)
 
 ## 🎯 Funcionalidades Completas
 
-### Core
+### Core ✅
 ✅ Gestão completa de usuários (cuidadores, clientes, admins)  
 ✅ Busca avançada de cuidadores (localização, especialidade, disponibilidade)  
 ✅ Sistema de mensagens (chat) em tempo real  
@@ -283,19 +325,21 @@ Prefixo: `ch_*` (CareHub)
 ✅ Soft delete para usuários  
 ✅ Paginação e ordenação em listas  
 ✅ CORS configurado para desenvolvimento (localhost:5173, 5174, 4173, 3000)  
-✅ Tratamento global de exceções  
+✅ Tratamento global de exceções com mensagens amigáveis  
 
-### Prontuário e Acompanhamento 
+### Prontuário e Acompanhamento ✅
 ✅ Prontuário eletrônico completo do idoso  
 ✅ Sistema de agendamentos com controle de status  
-✅ Registros detalhados de cada atendimento  
-✅ Histórico completo de acompanhamento  
+✅ **Validação de horários** - Só pode iniciar 30 minutos antes  
+✅ **Correção UTC** - Horários locais (Brasília UTC-3) preservados  
+✅ Registros detalhados de cada atendimento **em tempo real**  
+✅ Histórico completo de acompanhamento **organizado**  
 ✅ Controle de sinais vitais (pressão, glicemia)  
 ✅ Registro de medicamentos administrados  
 ✅ Monitoramento de humor e atividades  
 ✅ Registro de intercorrências  
 
-### Frontend (Interface do Usuário)
+### Frontend (Interface do Usuário) ✅
 ✅ Interface moderna com React + TypeScript  
 ✅ Navegação com React Router  
 ✅ State management com TanStack Query  
@@ -304,13 +348,23 @@ Prefixo: `ch_*` (CareHub)
 ✅ **Navegação intuitiva** - Botão "Voltar" em todas as páginas  
 ✅ **Responsivo** - Funciona em desktop, tablet e mobile  
 ✅ **Alto contraste** - Fácil leitura para idosos  
+✅ **Workflow Hospital-Style** implementado:
+  - ✅ Auto-redirecionamento ao iniciar atendimento
+  - ✅ Auto-população de formulários via URL params
+  - ✅ Histórico organizado por cliente/cuidador
+  - ✅ Busca no histórico (nome, medicamentos, observações)
+  - ✅ Accordions expansíveis com todos os detalhes
+  - ✅ Badges e chips informativos
+  - ✅ Botão "Recarregar" para atualizar dados
 
-### Desenvolvimento
+### Desenvolvimento ✅
 ✅ Hot reload (Vite + Spring DevTools)  
 ✅ Compilação Maven automatizada  
 ✅ Arquitetura limpa (sem arquivos obsoletos)  
 ✅ Documentação completa  
 ✅ Código organizado e padronizado  
+✅ **Logs de debug** para troubleshooting  
+✅ **Tratamento de erros** com mensagens específicas  
 
 ---
 
@@ -594,6 +648,6 @@ O sistema já vem com dados iniciais para teste (via `DataInitializer.java`):
 
 **Desenvolvedor:** Romulo-Castro  
 **Data Inicial:** 11/10/2025  
-**Última Atualização:** 08/11/2025  
-**Status:** ✅ Sistema completo e operacional (Backend + Frontend)  
+**Última Atualização:** 09/11/2025  
+**Status:** ✅ Sistema completo e operacional (Backend + Frontend)
 **Versão:** 2.0.0
