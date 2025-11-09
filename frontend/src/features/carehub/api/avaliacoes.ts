@@ -17,17 +17,6 @@ export interface AvaliacaoRequest {
   comentario: string;
 }
 
-export async function verificarPodeAvaliar(clienteId: number, cuidadorId: number): Promise<boolean> {
-  try {
-    const response = await http.get<boolean>(`/api/carehub/avaliacoes/pode-avaliar/${cuidadorId}`, {
-      headers: { 'X-User-Id': clienteId },
-    });
-    return response.data;
-  } catch {
-    return false;
-  }
-}
-
 export async function listarAvaliacoesCuidador(cuidadorId: number): Promise<AvaliacaoResponse[]> {
   const response = await http.get<AvaliacaoResponse[]>(`/api/carehub/avaliacoes/cuidador/${cuidadorId}`);
   return response.data;

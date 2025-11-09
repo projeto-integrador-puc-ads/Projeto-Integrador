@@ -65,12 +65,6 @@ export default function LoginForm() {
       setSubmitting(false);
     }
   }
-  
-  // Quick login buttons for testing
-  const quickLogin = (userEmail: string, userPassword: string) => {
-    setEmail(userEmail);
-    setPassword(userPassword);
-  };
 
   return (
     <Box component="form" onSubmit={onSubmit} noValidate>
@@ -114,37 +108,6 @@ export default function LoginForm() {
             >
               {submitting ? 'Entrando…' : 'Entrar'}
             </Button>
-            
-            {/* Quick Login Buttons (DEV ONLY) */}
-            <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => quickLogin(TEST_USERS.cliente.email, TEST_USERS.cliente.password)}
-                disabled={submitting}
-                fullWidth
-              >
-                👤 Cliente
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => quickLogin(TEST_USERS.cuidador.email, TEST_USERS.cuidador.password)}
-                disabled={submitting}
-                fullWidth
-              >
-                👨‍⚕️ Cuidador
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => quickLogin(TEST_USERS.admin.email, TEST_USERS.admin.password)}
-                disabled={submitting}
-                fullWidth
-              >
-                🔧 Admin
-              </Button>
-            </Stack>
           </Stack>
         </CardContent>
       </Card>

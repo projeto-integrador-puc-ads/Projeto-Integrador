@@ -8,6 +8,7 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
 import br.pucgo.ads.projetointegrador.carehub.entity.Prontuario;
 import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
+import br.pucgo.ads.projetointegrador.carehub.entity.TipoAtendimento;
 import br.pucgo.ads.projetointegrador.carehub.repository.AdministradorRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
@@ -53,7 +54,7 @@ public class DataInitializer {
 			admin.setUsername("admin");
 			admin.setEmail("admin@carehub.test");
 			admin.setPassword(encoder.encode("admin123"));
-			admin.setRoles(Set.of(RoleType.ROLE_ADMIN, RoleType.CAREHUB_ADMIN));
+			admin.setRoles(Set.of(RoleType.ROLE_ADMIN));
 			admin.setTelefone("62999990001");
 			admin.setAtivo(true);
 			admin.setDepartamento("Operacoes");
@@ -109,7 +110,7 @@ public class DataInitializer {
 			agendamento.setDataHoraFim(LocalDateTime.now().plusDays(1).withHour(12).withMinute(0));
 			agendamento.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
 			agendamento.setObservacoes("Primeira visita");
-			agendamento.setTipoAtendimento("Acompanhamento");
+			agendamento.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
 			agendamento = agendamentoRepo.save(agendamento);
 
 			RegistroAcompanhamento registro = new RegistroAcompanhamento();
@@ -132,6 +133,11 @@ public class DataInitializer {
 			avaliacao.setNota(5);
 			avaliacao.setComentario("Excelente atendimento!");
 			avaliacaoRepo.save(avaliacao);
+
+			// Atualizar média do cuidador após criar avaliação
+			cuidador.setAvaliacaoMedia(new BigDecimal("5.00"));
+			cuidador.setTotalAvaliacoes(1);
+			cuidadorRepo.save(cuidador);
 
 			Mensagem mensagem = new Mensagem();
 			mensagem.setRemetente(cliente);

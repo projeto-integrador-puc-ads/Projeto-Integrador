@@ -11,6 +11,8 @@ import br.pucgo.ads.projetointegrador.carehub.exception.ForbiddenException;
 import br.pucgo.ads.projetointegrador.carehub.service.AgendamentoService;
 import br.pucgo.ads.projetointegrador.carehub.service.ProntuarioService;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/carehub/prontuarios")
 public class ProntuarioController {
@@ -32,9 +34,11 @@ public class ProntuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<ProntuarioResponseDTO> atualizarProntuario(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long cuidadorId,
+            Principal principal,
             @Valid @RequestBody ProntuarioRequestDTO dto
     ) {
+        Long cuidadorId = Long.parseLong(principal.getName());
+        
         // Buscar prontuário para obter o clienteId
         ProntuarioResponseDTO prontuarioAtual = prontuarioService.buscarPorId(id);
         Long clienteId = prontuarioAtual.getClienteId();
@@ -65,8 +69,9 @@ public class ProntuarioController {
     @GetMapping("/pode-editar/{clienteId}")
     public ResponseEntity<Boolean> verificarPodeEditar(
             @PathVariable Long clienteId,
-            @RequestHeader("X-User-Id") Long cuidadorId
+            Principal principal
     ) {
+        Long cuidadorId = Long.parseLong(principal.getName());
         boolean podeEditar = agendamentoService.podeEditarProntuario(cuidadorId, clienteId);
         return ResponseEntity.ok(podeEditar);
     }

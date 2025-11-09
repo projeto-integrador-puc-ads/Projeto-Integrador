@@ -39,8 +39,9 @@ public class Agendamento {
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    @Column(name = "tipo_atendimento", length = 64)
-    private String tipoAtendimento; // Ex: Acompanhamento, Consulta médica, Emergência
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_atendimento", length = 32)
+    private TipoAtendimento tipoAtendimento;
 
     @Column(name = "data_solicitacao")
     private LocalDateTime dataSolicitacao;

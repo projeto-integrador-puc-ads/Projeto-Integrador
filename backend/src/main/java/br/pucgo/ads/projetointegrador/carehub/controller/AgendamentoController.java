@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.carehub.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -10,9 +11,12 @@ import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.AgendamentoRequest
 import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.AgendamentoResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.service.AgendamentoService;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/carehub/agendamentos")
 public class AgendamentoController {
@@ -24,7 +28,14 @@ public class AgendamentoController {
     public ResponseEntity<AgendamentoResponseDTO> criarAgendamento(
             @Valid @RequestBody AgendamentoRequestDTO dto
     ) {
+        log.info("Criando agendamento: clienteId={}, cuidadorId={}, data={}", 
+            dto.getClienteId(), dto.getCuidadorId(), dto.getDataHoraInicio());
+        
         AgendamentoResponseDTO agendamento = agendamentoService.criarAgendamento(dto);
+        
+        log.info("Agendamento criado com sucesso: id={}, status={}", 
+            agendamento.getId(), agendamento.getStatus());
+        
         return ResponseEntity.ok(agendamento);
     }
 
@@ -33,7 +44,12 @@ public class AgendamentoController {
             @PathVariable Long id,
             @RequestParam String status
     ) {
+        log.info("Atualizando status do agendamento: id={}, novoStatus={}", id, status);
+        
         AgendamentoResponseDTO agendamento = agendamentoService.atualizarStatus(id, status);
+        
+        log.info("Status atualizado com sucesso: id={}, status={}", id, agendamento.getStatus());
+        
         return ResponseEntity.ok(agendamento);
     }
 
@@ -67,9 +83,12 @@ public class AgendamentoController {
 
     @GetMapping("/proximos")
     public ResponseEntity<List<AgendamentoResponseDTO>> listarProximos(
-            @RequestHeader("X-User-Id") Long userId,
+            Principal principal,
             @RequestParam(defaultValue = "7") int dias
     ) {
+        // Principal.getName() retorna email ou username, não o ID
+        String usernameOrEmail = principal.getName();
+        Long userId = agendamentoService.getUserIdByUsernameOrEmail(usernameOrEmail);
         List<AgendamentoResponseDTO> agendamentos = agendamentoService.listarProximos(userId, dias);
         return ResponseEntity.ok(agendamentos);
     }
@@ -78,5 +97,11 @@ public class AgendamentoController {
     public ResponseEntity<Void> cancelarAgendamento(@PathVariable Long id) {
         agendamentoService.cancelarAgendamento(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping("/{id}/pode-iniciar")
+    public ResponseEntity<Map<String, Object>> verificarPodeIniciar(@PathVariable Long id) {
+        Map<String, Object> resultado = agendamentoService.verificarPodeIniciar(id);
+        return ResponseEntity.ok(resultado);
     }
 }

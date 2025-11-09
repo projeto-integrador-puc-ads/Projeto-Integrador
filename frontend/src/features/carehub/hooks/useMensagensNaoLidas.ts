@@ -7,6 +7,7 @@ export function useMensagensNaoLidas(usuarioId: number | undefined) {
     queryFn: () => contarMensagensNaoLidas(usuarioId!),
     enabled: !!usuarioId,
     refetchInterval: 10000, // Atualiza a cada 10 segundos
-    staleTime: 5000,
+    staleTime: 5 * 60 * 1000, // 5 minutos - considera dados "frescos"
+    gcTime: 10 * 60 * 1000, // 10 minutos - mantém cache
   });
 }

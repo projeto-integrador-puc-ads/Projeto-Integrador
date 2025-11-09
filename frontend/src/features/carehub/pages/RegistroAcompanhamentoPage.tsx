@@ -18,7 +18,7 @@ import {
 import type { SelectChangeEvent } from '@mui/material';
 import { Save, CheckCircle } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import axios from 'axios';
+import http from '@/lib/http';
 import { useSnackbar } from 'notistack';
 import { getUserId } from '@/lib/auth';
 
@@ -49,6 +49,15 @@ export function RegistroAcompanhamentoPage() {
     sinaisVitais: '',
   });
 
+  // ✅ Captura agendamentoId da URL se vier de "Iniciar Atendimento"
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const agendamentoId = params.get('agendamentoId');
+    if (agendamentoId) {
+      setAgendamentoSelecionado(agendamentoId);
+    }
+  }, []);
+
   useEffect(() => {
     if (cuidadorId) {
       carregarAgendamentos();
@@ -59,8 +68,8 @@ export function RegistroAcompanhamentoPage() {
     if (!cuidadorId) return;
     
     try {
-      const response = await axios.get(
-        `http://localhost:8080/api/carehub/agendamentos/cuidador/${cuidadorId}`
+      const response = await http.get(
+        `/api/carehub/agendamentos/cuidador/${cuidadorId}`
       );
       // Filtrar apenas agendamentos confirmados ou em andamento
       const agendamentosAtivos = response.data.filter(
@@ -101,8 +110,13 @@ export function RegistroAcompanhamentoPage() {
     try {
       setLoading(true);
       
-      await axios.post(
-        'http://localhost:8080/api/carehub/registros',
+      console.log('💾 Salvando registro:');
+      console.log('  - cuidadorId:', cuidadorId);
+      console.log('  - agendamentoId:', parseInt(agendamentoSelecionado));
+      console.log('  - formData:', formData);
+      
+      const response = await http.post(
+        '/api/carehub/registros',
         {
           agendamentoId: parseInt(agendamentoSelecionado),
           ...formData,
@@ -114,6 +128,7 @@ export function RegistroAcompanhamentoPage() {
         }
       );
 
+      console.log('✅ Registro salvo! Response:', response.data);
       enqueueSnackbar('Registro salvo com sucesso!', { variant: 'success' });
       
       // Limpar formulário
@@ -141,11 +156,19 @@ export function RegistroAcompanhamentoPage() {
 
   return (
     <Box>
-      <PageHeader title="Registro de Acompanhamento" />
+      <PageHeader title="Registro de Acompanhamento" backTo="/carehub/cuidador/agendamentos" />
 
       <Alert severity="info" sx={{ mb: 3 }}>
-        <strong>Instruções:</strong> Preencha os dados do atendimento realizado. Todos os campos são importantes para o histórico do paciente.
+        <strong>📋 Documentação do Atendimento:</strong> Registre todos os detalhes do atendimento realizado. 
+        Este registro será adicionado ao histórico do cliente e ficará disponível para consultas futuras.
       </Alert>
+
+      {agendamentoSelecionado && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          <strong>✅ Atendimento em Andamento:</strong> Você está registrando o acompanhamento em tempo real. 
+          Preencha os dados conforme realiza as atividades.
+        </Alert>
+      )}
 
       <Card component="form" onSubmit={handleSubmit}>
         <CardContent>

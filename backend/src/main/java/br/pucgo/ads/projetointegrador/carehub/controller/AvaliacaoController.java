@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.carehub.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import br.pucgo.ads.projetointegrador.carehub.service.AvaliacaoService;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/carehub/avaliacoes")
 public class AvaliacaoController {
@@ -23,7 +25,14 @@ public class AvaliacaoController {
             @RequestHeader("X-User-Id") Long clienteId,
             @Valid @RequestBody AvaliacaoRequestDTO dto
     ) {
+        log.info("Criando avaliação: clienteId={}, cuidadorId={}, nota={}", 
+            clienteId, dto.getCuidadorId(), dto.getNota());
+        
         AvaliacaoResponseDTO avaliacao = avaliacaoService.criarAvaliacao(clienteId, dto);
+        
+        log.info("Avaliação criada com sucesso: id={}, cuidadorId={}, nota={}", 
+            avaliacao.getId(), avaliacao.getCuidadorId(), avaliacao.getNota());
+        
         return ResponseEntity.ok(avaliacao);
     }
 
@@ -37,14 +46,5 @@ public class AvaliacaoController {
     public ResponseEntity<Void> deletarAvaliacao(@PathVariable Long id) {
         avaliacaoService.deletarAvaliacao(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/pode-avaliar/{cuidadorId}")
-    public ResponseEntity<Boolean> verificarPodeAvaliar(
-            @PathVariable Long cuidadorId,
-            @RequestHeader("X-User-Id") Long clienteId
-    ) {
-        boolean podeAvaliar = avaliacaoService.podeAvaliar(clienteId, cuidadorId);
-        return ResponseEntity.ok(podeAvaliar);
     }
 }

@@ -31,6 +31,17 @@ public class CareHubExceptionHandler {
 
         return ResponseEntity.badRequest().body(response);
     }
+    
+    @ExceptionHandler(OperacaoNaoPermitidaException.class)
+    public ResponseEntity<Map<String, Object>> handleOperacaoNaoPermitida(OperacaoNaoPermitidaException ex) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("timestamp", LocalDateTime.now().toString());
+        errorResponse.put("status", HttpStatus.FORBIDDEN.value());
+        errorResponse.put("error", "Operação Não Permitida");
+        errorResponse.put("message", ex.getMessage());
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {

@@ -18,7 +18,7 @@ export default function AgendamentosPage() {
   const [cuidadorId, setCuidadorId] = useState<number | undefined>(initialCuidador);
   const [inicio, setInicio] = useState<string>(dayjs().add(1, 'day').hour(9).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
   const [fim, setFim] = useState<string>(dayjs().add(1, 'day').hour(11).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
-  const [tipo, setTipo] = useState<string>('DOMICILIAR');
+  const [tipo, setTipo] = useState<string>('DOMICILIO'); // ✅ Corrigido de DOMICILIAR para DOMICILIO
 
   // Fetch cliente ID
   useEffect(() => {
@@ -78,8 +78,11 @@ export default function AgendamentosPage() {
       enqueueSnackbar('Selecione um cuidador', { variant: 'warning' });
       return;
     }
-    const dataInicio = dayjs(inicio).toISOString();
-    const dataFim = dayjs(fim).toISOString();
+    
+    // ✅ Usar formato local sem conversão para UTC
+    const dataInicio = dayjs(inicio).format('YYYY-MM-DDTHH:mm:ss');
+    const dataFim = dayjs(fim).format('YYYY-MM-DDTHH:mm:ss');
+    
     criarMutation.mutate({ 
       clienteId, 
       cuidadorId, 
@@ -152,7 +155,7 @@ export default function AgendamentosPage() {
               onChange={(e) => setTipo(e.target.value)}
               sx={{ minWidth: 180 }}
             >
-              <MenuItem value="DOMICILIAR">Domiciliar</MenuItem>
+              <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
               <MenuItem value="PRESENCIAL">Presencial</MenuItem>
               <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
             </TextField>

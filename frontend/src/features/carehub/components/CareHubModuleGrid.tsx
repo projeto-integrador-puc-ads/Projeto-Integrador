@@ -8,6 +8,7 @@ import {
   LocalHospital,
   Assignment,
   AccessTime,
+  History,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -50,6 +51,12 @@ export function CareHubModuleGrid() {
       to: '/carehub/agendamentos',
     },
     {
+      icon: <History sx={{ fontSize: 40 }} />,
+      title: 'Histórico de Atendimentos',
+      desc: 'Veja todos os registros de atendimentos',
+      to: '/carehub/historico-atendimentos',
+    },
+    {
       icon: (
         <Badge badgeContent={naoLidas} color="error">
           <Chat sx={{ fontSize: 40 }} />
@@ -88,6 +95,12 @@ export function CareHubModuleGrid() {
       to: '/carehub/cuidador/registros',
     },
     {
+      icon: <History sx={{ fontSize: 40 }} />,
+      title: 'Histórico de Atendimentos',
+      desc: 'Veja todos os registros por cliente',
+      to: '/carehub/historico-atendimentos',
+    },
+    {
       icon: (
         <Badge badgeContent={naoLidas} color="error">
           <Chat sx={{ fontSize: 40 }} />
@@ -99,8 +112,8 @@ export function CareHubModuleGrid() {
     },
   ];
 
-  // Seleciona módulos baseado no ROLE (não no userId)
-  const modules = userRole === 'CUIDADOR' ? cuidadorModules : clienteModules;
+  // Seleciona módulos baseado no ROLE (aceita CUIDADOR ou ROLE_CUIDADOR)
+  const modules = userRole?.includes('CUIDADOR') ? cuidadorModules : clienteModules;
 
   return (
     <Box>

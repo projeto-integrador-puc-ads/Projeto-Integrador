@@ -13,14 +13,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/clientes")
-@PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('IDOSO') or hasRole('FAMILIAR') or hasRole('ROLE_ADMIN')")
 public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ClienteResponseDTO>> listarTodos() {
         List<ClienteResponseDTO> clientes = clienteService.listarTodos();
         return ResponseEntity.ok(clientes);
@@ -42,7 +42,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         clienteService.deletar(id);
         return ResponseEntity.noContent().build();

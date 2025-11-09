@@ -15,4 +15,8 @@ public interface RegistroAcompanhamentoRepository extends JpaRepository<Registro
     List<RegistroAcompanhamento> findByCuidadorIdOrderByDataHoraRegistroDesc(Long cuidadorId);
     
     List<RegistroAcompanhamento> findByAgendamentoIdOrderByDataHoraRegistroDesc(Long agendamentoId);
+    
+    List<RegistroAcompanhamento> findByAgendamentoId(Long agendamentoId);
+    
+    boolean existsByAgendamentoId(Long agendamentoId);
 }

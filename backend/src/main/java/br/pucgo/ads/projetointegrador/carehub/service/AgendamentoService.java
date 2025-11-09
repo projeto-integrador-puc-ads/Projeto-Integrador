@@ -9,12 +9,20 @@ import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.AgendamentoRespons
 import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
+import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
+import br.pucgo.ads.projetointegrador.carehub.entity.TipoAtendimento;
+import br.pucgo.ads.projetointegrador.carehub.exception.OperacaoNaoPermitidaException;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorRepository;
+import br.pucgo.ads.projetointegrador.carehub.repository.RegistroAcompanhamentoRepository;
+import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -29,6 +37,19 @@ public class AgendamentoService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private RegistroAcompanhamentoRepository registroRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+
+    // ✅ Método helper para obter ID do usuário pelo username ou email
+    public Long getUserIdByUsernameOrEmail(String usernameOrEmail) {
+        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + usernameOrEmail));
+        return user.getId();
+    }
 
     @Transactional
     public AgendamentoResponseDTO criarAgendamento(AgendamentoRequestDTO dto) {
@@ -47,7 +68,19 @@ public class AgendamentoService {
         agendamento.setDataHoraInicio(dto.getDataHoraInicio());
         agendamento.setDataHoraFim(dto.getDataHoraFim());
         agendamento.setObservacoes(dto.getObservacoes());
-        agendamento.setTipoAtendimento(dto.getTipoAtendimento());
+        
+        // Converter String para Enum (se fornecido)
+        if (dto.getTipoAtendimento() != null && !dto.getTipoAtendimento().isBlank()) {
+            try {
+                agendamento.setTipoAtendimento(TipoAtendimento.valueOf(dto.getTipoAtendimento().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                // Valor inválido, usar ACOMPANHAMENTO como padrão
+                agendamento.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
+            }
+        } else {
+            // Padrão se não especificado
+            agendamento.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
+        }
 
         agendamento = agendamentoRepository.save(agendamento);
 
@@ -61,10 +94,67 @@ public class AgendamentoService {
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
-        agendamento.setStatus(Agendamento.StatusAgendamento.valueOf(status));
+        Agendamento.StatusAgendamento novoStatus = Agendamento.StatusAgendamento.valueOf(status);
+        
+        // ✅ VALIDAÇÃO: Só pode iniciar atendimento se estiver no horário correto
+        if (novoStatus == Agendamento.StatusAgendamento.EM_ANDAMENTO) {
+            validarInicioAtendimento(agendamento);
+            
+            // ✅ Criar registro de acompanhamento automático
+            criarRegistroAutomatico(agendamento);
+        }
+        
+        agendamento.setStatus(novoStatus);
         agendamento = agendamentoRepository.save(agendamento);
 
         return toResponseDTO(agendamento);
+    }
+    
+    /**
+     * Valida se o atendimento pode ser iniciado baseado na data/hora atual.
+     * Permite iniciar 30 minutos antes do horário agendado até o horário de fim.
+     */
+    private void validarInicioAtendimento(Agendamento agendamento) {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioPermitido = agendamento.getDataHoraInicio().minusMinutes(30);
+        LocalDateTime fimPermitido = agendamento.getDataHoraFim();
+        
+        if (agora.isBefore(inicioPermitido)) {
+            throw new OperacaoNaoPermitidaException(
+                String.format("Não é possível iniciar o atendimento ainda. " +
+                    "O atendimento está agendado para %s. " +
+                    "Você poderá iniciá-lo a partir de %s (30 minutos antes).",
+                    agendamento.getDataHoraInicio(),
+                    inicioPermitido)
+            );
+        }
+        
+        if (agora.isAfter(fimPermitido)) {
+            throw new OperacaoNaoPermitidaException(
+                String.format("Não é possível iniciar o atendimento. " +
+                    "O horário agendado já passou (término: %s).",
+                    fimPermitido)
+            );
+        }
+    }
+    
+    /**
+     * Cria um registro de acompanhamento vazio quando o atendimento é iniciado.
+     */
+    private void criarRegistroAutomatico(Agendamento agendamento) {
+        // Verifica se já existe registro para este agendamento
+        boolean jaExiste = registroRepository.existsByAgendamentoId(agendamento.getId());
+        
+        if (!jaExiste) {
+            RegistroAcompanhamento registro = new RegistroAcompanhamento();
+            registro.setAgendamento(agendamento);
+            registro.setCuidador(agendamento.getCuidador());
+            registro.setCliente(agendamento.getCliente());
+            registro.setDataHoraRegistro(LocalDateTime.now());
+            registro.setObservacoes("Atendimento iniciado - Aguardando preenchimento pelo cuidador");
+            
+            registroRepository.save(registro);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -141,6 +231,44 @@ public class AgendamentoService {
             fimHoje
         );
     }
+    
+    /**
+     * Verifica se um agendamento pode ser iniciado (mudança para status EM_ANDAMENTO).
+     * Retorna informações sobre a possibilidade e motivo se não puder.
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> verificarPodeIniciar(Long id) {
+        Objects.requireNonNull(id, "Agendamento ID cannot be null");
+        
+        Map<String, Object> resultado = new HashMap<>();
+        
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+        
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioPermitido = agendamento.getDataHoraInicio().minusMinutes(30);
+        LocalDateTime fimPermitido = agendamento.getDataHoraFim();
+        
+        boolean podeIniciar = !agora.isBefore(inicioPermitido) && !agora.isAfter(fimPermitido);
+        
+        resultado.put("podeIniciar", podeIniciar);
+        resultado.put("agora", agora.toString());
+        resultado.put("inicioPermitido", inicioPermitido.toString());
+        resultado.put("fimPermitido", fimPermitido.toString());
+        resultado.put("dataHoraInicio", agendamento.getDataHoraInicio().toString());
+        
+        if (!podeIniciar) {
+            if (agora.isBefore(inicioPermitido)) {
+                resultado.put("motivo", "Ainda não está no horário. Você poderá iniciar 30 minutos antes.");
+            } else {
+                resultado.put("motivo", "O horário agendado já passou.");
+            }
+        } else {
+            resultado.put("motivo", "Você pode iniciar o atendimento agora.");
+        }
+        
+        return resultado;
+    }
 
     private AgendamentoResponseDTO toResponseDTO(Agendamento agendamento) {
         AgendamentoResponseDTO dto = new AgendamentoResponseDTO();
@@ -153,8 +281,13 @@ public class AgendamentoService {
         dto.setDataHoraFim(agendamento.getDataHoraFim());
         dto.setStatus(agendamento.getStatus().name());
         dto.setObservacoes(agendamento.getObservacoes());
-    dto.setTipoAtendimento(agendamento.getTipoAtendimento());
-    dto.setDataSolicitacao(agendamento.getDataSolicitacao());
+        
+        // Converter Enum para String (nome + descrição)
+        if (agendamento.getTipoAtendimento() != null) {
+            dto.setTipoAtendimento(agendamento.getTipoAtendimento().name());
+        }
+        
+        dto.setDataSolicitacao(agendamento.getDataSolicitacao());
         return dto;
     }
 }

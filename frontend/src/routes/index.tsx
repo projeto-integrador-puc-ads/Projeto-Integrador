@@ -21,6 +21,7 @@ import {
   RegistroAcompanhamentoPage,
   ProximosAtendimentosPage,
 } from '@/features/carehub';
+import { HistoricoAtendimentosPage } from '@/features/carehub/pages/HistoricoAtendimentosPage';
 import CareHubHomePage from '@/features/carehub/pages/CareHubHomePage';
 import AgendamentosNegociacaoPage from '@/features/carehub/pages/AgendamentosNegociacaoPage';
 
@@ -78,6 +79,8 @@ export function AppRoutes() {
         <Route path="carehub/cuidador/agendamentos" element={<MeusAgendamentosPage />} />
         <Route path="carehub/cuidador/prontuarios" element={<ProntuariosClientesPage />} />
         <Route path="carehub/cuidador/registros" element={<RegistroAcompanhamentoPage />} />
+        <Route path="carehub/registro-acompanhamento" element={<RegistroAcompanhamentoPage />} />
+        <Route path="carehub/historico-atendimentos" element={<HistoricoAtendimentosPage />} />
         
         {/* CareHub - Páginas Compartilhadas */}
         <Route path="carehub/proximos" element={<ProximosAtendimentosPage />} />

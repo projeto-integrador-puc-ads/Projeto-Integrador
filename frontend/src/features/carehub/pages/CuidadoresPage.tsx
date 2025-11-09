@@ -6,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import { LocationOn, PersonSearch, Star, Chat } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import { AvaliacaoModal } from '../components/AvaliacaoModal';
-import { verificarPodeAvaliar } from '../api/avaliacoes';
 
 export default function CuidadoresPage() {
   const [q, setQ] = useState('');
@@ -15,7 +14,6 @@ export default function CuidadoresPage() {
   const [clienteId, setClienteId] = useState<number | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
   const [cuidadorSelecionado, setCuidadorSelecionado] = useState<{ id: number; nome: string } | null>(null);
-  const [podeAvaliarMap, setPodeAvaliarMap] = useState<Record<number, boolean>>({});
   
 
   // Recuperar clienteId do cabeçalho (simulado - em produção viria do contexto de auth)
@@ -42,36 +40,9 @@ export default function CuidadoresPage() {
     retry: 2,
   });
 
-  // Verificar quais cuidadores o cliente pode avaliar
-  useEffect(() => {
-    if (!clienteId || !data?.content) return;
-    
-    const checkPermissions = async () => {
-      const results: Record<number, boolean> = {};
-      
-      for (const cuidador of data.content) {
-        try {
-          const podeAvaliar = await verificarPodeAvaliar(clienteId, cuidador.id);
-          results[cuidador.id] = podeAvaliar;
-        } catch {
-          results[cuidador.id] = false;
-        }
-      }
-      
-      setPodeAvaliarMap(results);
-    };
-    
-    checkPermissions();
-  }, [clienteId, data?.content]);
-
   const handleAvaliarClick = (cuidadorId: number, cuidadorNome: string) => {
     if (!clienteId) {
       alert('Você precisa estar logado para avaliar um cuidador.');
-      return;
-    }
-    
-    if (!podeAvaliarMap[cuidadorId]) {
-      alert('Você já avaliou este cuidador ou ainda não foi atendido por ele.');
       return;
     }
     
@@ -328,20 +299,15 @@ export default function CuidadoresPage() {
                       onClick={() => handleAvaliarClick(c.id, c.nome)}
                       variant="outlined"
                       color="warning"
-                      disabled={!clienteId || podeAvaliarMap[c.id] === false}
+                      disabled={!clienteId}
                       startIcon={<Star />}
                       sx={{ 
                         flex: 1,
                         borderRadius: 2,
-                        textTransform: 'none'
+                        textTransform: 'none',
+                        fontWeight: 'medium'
                       }}
-                      title={
-                        !clienteId 
-                          ? "Faça login para avaliar" 
-                          : podeAvaliarMap[c.id] === false 
-                            ? "Você já avaliou ou não foi atendido" 
-                            : "Avaliar cuidador"
-                      }
+                      title={!clienteId ? "Faça login para avaliar" : "Avaliar cuidador"}
                     >
                       Avaliar
                     </Button>

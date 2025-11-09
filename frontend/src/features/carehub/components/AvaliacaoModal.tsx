@@ -70,14 +70,25 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
   const mutation = useMutation({
     mutationFn: (avaliacao: AvaliacaoRequest) => criarAvaliacao(clienteId, avaliacao),
     onSuccess: () => {
-      enqueueSnackbar('✨ Avaliação enviada com sucesso!', { variant: 'success' });
+      enqueueSnackbar('✨ Avaliação enviada com sucesso! Obrigado pelo seu feedback.', { variant: 'success' });
       queryClient.invalidateQueries({ queryKey: ['avaliacoes', cuidadorId] });
       queryClient.invalidateQueries({ queryKey: ['cuidadores'] });
       handleClose();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Erro ao enviar avaliação';
-      enqueueSnackbar(message, { variant: 'error' });
+      const message = error.response?.data?.message || error.message || 'Erro ao enviar avaliação';
+      
+      // Mensagens específicas para erros comuns
+      if (message.includes('já avaliou')) {
+        enqueueSnackbar('⚠️ Você já avaliou este cuidador anteriormente!', { 
+          variant: 'warning',
+          autoHideDuration: 5000
+        });
+      } else if (message.includes('não encontrado')) {
+        enqueueSnackbar('❌ Cuidador não encontrado', { variant: 'error' });
+      } else {
+        enqueueSnackbar(`❌ ${message}`, { variant: 'error' });
+      }
     },
   });
 
@@ -139,10 +150,13 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
         </IconButton>
         
         <Typography variant="h5" fontWeight="bold" mb={1}>
-          Como foi o atendimento?
+          Avaliar Atendimento
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.95 }}>
           {cuidadorNome}
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.85, mt: 0.5, display: 'block' }}>
+          💡 Sua avaliação ajuda outros clientes
         </Typography>
       </Box>
 
@@ -222,8 +236,11 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
 
           {/* Comentário */}
           <Box>
-            <Typography variant="subtitle2" color="text.secondary" mb={1}>
-              Conte mais sobre sua experiência (opcional)
+            <Typography variant="subtitle2" color="text.secondary" mb={1} fontWeight="medium">
+              Deixe um comentário sobre sua experiência
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" mb={1.5}>
+              ⭐ Dica: Seja específico sobre o que mais gostou ou o que pode melhorar
             </Typography>
             <TextField
               multiline

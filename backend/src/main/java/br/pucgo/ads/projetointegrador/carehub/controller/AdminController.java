@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/carehub/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
 
     @Autowired

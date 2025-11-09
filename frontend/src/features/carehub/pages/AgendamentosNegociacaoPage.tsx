@@ -41,7 +41,7 @@ export default function AgendamentosNegociacaoPage() {
   const [fim, setFim] = useState<string>(
     dayjs().add(1, 'day').hour(11).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm')
   );
-  const [tipo, setTipo] = useState<string>('DOMICILIAR');
+  const [tipo, setTipo] = useState<string>('DOMICILIO'); // ✅ Corrigido de DOMICILIAR para DOMICILIO
   const [observacoes, setObservacoes] = useState<string>('');
   
   // Estado para modal de contraproposta (funcionalidade futura)
@@ -130,11 +130,12 @@ export default function AgendamentosNegociacaoPage() {
       return;
     }
     
+    // ✅ Usar formato local sem conversão para UTC
     criarMutation.mutate({ 
       clienteId, 
       cuidadorId, 
-      dataHoraInicio: dataInicio.toISOString(), 
-      dataHoraFim: dataFim.toISOString(), 
+      dataHoraInicio: dataInicio.format('YYYY-MM-DDTHH:mm:ss'), 
+      dataHoraFim: dataFim.format('YYYY-MM-DDTHH:mm:ss'), 
       tipoAtendimento: tipo,
       observacoes: observacoes.trim() || undefined
     });
@@ -276,7 +277,7 @@ export default function AgendamentosNegociacaoPage() {
               onChange={(e) => setTipo(e.target.value)}
               sx={{ minWidth: 180 }}
             >
-              <MenuItem value="DOMICILIAR">Domiciliar</MenuItem>
+              <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
               <MenuItem value="PRESENCIAL">Presencial</MenuItem>
               <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
             </TextField>

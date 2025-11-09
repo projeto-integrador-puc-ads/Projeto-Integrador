@@ -22,7 +22,8 @@ import {
   Phone,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import axios from 'axios';
+import http from '@/lib/http';
+import { getUserId } from '@/lib/auth';
 
 interface Prontuario {
   id: number;
@@ -38,28 +39,49 @@ interface Prontuario {
   necessidadesEspeciais?: string;
 }
 
+interface Agendamento {
+  id: number;
+  clienteId: number;
+  clienteNome: string;
+}
+
 export function ProntuariosClientesPage() {
   const [prontuarios, setProntuarios] = useState<Prontuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const cuidadorId = getUserId();
 
   useEffect(() => {
-    carregarProntuarios();
-  }, []);
+    if (cuidadorId) {
+      carregarProntuarios();
+    }
+  }, [cuidadorId]);
 
   const carregarProntuarios = async () => {
+    if (!cuidadorId) return;
+
     try {
       setLoading(true);
       
-      // Primeiro, buscar todos os clientes
-      const clientesResponse = await axios.get('http://localhost:8080/api/carehub/clientes');
-      const clientes = clientesResponse.data;
+      // 1. Buscar agendamentos do cuidador logado
+      const agendamentosResponse = await http.get(`/api/carehub/agendamentos/cuidador/${cuidadorId}`);
+      const agendamentos: Agendamento[] = agendamentosResponse.data;
 
-      // Para cada cliente, tentar buscar o prontuário
-      const prontuariosPromises = clientes.map(async (cliente: any) => {
+      // 2. Extrair IDs únicos dos clientes
+      const clienteIds = [...new Set(agendamentos.map(ag => ag.clienteId))];
+
+      if (clienteIds.length === 0) {
+        setProntuarios([]);
+        setError('Você ainda não tem agendamentos com clientes');
+        setLoading(false);
+        return;
+      }
+
+      // 3. Buscar prontuário de cada cliente
+      const prontuariosPromises = clienteIds.map(async (clienteId) => {
         try {
-          const prontuarioResponse = await axios.get(
-            `http://localhost:8080/api/carehub/prontuarios/cliente/${cliente.id}`
+          const prontuarioResponse = await http.get(
+            `/api/carehub/prontuarios/cliente/${clienteId}`
           );
           return prontuarioResponse.data;
         } catch {
@@ -68,7 +90,7 @@ export function ProntuariosClientesPage() {
       });
 
       const prontuariosData = await Promise.all(prontuariosPromises);
-      const prontuariosValidos = prontuariosData.filter(p => p !== null);
+      const prontuariosValidos = prontuariosData.filter((p): p is Prontuario => p !== null);
       
       setProntuarios(prontuariosValidos);
       setError(null);

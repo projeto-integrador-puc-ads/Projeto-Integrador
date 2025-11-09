@@ -19,7 +19,7 @@ export function CareHubModuleGrid() {
   const { data: naoLidas = 0 } = useMensagensNaoLidas(userId);
 
   useEffect(() => {
-    const savedUserId = localStorage.getItem('devUserId');
+    const savedUserId = localStorage.getItem('userId');
     if (savedUserId) {
       setUserId(parseInt(savedUserId));
     }
