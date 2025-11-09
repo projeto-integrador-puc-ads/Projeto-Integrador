@@ -1,0 +1,391 @@
+{
+	"info": {
+		"_postman_id": "jwt-auth-2025-11-02",
+		"name": "Projeto Integrador - JWT Authentication",
+		"description": "Collection para testar autenticação JWT da Plataforma - Projeto Integrador PUC-GO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "1. Signup - Registrar Usuario IDOSO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Salvar o token JWT retornado",
+									"if (pm.response.code === 201) {",
+									"    pm.environment.set(\"jwt_token\", pm.response.text());",
+									"    console.log(\"✅ Usuário cadastrado com sucesso!\");",
+									"} else {",
+									"    console.log(\"❌ Erro no cadastro:\", pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva Santos\",\n    \"username\": \"joao.silva\",\n    \"email\": \"joao.silva@email.com\",\n    \"password\": \"senha123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Registrar um novo usuário no sistema (público - não precisa autenticação)"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Signup - Registrar Usuario CUIDADOR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log(\"✅ Cuidador cadastrado com sucesso!\");",
+									"} else {",
+									"    console.log(\"❌ Erro no cadastro:\", pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Maria Fernanda Costa\",\n    \"username\": \"maria.cuidadora\",\n    \"email\": \"maria.cuidadora@email.com\",\n    \"password\": \"senha123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Registrar um novo cuidador no sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login - Obter Token JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Salvar o token JWT retornado",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"jwt_token\", jsonData.accessToken);",
+									"    console.log(\"✅ Login realizado com sucesso!\");",
+									"    console.log(\"🔑 Token JWT:\", jsonData.accessToken);",
+									"} else {",
+									"    console.log(\"❌ Erro no login:\", pm.response.text());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"usernameOrEmail\": \"joao.silva@email.com\",\n    \"password\": \"senha123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Fazer login e receber token JWT (público - não precisa autenticação)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints públicos de autenticação (signup e login)"
+		},
+		{
+			"name": "User Management (Protected)",
+			"item": [
+				{
+					"name": "4. Buscar Usuario por ID (com JWT)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Buscar usuário por ID - REQUER JWT TOKEN\n\n✅ Deve funcionar com token válido\n❌ Retorna 401 sem token"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Buscar Usuario por Email (com JWT)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/email/joao.silva@email.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"email",
+								"joao.silva@email.com"
+							]
+						},
+						"description": "Buscar usuário por email - REQUER JWT TOKEN"
+					},
+					"response": []
+				},
+				{
+					"name": "6. Listar Todos Usuarios (ADMIN apenas)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Listar todos os usuários - REQUER ROLE ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "7. Atualizar Usuario (com JWT)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"João Silva Santos - Atualizado\",\n    \"email\": \"joao.silva.novo@email.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Atualizar dados do usuário - REQUER JWT TOKEN"
+					},
+					"response": []
+				},
+				{
+					"name": "8. Deletar Usuario (ADMIN apenas)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"2"
+							]
+						},
+						"description": "Deletar usuário - REQUER ROLE ADMIN"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints protegidos que requerem autenticação JWT"
+		},
+		{
+			"name": "Tests - Unauthorized Access",
+			"item": [
+				{
+					"name": "9. Teste SEM TOKEN (deve falhar com 401)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "❌ Este request NÃO tem token JWT\n\nDeveria retornar:\n- Status: 401 Unauthorized\n- Mensagem de erro de autenticação"
+					},
+					"response": []
+				},
+				{
+					"name": "10. Teste TOKEN INVALIDO (deve falhar com 401)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "token-invalido-123456",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "❌ Este request tem um token JWT INVÁLIDO\n\nDeveria retornar:\n- Status: 401 Unauthorized\n- Mensagem: \"Invalid JWT token\""
+					},
+					"response": []
+				}
+			],
+			"description": "Testes negativos para validar segurança JWT"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

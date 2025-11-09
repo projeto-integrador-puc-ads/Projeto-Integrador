@@ -5,6 +5,8 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // ✅ Novo ícone
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,11 +44,26 @@ export function ModuleGrid() {
       desc: 'Acompanhe suas consultas médicas.',
       to: '/grupo4/consultas',
     },
+
+    // ✅ Novo módulo: Atendimento Médico
     {
-      icon: <HelpOutlineIcon sx={{ fontSize: 40 }} />,
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
+      title: 'Atendimento Médico',
+      desc: 'Registre informações de consultas e diagnósticos.',
+      to: '/atendimento',
+    },
+
+    {
+      icon: <EscalatorWarningIcon sx={{ fontSize: 40 }} />,
       title: 'Ajudador',
       desc: 'Dicas rápidas e ajuda no dia a dia.',
       to: '/grupo5/ajudador',
+    },
+    {
+      icon: <HelpOutlineIcon sx={{ fontSize: 40 }} />,
+      title: 'Dúvidas',
+      desc: 'Dúvidas e sugestões.',
+      to: '/grupo6/ajudador',
     },
   ];
 
