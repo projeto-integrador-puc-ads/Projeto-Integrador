@@ -1,6 +1,9 @@
 package br.pucgo.ads.projetointegrador.diario_saude.entity;
 
 import org.springframework.beans.BeanUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.pucgo.ads.projetointegrador.diario_saude.dto.ExameDTO;
 import jakarta.persistence.*;
 import java.util.List;
@@ -17,10 +20,6 @@ public class ExameEntity {
     @Column(nullable = false)
     private String nome_exame;
 
-    private String data_solicitacao;
-
-    private String imagem_resultado;
-
     public ExameEntity(){}
 
     public ExameEntity(ExameDTO exame){
@@ -28,6 +27,7 @@ public class ExameEntity {
     }
 
     @OneToMany(mappedBy = "exame")
+    @JsonIgnore
     private List<PrescricaoExameEntity> prescricoes;
 
     public List<PrescricaoExameEntity> getPrescricoes() {
@@ -52,21 +52,5 @@ public class ExameEntity {
 
     public void setNome_exame(String nome_exame) {
         this.nome_exame = nome_exame;
-    }
-
-    public String getData_solicitacao() {
-        return data_solicitacao;
-    }
-
-    public void setData_solicitacao(String data_solicitacao) {
-        this.data_solicitacao = data_solicitacao;
-    }
-
-    public String getImagem_resultado() {
-        return imagem_resultado;
-    }
-
-    public void setImagem_resultado(String imagem_resultado) {
-        this.imagem_resultado = imagem_resultado;
     }
 }

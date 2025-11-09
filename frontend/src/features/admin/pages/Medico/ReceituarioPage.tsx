@@ -43,6 +43,8 @@ export default function ReceituarioPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const paciente = location.state?.paciente as Paciente | undefined;
+  const prescricaoExistente = location.state?.prescricao;
+
 
   // Redireciona se paciente não existir
   useEffect(() => {
@@ -112,29 +114,16 @@ export default function ReceituarioPage() {
       return;
     }
 
+    // ✅ A prescrição TEM que existir
+    if (!prescricaoExistente?.id_prescricao) {
+      alert("⚠ Nenhuma prescrição iniciada! Volte para a tela de Atendimento.");
+      return;
+    }
+
+    const prescricaoId = prescricaoExistente.id_prescricao;
+
     try {
-      // Cria prescrição médica
-      const prescricaoResp = await fetch(
-        "http://localhost:8080/api/diario_saude/prescricao",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            id_medico: usuario.id_usuario,
-            id_usuario: paciente.id_usuario,
-            descricao: `Orientações: ${orientacoes}\nSinais de Alarme: ${sinaisAlarme}`,
-          }),
-        }
-      );
-
-      if (!prescricaoResp.ok) throw new Error("Erro ao criar prescrição médica");
-      const prescricaoData = await prescricaoResp.json();
-      const prescricaoId = prescricaoData.id_prescricao;
-
-      // Insere medicamentos na tabela prescricao_medicamento
+      // Salva medicamentos na prescrição existente
       for (const med of medList) {
         await fetch("http://localhost:8080/api/diario_saude/prescricao_medicamento", {
           method: "POST",

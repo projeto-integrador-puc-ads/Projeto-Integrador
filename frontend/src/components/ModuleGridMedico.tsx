@@ -14,7 +14,7 @@ type Paciente = {
   alergias?: string;
 };
 
-export function ModuleGridMedico({ paciente }: { paciente: Paciente }) {
+export function ModuleGridMedico({ paciente, prescricao }: { paciente: Paciente, prescricao: any }) {
   const navigate = useNavigate();
 
   const items = [
@@ -22,19 +22,19 @@ export function ModuleGridMedico({ paciente }: { paciente: Paciente }) {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
       title: 'Receituário',
       desc: 'Adicionar medicamentos para o paciente.',
-      onClick: () => navigate('/atendimento/receituario', { state: { paciente } }),
+      onClick: () => navigate('/atendimento/receituario', { state: { paciente, prescricao } }),
     },
     {
       icon: <DescriptionIcon sx={{ fontSize: 40 }} color="primary" />,
       title: 'Pedir Exames',
       desc: 'Solicitar exames para o paciente.',
-      onClick: () => navigate('/atendimento/exames', { state: { paciente } }),
+      onClick: () => navigate('/atendimento/exames', { state: { paciente, prescricao } }),
     },
     {
       icon: <FitnessCenterIcon sx={{ fontSize: 40 }} color="secondary" />,
       title: 'Recomendação de Exercícios',
       desc: 'Sugira exercícios para o paciente.',
-      onClick: () => navigate('/atendimento/exercicios', { state: { paciente } }),
+      onClick: () => navigate('/atendimento/exercicios', { state: { paciente, prescricao } }),
     },
   ];
 
