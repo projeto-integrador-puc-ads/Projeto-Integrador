@@ -32,11 +32,10 @@ type Paciente = {
 
 type Medicamento = {
   id_medicamento?: number;
-  nome: string;
-  principio: string;
+  nome_medicamento: string;
+  principio_ativo: string;
   concentracao: string;
   via: string;
-  tipo: string;
 };
 
 export default function ReceituarioPage() {
@@ -44,7 +43,6 @@ export default function ReceituarioPage() {
   const location = useLocation();
   const paciente = location.state?.paciente as Paciente | undefined;
   const prescricaoExistente = location.state?.prescricao;
-
 
   // Redireciona se paciente não existir
   useEffect(() => {
@@ -76,14 +74,14 @@ export default function ReceituarioPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const [form, setForm] = useState<Medicamento>({
-    nome: "",
-    principio: "",
+    nome_medicamento: "",
+    principio_ativo: "",
     concentracao: "",
     via: "",
-    tipo: "",
   });
 
   const [listaMedicamentos, setListaMedicamentos] = useState<Medicamento[]>([]);
+  const listaVias = ["Oral", "Intravenosa", "Intramuscular", "Inalatória", "Sublingual", "Tópica"];
 
   useEffect(() => {
     if (!token) return;
@@ -95,16 +93,13 @@ export default function ReceituarioPage() {
       .catch((err) => console.error("Erro ao buscar medicamentos:", err));
   }, [token]);
 
-  const listaVias = ["Oral", "Intravenosa", "Intramuscular", "Inalatória", "Sublingual", "Tópica"];
-  const listaTipos = ["Simples", "Controlada", "Retida", "Psicotrópica"];
-
   const handleAddMedicamento = () => {
-    if (!form.nome || !form.concentracao || !form.via) {
+    if (!form.nome_medicamento || !form.concentracao || !form.via) {
       alert("Preencha nome, concentração e via do medicamento");
       return;
     }
     setMedList([...medList, form]);
-    setForm({ nome: "", principio: "", concentracao: "", via: "", tipo: "" });
+    setForm({ nome_medicamento: "", principio_ativo: "", concentracao: "", via: "" });
     setDialogOpen(false);
   };
 
@@ -113,17 +108,12 @@ export default function ReceituarioPage() {
       alert("Token não encontrado.");
       return;
     }
-
-    // ✅ A prescrição TEM que existir
     if (!prescricaoExistente?.id_prescricao) {
       alert("⚠ Nenhuma prescrição iniciada! Volte para a tela de Atendimento.");
       return;
     }
 
-    const prescricaoId = prescricaoExistente.id_prescricao;
-
     try {
-      // Salva medicamentos na prescrição existente
       for (const med of medList) {
         await fetch("http://localhost:8080/api/diario_saude/prescricao_medicamento", {
           method: "POST",
@@ -132,15 +122,14 @@ export default function ReceituarioPage() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            id_prescricao: prescricaoId,
+            id_prescricao: prescricaoExistente.id_prescricao,
             id_medicamento: med.id_medicamento || null,
-            dosagem: med.concentracao,
-            frequencia: med.tipo,
+            nome_medicamento: med.nome_medicamento,
+            concentracao: med.concentracao,
             via: med.via,
           }),
         });
       }
-
       alert("✅ Receita salva com sucesso!");
       navigate(-1);
     } catch (err) {
@@ -167,11 +156,12 @@ export default function ReceituarioPage() {
         </Typography>
 
         <Typography variant="h6" mb={1}>Medicamentos:</Typography>
-
         <List dense>
           {medList.map((m, i) => (
             <ListItem key={i} disableGutters>
-              <ListItemText primary={`${m.nome} (${m.principio}) - ${m.concentracao} - ${m.via} - ${m.tipo}`} />
+              <ListItemText
+                primary={`${m.nome_medicamento} (${m.principio_ativo}) - ${m.concentracao} - ${m.via}`}
+              />
             </ListItem>
           ))}
         </List>
@@ -218,7 +208,13 @@ export default function ReceituarioPage() {
               options={listaMedicamentos}
               getOptionLabel={(option) => option.nome}
               onChange={(event, newValue) => {
-                if (newValue) setForm(newValue);
+                if (newValue)
+                  setForm({
+                    ...form,
+                    id_medicamento: newValue.id_medicamento,
+                    nome_medicamento: newValue.nome,
+                    principio_ativo: newValue.principio_ativo,
+                  });
               }}
               renderInput={(params) => <TextField {...params} label="Nome do Medicamento" fullWidth />}
             />
@@ -226,29 +222,22 @@ export default function ReceituarioPage() {
             <TextField
               label="Princípio Ativo"
               fullWidth
-              value={form.principio}
-              onChange={(e) => setForm({ ...form, principio: e.target.value })}
+              value={form.principio_ativo || ""}
+              onChange={(e) => setForm({ ...form, principio_ativo: e.target.value })}
             />
 
             <TextField
               label="Concentração"
               fullWidth
-              value={form.concentracao}
+              value={form.concentracao || ""}
               onChange={(e) => setForm({ ...form, concentracao: e.target.value })}
             />
 
             <Autocomplete
               options={listaVias}
-              value={form.via}
-              onChange={(e, newValue) => setForm({ ...form, via: newValue ?? "" })}
+              value={form.via || ""}
+              onChange={(event, newValue) => setForm({ ...form, via: newValue || "" })}
               renderInput={(params) => <TextField {...params} label="Via de Administração" fullWidth />}
-            />
-
-            <Autocomplete
-              options={listaTipos}
-              value={form.tipo}
-              onChange={(e, newValue) => setForm({ ...form, tipo: newValue ?? "" })}
-              renderInput={(params) => <TextField {...params} label="Tipo de Receita" fullWidth />}
             />
           </Stack>
         </DialogContent>

@@ -12,27 +12,35 @@ public class MedicamentoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_medicamento;
+    private Long id_medicamento;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500) // Nome pode ser grande
     private String nome;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000) // Princípio ativo pode ser bem grande
     private String principio_ativo;
 
-    @Column(nullable = false)
-    private String concentracao;
+    @Column(length = 500) // Empresa
+    private String empresa;
 
-    @Column(nullable = false)
-    private String via_administracao;
+    @Column(length = 1000) // Classe terapêutica
+    private String classe_terapeutica;
 
-    @Column(nullable = false)
-    private String tipo_receita;
+    @Column(length = 255) // Número de registro
+    private String numero_registro;
 
-    public MedicamentoEntity(){}
+    public MedicamentoEntity() {}
 
-    public MedicamentoEntity(MedicamentoDTO medicamento){
-        BeanUtils.copyProperties(medicamento, this);
+    public MedicamentoEntity(String nome, String principio_ativo, String empresa, String classe, String numero_registro) {
+        this.nome = nome;
+        this.principio_ativo = principio_ativo;
+        this.empresa = empresa;
+        this.classe_terapeutica = classe;
+        this.numero_registro = numero_registro;
+    }
+
+    public MedicamentoEntity(MedicamentoDTO dto) {
+        BeanUtils.copyProperties(dto, this);
     }
 
     @OneToMany(mappedBy = "medicamento")
@@ -41,6 +49,35 @@ public class MedicamentoEntity {
     public List<PrescricaoMedicamentoEntity> getPrescricoes() {
         return prescricoes;
     }
+
+    public void setId_medicamento(Long id_medicamento) {
+        this.id_medicamento = id_medicamento;
+    }
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
+
+    public String getClasse_terapeutica() {
+        return classe_terapeutica;
+    }
+
+    public void setClasse_terapeutica(String classe_terapeutica) {
+        this.classe_terapeutica = classe_terapeutica;
+    }
+
+    public String getNumero_registro() {
+        return numero_registro;
+    }
+
+    public void setNumero_registro(String numero_registro) {
+        this.numero_registro = numero_registro;
+    }
+
 
     public void setPrescricoes(List<PrescricaoMedicamentoEntity> prescricoes) {
         this.prescricoes = prescricoes;
@@ -68,29 +105,5 @@ public class MedicamentoEntity {
 
     public void setPrincipio_ativo(String principio_ativo) {
         this.principio_ativo = principio_ativo;
-    }
-
-    public String getConcentracao() {
-        return concentracao;
-    }
-
-    public void setConcentracao(String concentracao) {
-        this.concentracao = concentracao;
-    }
-
-    public String getVia_administracao() {
-        return via_administracao;
-    }
-
-    public void setVia_administracao(String via_administracao) {
-        this.via_administracao = via_administracao;
-    }
-
-    public String getTipo_receita() {
-        return tipo_receita;
-    }
-
-    public void setTipo_receita(String tipo_receita) {
-        this.tipo_receita = tipo_receita;
     }
 }

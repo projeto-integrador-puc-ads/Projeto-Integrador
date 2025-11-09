@@ -30,8 +30,12 @@ public class PrescricaoMedicamentoService {
 
     public void inserir(PrescricaoMedicamentoDTO dto){
         PrescricaoMedicamentoEntity entity = new PrescricaoMedicamentoEntity(dto);
-        entity.setMedicamento(medicamentoRepo.findById(dto.getId_medicamento()).get());
-        entity.setPrescricaoMedica(prescricaoRepo.findById(dto.getId_prescricao()).get());
+        entity.setDosagem(dto.getConcentracao());
+        entity.setFrequencia(dto.getVia());
+        //Associa medicamento e prescrição
+        entity.setMedicamento(medicamentoRepo.findById(dto.getId_medicamento()).orElseThrow());
+        entity.setPrescricaoMedica(prescricaoRepo.findById(dto.getId_prescricao()).orElseThrow());
+
         repo.save(entity);
     }
 

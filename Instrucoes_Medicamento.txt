@@ -1,0 +1,22 @@
+Como inserir os dados do csv da ANVISA usando o endpoint disponibilizado no postman
+Link do csv:https://dados.gov.br/dados/conjuntos-dados/medicamentos-registrados-no-brasil
+
+1- Baixe o arquivo e remova da pasta de downloads, coloque em uma pasta permanente como C:\Users\usuario\Postman
+(crie a pasta chamada Postman)
+
+2- No aplication.properties no projeto em backend -> resources remova os comentários para aumentar o limite de tamanho máximo
+spring.servlet.multipart.max-file-size=50MB
+spring.servlet.multipart.max-request-size=50MB
+
+3- Abra o postman e coloque a url no metodo POST com o endpoint: http://localhost:8080/api/diario_saude/medicamentos/import
+
+4- Siga os passos do GUIA_DESENVOLVEDORES_GRUPOS para obter o token de autenticação e inserir junto com a requisição do postman
+
+5- Em Body clique em form-data e selecione key -> File e de o nome de file, após isso carregue o csv no campo Value, caso tenha adblock desabilite para enviar o csv
+
+6- Envie a requisição
+
+7- Coloque os comentários novamente nas linhas do passo 3(Adicione o #)
+#spring.servlet.multipart.max-file-size=50MB
+#spring.servlet.multipart.max-request-size=50MB
+

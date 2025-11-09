@@ -23,19 +23,19 @@ public class PrescricaoMedicaEntity {
     @Column(nullable = true)
     private String observacoes;
 
-    // Relação (M:1) Médico
+    //Relação (M:1) Médico
     @ManyToOne
     @JoinColumn(name = "id_medico", nullable = false)
     @JsonIgnore
     private MedicoEntity medico;
 
-    // Relação (M:1) Usuário
+    //Relação (M:1) Usuário
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     @JsonIgnore
     private UsuarioEntity usuario;
 
-    // Relações 1:N com prescricoes
+    //Relações 1:N com prescricoes
     @OneToMany(mappedBy = "prescricaoMedica")
     @JsonIgnore
     private List<PrescricaoMedicamentoEntity> prescricoesMedicamentos;
