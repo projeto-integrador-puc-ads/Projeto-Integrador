@@ -60,9 +60,9 @@ public class CuidadorService {
         Cuidador cuidador = cuidadorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cuidador não encontrado"));
 
-        if (dto.getNome() != null) cuidador.setNome(dto.getNome());
+        if (dto.getNome() != null) cuidador.setName(dto.getNome());
         if (dto.getEmail() != null) cuidador.setEmail(dto.getEmail());
-        if (dto.getSenha() != null) cuidador.setSenha(passwordEncoder.encode(dto.getSenha()));
+        if (dto.getSenha() != null) cuidador.setPassword(passwordEncoder.encode(dto.getSenha()));
         if (dto.getTelefone() != null) cuidador.setTelefone(dto.getTelefone());
         if (dto.getExperiencia() != null) cuidador.setExperiencia(dto.getExperiencia());
         
@@ -115,7 +115,7 @@ public class CuidadorService {
     private CuidadorResponseDTO toResponseDTO(Cuidador cuidador) {
         CuidadorResponseDTO dto = new CuidadorResponseDTO();
         dto.setId(cuidador.getId());
-        dto.setNome(cuidador.getNome());
+        dto.setNome(cuidador.getName());
         dto.setEmail(cuidador.getEmail());
         dto.setTelefone(cuidador.getTelefone());
     dto.setExperiencia(cuidador.getExperiencia());

@@ -8,7 +8,7 @@ import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.ContatoDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
-import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.carehub.repository.MensagemRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.UsuarioRepository;
 
@@ -30,10 +30,10 @@ public class MensagemService {
         Objects.requireNonNull(remetenteId, "Remetente ID cannot be null");
         Long destinatarioId = Objects.requireNonNull(dto.getDestinatarioId(), "Destinatario ID cannot be null");
         
-        Usuario remetente = usuarioRepository.findById(remetenteId)
+        User remetente = usuarioRepository.findById(remetenteId)
                 .orElseThrow(() -> new RuntimeException("Remetente não encontrado"));
 
-        Usuario destinatario = usuarioRepository.findById(destinatarioId)
+        User destinatario = usuarioRepository.findById(destinatarioId)
                 .orElseThrow(() -> new RuntimeException("Destinatário não encontrado"));
 
         Mensagem mensagem = new Mensagem();
@@ -69,7 +69,7 @@ public class MensagemService {
     public List<MensagemResponseDTO> buscarMensagensNaoLidas(Long usuarioId) {
         Objects.requireNonNull(usuarioId, "Usuario ID cannot be null");
         
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        User usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         return mensagemRepository.findByDestinatarioAndLidaFalseOrderByDataEnvioDesc(usuario).stream()
@@ -109,7 +109,7 @@ public class MensagemService {
                 .map(usuario -> {
                     ContatoDTO dto = new ContatoDTO();
                     dto.setId(usuario.getId());
-                    dto.setNome(usuario.getNome());
+                    dto.setNome(usuario.getName());
                     dto.setPerfil(usuario.getClass().getSimpleName().toUpperCase());
                     dto.setEmail(usuario.getEmail());
                     
@@ -151,9 +151,9 @@ public class MensagemService {
         MensagemResponseDTO dto = new MensagemResponseDTO();
         dto.setId(mensagem.getId());
         dto.setRemetenteId(mensagem.getRemetente().getId());
-        dto.setRemetenteNome(mensagem.getRemetente().getNome());
+        dto.setRemetenteNome(mensagem.getRemetente().getName());
         dto.setDestinatarioId(mensagem.getDestinatario().getId());
-        dto.setDestinatarioNome(mensagem.getDestinatario().getNome());
+        dto.setDestinatarioNome(mensagem.getDestinatario().getName());
         dto.setConteudo(mensagem.getConteudo());
         dto.setDataEnvio(mensagem.getDataEnvio());
         dto.setLida(mensagem.getLida());

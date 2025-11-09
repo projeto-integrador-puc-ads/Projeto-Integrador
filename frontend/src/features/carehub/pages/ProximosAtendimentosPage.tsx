@@ -18,6 +18,7 @@ import {
   CheckCircle,
   Schedule,
 } from '@mui/icons-material';
+import { getUserId } from '@/lib/auth';
 
 interface Agendamento {
   id: number;
@@ -33,7 +34,7 @@ interface Agendamento {
 }
 
 export function ProximosAtendimentosPage() {
-  const userId = parseInt(localStorage.getItem('devUserId') || '2');
+  const userId = getUserId();
   
   const { data: agendamentos = [], isLoading, error } = useQuery<Agendamento[]>({
     queryKey: ['proximos-atendimentos', userId],

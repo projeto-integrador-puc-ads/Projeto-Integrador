@@ -20,6 +20,7 @@ import { Save, CheckCircle } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
+import { getUserId } from '@/lib/auth';
 
 interface Agendamento {
   id: number;
@@ -34,7 +35,7 @@ export function RegistroAcompanhamentoPage() {
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<string>('');
   const [loading, setLoading] = useState(false);
   
-  const cuidadorId = parseInt(localStorage.getItem('devUserId') || '3');
+  const cuidadorId = getUserId(); // Cuidador logado
 
   const [formData, setFormData] = useState({
     pressaoArterial: '',
@@ -49,10 +50,14 @@ export function RegistroAcompanhamentoPage() {
   });
 
   useEffect(() => {
-    carregarAgendamentos();
+    if (cuidadorId) {
+      carregarAgendamentos();
+    }
   }, [cuidadorId]);
 
   const carregarAgendamentos = async () => {
+    if (!cuidadorId) return;
+    
     try {
       const response = await axios.get(
         `http://localhost:8080/api/carehub/agendamentos/cuidador/${cuidadorId}`
@@ -85,6 +90,11 @@ export function RegistroAcompanhamentoPage() {
     
     if (!agendamentoSelecionado) {
       enqueueSnackbar('Selecione um agendamento', { variant: 'warning' });
+      return;
+    }
+
+    if (!cuidadorId) {
+      enqueueSnackbar('Erro: Usuário não autenticado', { variant: 'error' });
       return;
     }
 

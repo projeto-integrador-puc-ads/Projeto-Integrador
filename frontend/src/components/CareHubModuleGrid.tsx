@@ -1,5 +1,5 @@
-import { Box, Badge } from '@mui/material';
-import { ModuleCard } from '@/components/ModuleCard';
+import { Box, Typography, Divider, Badge } from '@mui/material';
+import { ModuleCard } from './ModuleCard';
 import {
   Search,
   Chat,
@@ -11,22 +11,18 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useMensagensNaoLidas } from '../hooks/useMensagensNaoLidas';
-import { getUserId, getUserRole } from '@/lib/auth';
+import { useMensagensNaoLidas } from '../features/carehub/hooks/useMensagensNaoLidas';
 
 export function CareHubModuleGrid() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<number | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const { data: naoLidas = 0 } = useMensagensNaoLidas(userId || 0);
+  const [userId, setUserId] = useState<number>(2);
+  const { data: naoLidas = 0 } = useMensagensNaoLidas(userId);
 
   useEffect(() => {
-    const id = getUserId();
-    const role = getUserRole();
-    setUserId(id);
-    setUserRole(role);
-    
-    console.log(`🎭 CareHub: User ID=${id}, Role=${role}`);
+    const savedUserId = localStorage.getItem('devUserId');
+    if (savedUserId) {
+      setUserId(parseInt(savedUserId));
+    }
   }, []);
 
   // Módulos do Cliente (Dona Maria - ID 2)
@@ -99,11 +95,16 @@ export function CareHubModuleGrid() {
     },
   ];
 
-  // Seleciona módulos baseado no ROLE (não no userId)
-  const modules = userRole === 'CUIDADOR' ? cuidadorModules : clienteModules;
+  const modules = userId === 3 ? cuidadorModules : clienteModules;
+  const perfil = userId === 3 ? 'Cuidador Profissional' : 'Cliente';
 
   return (
     <Box>
+      <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+        🎭 Você está como: <strong>{perfil}</strong>
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+      
       <Box
         sx={{
           display: 'grid',

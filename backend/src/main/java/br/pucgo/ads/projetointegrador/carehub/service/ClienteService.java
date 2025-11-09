@@ -44,9 +44,9 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        if (dto.getNome() != null) cliente.setNome(dto.getNome());
+        if (dto.getNome() != null) cliente.setName(dto.getNome());
         if (dto.getEmail() != null) cliente.setEmail(dto.getEmail());
-        if (dto.getSenha() != null) cliente.setSenha(passwordEncoder.encode(dto.getSenha()));
+        if (dto.getSenha() != null) cliente.setPassword(passwordEncoder.encode(dto.getSenha()));
         if (dto.getTelefone() != null) cliente.setTelefone(dto.getTelefone());
         if (dto.getNecessidades() != null) cliente.setNecessidades(dto.getNecessidades());
         if (dto.getEndereco() != null) cliente.setEndereco(dto.getEndereco());
@@ -71,7 +71,7 @@ public class ClienteService {
     private ClienteResponseDTO toResponseDTO(Cliente cliente) {
         ClienteResponseDTO dto = new ClienteResponseDTO();
         dto.setId(cliente.getId());
-        dto.setNome(cliente.getNome());
+        dto.setNome(cliente.getName());
         dto.setEmail(cliente.getEmail());
         dto.setTelefone(cliente.getTelefone());
         dto.setNecessidades(cliente.getNecessidades());

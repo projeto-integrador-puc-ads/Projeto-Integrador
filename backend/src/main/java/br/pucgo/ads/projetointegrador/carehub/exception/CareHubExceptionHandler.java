@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+@RestControllerAdvice(basePackages = "br.pucgo.ads.projetointegrador.carehub")
+public class CareHubExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -63,7 +63,7 @@ class CarehubApiIntegrationTest {
 
         mockMvc.perform(get("/api/carehub/cuidadores"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nome").value(cuidador.getNome()));
+                .andExpect(jsonPath("$[0].nome").value(cuidador.getName()));
 
         AgendamentoRequestDTO agendamentoRequest = new AgendamentoRequestDTO(
                 cuidador.getId(),

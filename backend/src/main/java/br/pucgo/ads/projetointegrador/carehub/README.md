@@ -597,15 +597,3 @@ O sistema já vem com dados iniciais para teste (via `DataInitializer.java`):
 **Última Atualização:** 08/11/2025  
 **Status:** ✅ Sistema completo e operacional (Backend + Frontend)  
 **Versão:** 2.0.0
-
----
-
-## 📞 Contato
-
-Para dúvidas sobre o projeto CareHub, consulte a documentação em:
-- 📄 `ARQUITETURA_CAREHUB.md` - Visão geral da arquitetura
-- 📄 `AUDITORIA_CAREHUB.md` - Análise técnica detalhada
-- 📄 `LIMPEZA_CAREHUB_CONCLUIDA.md` - Histórico de melhorias
-
-**Branch:** `carehub`  
-**Repositório:** `projeto-integrador-puc-ads/Projeto-Integrador`

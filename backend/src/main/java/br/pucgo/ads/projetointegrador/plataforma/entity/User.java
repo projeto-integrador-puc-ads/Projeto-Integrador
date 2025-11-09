@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,6 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,4 +42,19 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<RoleType> roles = new HashSet<>();
+    
+    // Campos adicionais do CareHub
+    @Column(length = 32)
+    private String telefone;
+    
+    @Column(nullable = false)
+    private Boolean ativo = true;
+    
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
+    
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime atualizadoEm;
 }

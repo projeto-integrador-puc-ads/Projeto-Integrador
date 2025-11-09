@@ -1,5 +1,6 @@
 package br.pucgo.ads.projetointegrador.carehub.entity;
 
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,11 +22,11 @@ public class Mensagem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "remetente_id", nullable = false)
-    private Usuario remetente;
+    private User remetente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destinatario_id", nullable = false)
-    private Usuario destinatario;
+    private User destinatario;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String conteudo;

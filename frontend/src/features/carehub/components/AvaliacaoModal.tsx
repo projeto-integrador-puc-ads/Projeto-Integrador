@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   TextField,
-  Rating,
   Stack,
   Typography,
   Box,
+  Paper,
+  IconButton,
+  Fade,
+  Zoom,
 } from '@mui/material';
-import { Star } from '@mui/icons-material';
+import { Star, Close, SentimentVeryDissatisfied, SentimentDissatisfied, SentimentNeutral, SentimentSatisfied, SentimentVerySatisfied } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { criarAvaliacao, type AvaliacaoRequest } from '../api/avaliacoes';
@@ -24,16 +26,51 @@ interface AvaliacaoModalProps {
   clienteId: number;
 }
 
+interface RatingLabel {
+  text: string;
+  color: string;
+  icon: React.ReactElement;
+}
+
+const ratingLabels: { [key: number]: RatingLabel } = {
+  1: { 
+    text: 'Muito Insatisfeito', 
+    color: '#f44336',
+    icon: <SentimentVeryDissatisfied sx={{ fontSize: 80 }} />
+  },
+  2: { 
+    text: 'Insatisfeito', 
+    color: '#ff9800',
+    icon: <SentimentDissatisfied sx={{ fontSize: 80 }} />
+  },
+  3: { 
+    text: 'Regular', 
+    color: '#ffc107',
+    icon: <SentimentNeutral sx={{ fontSize: 80 }} />
+  },
+  4: { 
+    text: 'Satisfeito', 
+    color: '#8bc34a',
+    icon: <SentimentSatisfied sx={{ fontSize: 80 }} />
+  },
+  5: { 
+    text: 'Muito Satisfeito', 
+    color: '#4caf50',
+    icon: <SentimentVerySatisfied sx={{ fontSize: 80 }} />
+  },
+};
+
 export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, clienteId }: AvaliacaoModalProps) {
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
   const [nota, setNota] = useState<number>(5);
   const [comentario, setComentario] = useState('');
+  const [hoveredRating, setHoveredRating] = useState<number>(-1);
 
   const mutation = useMutation({
     mutationFn: (avaliacao: AvaliacaoRequest) => criarAvaliacao(clienteId, avaliacao),
     onSuccess: () => {
-      enqueueSnackbar('Avaliação enviada com sucesso!', { variant: 'success' });
+      enqueueSnackbar('✨ Avaliação enviada com sucesso!', { variant: 'success' });
       queryClient.invalidateQueries({ queryKey: ['avaliacoes', cuidadorId] });
       queryClient.invalidateQueries({ queryKey: ['cuidadores'] });
       handleClose();
@@ -63,64 +100,188 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
     onClose();
   };
 
+  const displayRating = hoveredRating !== -1 ? hoveredRating : nota;
+  const ratingInfo = ratingLabels[displayRating];
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        Avaliar Cuidador
-        <Typography variant="body2" color="text.secondary">
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          overflow: 'hidden'
+        }
+      }}
+    >
+      {/* Header com gradiente */}
+      <Box
+        sx={{
+          background: `linear-gradient(135deg, ${ratingInfo.color} 0%, ${ratingInfo.color}dd 100%)`,
+          color: 'white',
+          p: 3,
+          position: 'relative'
+        }}
+      >
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'white'
+          }}
+          disabled={mutation.isPending}
+        >
+          <Close />
+        </IconButton>
+        
+        <Typography variant="h5" fontWeight="bold" mb={1}>
+          Como foi o atendimento?
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.95 }}>
           {cuidadorNome}
         </Typography>
-      </DialogTitle>
+      </Box>
 
-      <DialogContent>
-        <Stack spacing={3} sx={{ pt: 2 }}>
-          {/* Sistema de Estrelas */}
+      <DialogContent sx={{ p: 3 }}>
+        <Stack spacing={3}>
+          {/* Ícone de Sentimento Animado */}
+          <Zoom in={true} timeout={300}>
+            <Box 
+              sx={{ 
+                textAlign: 'center',
+                py: 2,
+                transition: 'all 0.3s ease-in-out',
+                color: ratingInfo.color
+              }}
+            >
+              {ratingInfo.icon}
+            </Box>
+          </Zoom>
+
+          {/* Sistema de Estrelas Estilo Uber/99 */}
           <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Como foi o atendimento? *
-            </Typography>
-            <Rating
-              value={nota}
-              onChange={(_, newValue) => setNota(newValue || 1)}
-              size="large"
-              icon={<Star fontSize="inherit" />}
-              emptyIcon={<Star fontSize="inherit" />}
-            />
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-              {nota === 1 && 'Muito ruim'}
-              {nota === 2 && 'Ruim'}
-              {nota === 3 && 'Regular'}
-              {nota === 4 && 'Bom'}
-              {nota === 5 && 'Excelente'}
-            </Typography>
+            <Stack direction="row" spacing={1} justifyContent="center" mb={2}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <IconButton
+                  key={value}
+                  onClick={() => setNota(value)}
+                  onMouseEnter={() => setHoveredRating(value)}
+                  onMouseLeave={() => setHoveredRating(-1)}
+                  sx={{
+                    p: 0,
+                    transition: 'all 0.2s',
+                    transform: displayRating >= value ? 'scale(1.2)' : 'scale(1)',
+                    '&:hover': {
+                      transform: 'scale(1.3)'
+                    }
+                  }}
+                >
+                  <Star
+                    sx={{
+                      fontSize: 48,
+                      color: displayRating >= value ? '#FFD700' : '#e0e0e0',
+                      transition: 'all 0.2s',
+                      filter: displayRating >= value ? 'drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4))' : 'none'
+                    }}
+                  />
+                </IconButton>
+              ))}
+            </Stack>
+            
+            <Fade in={true}>
+              <Paper
+                elevation={0}
+                sx={{
+                  bgcolor: `${ratingInfo.color}15`,
+                  border: `2px solid ${ratingInfo.color}40`,
+                  borderRadius: 2,
+                  p: 2,
+                  textAlign: 'center'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  fontWeight="bold"
+                  sx={{ 
+                    color: ratingInfo.color,
+                    mb: 0.5
+                  }}
+                >
+                  {ratingInfo.text}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Toque nas estrelas para avaliar
+                </Typography>
+              </Paper>
+            </Fade>
           </Box>
 
           {/* Comentário */}
-          <TextField
-            label="Comentário (opcional)"
-            multiline
-            rows={4}
-            value={comentario}
-            onChange={(e) => setComentario(e.target.value)}
-            placeholder="Conte como foi sua experiência..."
-            fullWidth
-            inputProps={{ maxLength: 500 }}
-            helperText={`${comentario.length}/500 caracteres`}
-          />
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" mb={1}>
+              Conte mais sobre sua experiência (opcional)
+            </Typography>
+            <TextField
+              multiline
+              rows={4}
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              placeholder="Seu feedback ajuda outros clientes a escolherem o melhor cuidador..."
+              fullWidth
+              variant="outlined"
+              inputProps={{ maxLength: 500 }}
+              helperText={`${comentario.length}/500 caracteres`}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: ratingInfo.color,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: ratingInfo.color,
+                  }
+                }
+              }}
+            />
+          </Box>
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} disabled={mutation.isPending}>
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+        <Button 
+          onClick={handleClose} 
+          disabled={mutation.isPending}
+          size="large"
+          sx={{ 
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 'medium'
+          }}
+        >
           Cancelar
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           disabled={mutation.isPending}
-          sx={{ minWidth: 100 }}
+          size="large"
+          sx={{ 
+            minWidth: 140,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 'bold',
+            bgcolor: ratingInfo.color,
+            '&:hover': {
+              bgcolor: ratingInfo.color,
+              filter: 'brightness(0.9)'
+            }
+          }}
         >
-          {mutation.isPending ? 'Enviando...' : 'Avaliar'}
+          {mutation.isPending ? 'Enviando...' : 'Enviar Avaliação'}
         </Button>
       </DialogActions>
     </Dialog>

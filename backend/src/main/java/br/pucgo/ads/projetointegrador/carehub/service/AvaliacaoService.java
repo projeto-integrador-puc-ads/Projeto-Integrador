@@ -118,9 +118,9 @@ public class AvaliacaoService {
         AvaliacaoResponseDTO dto = new AvaliacaoResponseDTO();
         dto.setId(avaliacao.getId());
         dto.setCuidadorId(avaliacao.getCuidador().getId());
-        dto.setCuidadorNome(avaliacao.getCuidador().getNome());
+        dto.setCuidadorNome(avaliacao.getCuidador().getName());
         dto.setClienteId(avaliacao.getCliente().getId());
-        dto.setClienteNome(avaliacao.getCliente().getNome());
+        dto.setClienteNome(avaliacao.getCliente().getName());
         dto.setNota(avaliacao.getNota());
         dto.setComentario(avaliacao.getComentario());
         dto.setDataAvaliacao(avaliacao.getDataAvaliacao());

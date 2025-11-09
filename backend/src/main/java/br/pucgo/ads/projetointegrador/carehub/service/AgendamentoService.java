@@ -146,9 +146,9 @@ public class AgendamentoService {
         AgendamentoResponseDTO dto = new AgendamentoResponseDTO();
         dto.setId(agendamento.getId());
         dto.setCuidadorId(agendamento.getCuidador().getId());
-        dto.setCuidadorNome(agendamento.getCuidador().getNome());
+        dto.setCuidadorNome(agendamento.getCuidador().getName());
         dto.setClienteId(agendamento.getCliente().getId());
-        dto.setClienteNome(agendamento.getCliente().getNome());
+        dto.setClienteNome(agendamento.getCliente().getName());
         dto.setDataHoraInicio(agendamento.getDataHoraInicio());
         dto.setDataHoraFim(agendamento.getDataHoraFim());
         dto.setStatus(agendamento.getStatus().name());

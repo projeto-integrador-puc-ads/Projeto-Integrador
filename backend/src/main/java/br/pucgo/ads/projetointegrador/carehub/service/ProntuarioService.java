@@ -86,7 +86,7 @@ public class ProntuarioService {
         ProntuarioResponseDTO dto = new ProntuarioResponseDTO();
         dto.setId(prontuario.getId());
         dto.setClienteId(prontuario.getCliente().getId());
-        dto.setClienteNome(prontuario.getCliente().getNome());
+        dto.setClienteNome(prontuario.getCliente().getName());
         dto.setDataNascimento(prontuario.getDataNascimento());
         dto.setHistoricoMedico(prontuario.getHistoricoMedico());
         dto.setMedicamentosUso(prontuario.getMedicamentosUso());

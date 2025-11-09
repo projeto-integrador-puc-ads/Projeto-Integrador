@@ -13,7 +13,6 @@ import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
 import {
   CuidadoresPage,
-  AgendamentosPage,
   ProntuarioPage,
   AvaliacoesPage,
   ChatPage,
@@ -23,6 +22,7 @@ import {
   ProximosAtendimentosPage,
 } from '@/features/carehub';
 import CareHubHomePage from '@/features/carehub/pages/CareHubHomePage';
+import AgendamentosNegociacaoPage from '@/features/carehub/pages/AgendamentosNegociacaoPage';
 
 function Home() {
   return (
@@ -69,7 +69,7 @@ export function AppRoutes() {
         
         {/* CareHub - Módulos do Cliente */}
         <Route path="carehub/cuidadores" element={<CuidadoresPage />} />
-        <Route path="carehub/agendamentos" element={<AgendamentosPage />} />
+        <Route path="carehub/agendamentos" element={<AgendamentosNegociacaoPage />} />
         <Route path="carehub/prontuario" element={<ProntuarioPage />} />
         <Route path="carehub/avaliacoes/:id" element={<AvaliacoesPage />} />
         <Route path="carehub/chat" element={<ChatPage />} />

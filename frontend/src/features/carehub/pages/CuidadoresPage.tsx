@@ -90,6 +90,7 @@ export default function CuidadoresPage() {
       <PageHeader 
         title="Cuidadores Disponíveis"
         subtitle="Encontre o profissional ideal para suas necessidades"
+        backTo="/carehub"
       />
 
       {/* Filtros */}
@@ -294,32 +295,45 @@ export default function CuidadoresPage() {
                         borderRadius: 2,
                         textTransform: 'none',
                         fontWeight: 'bold',
-                        py: 1.2
+                        py: 1.2,
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #667eea 20%, #764ba2 120%)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)'
+                        },
+                        transition: 'all 0.3s'
                       }}
                     >
                       Agendar Consulta
                     </Button>
+                  </Stack>
+                  
+                  <Stack direction="row" gap={1} mt={1.5}>
                     <Button 
-                      size="medium" 
+                      size="small" 
                       href="/carehub/chat"
                       variant="outlined"
+                      startIcon={<Chat />}
                       sx={{ 
-                        minWidth: 48,
-                        borderRadius: 2
+                        flex: 1,
+                        borderRadius: 2,
+                        textTransform: 'none'
                       }}
-                      title="Conversar"
                     >
-                      <Chat />
+                      Chat
                     </Button>
                     <Button 
-                      size="medium" 
+                      size="small" 
                       onClick={() => handleAvaliarClick(c.id, c.nome)}
                       variant="outlined"
                       color="warning"
                       disabled={!clienteId || podeAvaliarMap[c.id] === false}
+                      startIcon={<Star />}
                       sx={{ 
-                        minWidth: 48,
-                        borderRadius: 2
+                        flex: 1,
+                        borderRadius: 2,
+                        textTransform: 'none'
                       }}
                       title={
                         !clienteId 
@@ -329,19 +343,20 @@ export default function CuidadoresPage() {
                             : "Avaliar cuidador"
                       }
                     >
-                      <Star />
+                      Avaliar
                     </Button>
                     <Button 
-                      size="medium" 
+                      size="small" 
                       href={`/carehub/avaliacoes/${c.id}`}
-                      variant="outlined"
+                      variant="text"
                       sx={{ 
                         minWidth: 48,
-                        borderRadius: 2
+                        borderRadius: 2,
+                        color: 'warning.main'
                       }}
-                      title="Ver Avaliações"
+                      title="Ver todas as avaliações"
                     >
-                      <Star />
+                      Ver {c.totalAvaliacoes || 0}
                     </Button>
                   </Stack>
                 </CardContent>

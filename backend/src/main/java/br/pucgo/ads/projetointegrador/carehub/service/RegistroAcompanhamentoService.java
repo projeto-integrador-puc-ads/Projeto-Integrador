@@ -94,9 +94,9 @@ public class RegistroAcompanhamentoService {
         dto.setId(registro.getId());
         dto.setAgendamentoId(registro.getAgendamento().getId());
         dto.setCuidadorId(registro.getCuidador().getId());
-        dto.setCuidadorNome(registro.getCuidador().getNome());
+        dto.setCuidadorNome(registro.getCuidador().getName());
         dto.setClienteId(registro.getCliente().getId());
-        dto.setClienteNome(registro.getCliente().getNome());
+        dto.setClienteNome(registro.getCliente().getName());
         dto.setDataHoraRegistro(registro.getDataHoraRegistro());
         dto.setPressaoArterial(registro.getPressaoArterial());
         dto.setGlicemia(registro.getGlicemia());

@@ -16,11 +16,11 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     
     List<Cuidador> findByAtivoTrue();
     
-    @Query(value = "SELECT u.id, u.nome, u.email, u.senha, u.perfil, u.telefone, u.ativo, u.data_criacao, u.data_atualizacao, " +
+    @Query(value = "SELECT u.id, u.name, u.email, u.password, u.username, u.telefone, u.ativo, u.created_at, u.updated_at, " +
            "c.experiencia, c.disponibilidade, c.taxa_hora, c.biografia, c.foto_perfil, " +
            "c.cidade, c.estado, c.avaliacao_media, c.total_avaliacoes " +
            "FROM ch_cuidador c " +
-           "JOIN ch_usuario u ON c.id = u.id " +
+           "JOIN users u ON c.id = u.id " +
            "WHERE u.ativo = true " +
            "AND (:localizacao IS NULL OR " +
            "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +
@@ -28,7 +28,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
            "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
            "ORDER BY c.avaliacao_media DESC NULLS LAST",
            countQuery = "SELECT COUNT(*) FROM ch_cuidador c " +
-           "JOIN ch_usuario u ON c.id = u.id " +
+           "JOIN users u ON c.id = u.id " +
            "WHERE u.ativo = true " +
            "AND (:localizacao IS NULL OR " +
            "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +

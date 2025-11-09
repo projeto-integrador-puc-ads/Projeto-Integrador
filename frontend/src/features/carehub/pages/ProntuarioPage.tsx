@@ -19,6 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { PageHeader } from '../components/PageHeader';
 import { Save, Lock } from '@mui/icons-material';
+import { getUserId, getUserRole } from '@/lib/auth';
 
 export default function ProntuarioPage() {
   const navigate = useNavigate();
@@ -30,10 +31,10 @@ export default function ProntuarioPage() {
 
   // Verificar se é cliente e bloquear acesso
   useEffect(() => {
-    const userId = parseInt(localStorage.getItem('devUserId') || '3');
+    const userRole = getUserRole();
     
-    // Se for cliente (ID 2), redirecionar para home
-    if (userId === 2) {
+    // Se for cliente, redirecionar para home
+    if (userRole === 'CLIENTE') {
       enqueueSnackbar('Acesso negado: prontuários são exclusivos para cuidadores', { 
         variant: 'error' 
       });
@@ -60,7 +61,13 @@ export default function ProntuarioPage() {
         return;
       }
 
-      const userId = parseInt(localStorage.getItem('devUserId') || '3');
+      const userId = getUserId();
+      if (!userId) {
+        setPodeEditar(false);
+        setVerificandoPermissao(false);
+        return;
+      }
+      
       const pode = await verificarPodeEditar(clienteId, userId);
       setPodeEditar(pode);
       setVerificandoPermissao(false);
@@ -117,6 +124,7 @@ export default function ProntuarioPage() {
       <PageHeader 
         title="Prontuário Médico"
         subtitle="Mantenha as informações de saúde dos clientes atualizadas"
+        backTo="/carehub"
       />
 
       {!podeEditar && !verificandoPermissao && (

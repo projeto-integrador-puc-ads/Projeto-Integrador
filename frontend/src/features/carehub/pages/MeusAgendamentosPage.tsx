@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import axios from 'axios';
+import { getUserId } from '@/lib/auth';
 
 interface Agendamento {
   id: number;
@@ -36,8 +37,8 @@ export function MeusAgendamentosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // ID do cuidador logado (João Cuidador = ID 3)
-  const cuidadorId = parseInt(localStorage.getItem('devUserId') || '3');
+  // ID do cuidador logado
+  const cuidadorId = getUserId();
 
   useEffect(() => {
     carregarAgendamentos();
@@ -112,7 +113,7 @@ export function MeusAgendamentosPage() {
   if (loading) {
     return (
       <Box>
-        <PageHeader title="Meus Agendamentos" />
+        <PageHeader title="Meus Agendamentos" backTo="/carehub" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
           <CircularProgress />
         </Box>
@@ -122,7 +123,7 @@ export function MeusAgendamentosPage() {
 
   return (
     <Box>
-      <PageHeader title="Meus Agendamentos" />
+      <PageHeader title="Meus Agendamentos" backTo="/carehub" />
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>

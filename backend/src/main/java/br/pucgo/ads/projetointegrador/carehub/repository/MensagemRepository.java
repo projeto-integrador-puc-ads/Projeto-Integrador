@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
-import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
     List<Mensagem> findByRemetenteIdOrDestinatarioIdOrderByDataEnvioDesc(@Param("usuarioId") Long remetenteId, 
                                                                            @Param("usuarioId") Long destinatarioId);
     
-    List<Mensagem> findByDestinatarioAndLidaFalseOrderByDataEnvioDesc(Usuario destinatario);
+    List<Mensagem> findByDestinatarioAndLidaFalseOrderByDataEnvioDesc(User destinatario);
     
     // Contar mensagens não lidas
     @Query("SELECT COUNT(m) FROM Mensagem m WHERE m.destinatario.id = :usuarioId AND m.lida = false")

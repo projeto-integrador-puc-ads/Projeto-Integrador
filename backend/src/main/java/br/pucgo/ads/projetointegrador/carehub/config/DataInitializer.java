@@ -8,7 +8,6 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
 import br.pucgo.ads.projetointegrador.carehub.entity.Prontuario;
 import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
-import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
 import br.pucgo.ads.projetointegrador.carehub.repository.AdministradorRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
@@ -18,6 +17,7 @@ import br.pucgo.ads.projetointegrador.carehub.repository.MensagemRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ProntuarioRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.RegistroAcompanhamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.UsuarioRepository;
+import br.pucgo.ads.projetointegrador.plataforma.entity.RoleType;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Configuration
 public class DataInitializer {
@@ -46,22 +47,29 @@ public class DataInitializer {
 				return;
 			}
 
+			// Admin - agora usando campos da tabela users
 			Administrador admin = new Administrador();
-			admin.setNome("Admin CareHub");
+			admin.setName("Admin CareHub");
+			admin.setUsername("admin");
 			admin.setEmail("admin@carehub.test");
-			admin.setSenha(encoder.encode("admin123"));
-			admin.setPerfil(Usuario.Perfil.ADMIN);
+			admin.setPassword(encoder.encode("admin123"));
+			admin.setRoles(Set.of(RoleType.ROLE_ADMIN, RoleType.CAREHUB_ADMIN));
+			admin.setTelefone("62999990001");
+			admin.setAtivo(true);
 			admin.setDepartamento("Operacoes");
 			admin.setNivelAcesso("TOTAL");
 			admin.setSuperAdmin(true);
 			adminRepo.save(admin);
 
+			// Cliente - usando campos da tabela users
 			Cliente cliente = new Cliente();
-			cliente.setNome("Dona Maria");
+			cliente.setName("Dona Maria");
+			cliente.setUsername("maria");
 			cliente.setEmail("maria@example.com");
-			cliente.setSenha(encoder.encode("123456"));
-			cliente.setPerfil(Usuario.Perfil.CLIENTE);
+			cliente.setPassword(encoder.encode("123456"));
+			cliente.setRoles(Set.of(RoleType.ROLE_USER, RoleType.CAREHUB_CLIENTE));
 			cliente.setTelefone("62999990000");
+			cliente.setAtivo(true);
 			cliente.setEndereco("Rua A, 123, Goiania-GO");
 			cliente.setContatoEmergencia("Filho: 62988887777");
 			cliente.setTipoCliente("IDOSO");
@@ -78,12 +86,15 @@ public class DataInitializer {
 			prontuario.setObservacoesGerais("Precisa de auxilio em mobilidade");
 			prontuarioRepo.save(prontuario);
 
+			// Cuidador - usando campos da tabela users
 			Cuidador cuidador = new Cuidador();
-			cuidador.setNome("Joao Cuidador");
+			cuidador.setName("Joao Cuidador");
+			cuidador.setUsername("joao");
 			cuidador.setEmail("joao@example.com");
-			cuidador.setSenha(encoder.encode("123456"));
-			cuidador.setPerfil(Usuario.Perfil.CUIDADOR);
+			cuidador.setPassword(encoder.encode("123456"));
+			cuidador.setRoles(Set.of(RoleType.ROLE_USER, RoleType.CAREHUB_CUIDADOR));
 			cuidador.setTelefone("62911112222");
+			cuidador.setAtivo(true);
 			cuidador.setExperiencia("5 anos com idosos acamados");
 			cuidador.setCidade("Goiania");
 			cuidador.setEstado("GO");

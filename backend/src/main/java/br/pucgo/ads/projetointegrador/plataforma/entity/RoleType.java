@@ -6,7 +6,11 @@ public enum RoleType {
     IDOSO,
     CUIDADOR,
     FAMILIAR,
-    PROFISSIONAL_SAUDE;
+    PROFISSIONAL_SAUDE,
+    // CareHub roles
+    CAREHUB_ADMIN,
+    CAREHUB_CUIDADOR,
+    CAREHUB_CLIENTE;
     
     @Override
     public String toString() {

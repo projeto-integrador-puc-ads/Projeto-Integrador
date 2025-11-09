@@ -28,6 +28,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
 import { Chat, Send, Person, Search, FilterList, Close } from '@mui/icons-material';
+import { getUserId } from '@/lib/auth';
 
 // Configurar dayjs para mostrar tempo relativo em português
 dayjs.extend(relativeTime);
@@ -45,9 +46,11 @@ export default function ChatPage() {
 
   // Carrega o userId do localStorage
   useEffect(() => {
-    const savedUserId = localStorage.getItem('devUserId');
-    if (savedUserId) {
-      setUserId(parseInt(savedUserId));
+    const id = getUserId();
+    if (id) {
+      setUserId(id);
+    } else {
+      console.warn('⚠️ No userId found - user may not be logged in');
     }
   }, []);
 
@@ -125,6 +128,7 @@ export default function ChatPage() {
       <PageHeader 
         title="Mensagens"
         subtitle="Converse com cuidadores e clientes"
+        backTo="/carehub"
       />
 
       <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 250px)' }}>
@@ -276,6 +280,8 @@ export default function ChatPage() {
                           )}
                         </Box>
                       }
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
                     />
                   </ListItemButton>
                   <Divider />

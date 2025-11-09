@@ -8,17 +8,13 @@ const http = axios.create({
 let token: string | null = null;
 export function setAuthToken(t: string | null) { token = t; }
 
-let devUserId: number | null = null;
-export function setDevUserId(id: number | null) { devUserId = id; }
-
 http.interceptors.request.use((config) => {
   if (token) {
+    console.log('📤 Adding Authorization header with token:', token.substring(0, 20) + '...');
     config.headers = config.headers || {};
     (config.headers as any)['Authorization'] = `Bearer ${token}`;
-  }
-  if (devUserId) {
-    config.headers = config.headers || {};
-    (config.headers as any)['X-User-Id'] = String(devUserId);
+  } else {
+    console.warn('⚠️ No token available for request:', config.url);
   }
   return config;
 });

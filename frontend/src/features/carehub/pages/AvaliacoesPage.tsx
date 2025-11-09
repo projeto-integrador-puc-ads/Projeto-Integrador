@@ -37,6 +37,7 @@ export default function AvaliacoesPage() {
       <PageHeader 
         title="Avaliações do Cuidador"
         subtitle="Veja o que outros clientes dizem sobre este profissional"
+        backTo="/carehub/cuidadores"
       />
 
       {/* Estatísticas de Avaliação */}
@@ -44,14 +45,40 @@ export default function AvaliacoesPage() {
         <Card 
           sx={{ 
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white'
+            color: 'white',
+            overflow: 'hidden',
+            position: 'relative'
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          {/* Decoração de fundo */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -30,
+              left: -30,
+              width: 150,
+              height: 150,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.05)',
+            }}
+          />
+          
+          <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
             <Stack direction={{ xs: 'column', md: 'row' }} gap={4} alignItems="center">
               {/* Média geral */}
               <Box textAlign="center" flex={1}>
-                <Typography variant="h2" fontWeight="bold" mb={1}>
+                <Typography variant="h1" fontWeight="bold" mb={1} sx={{ fontSize: { xs: '3rem', md: '4rem' } }}>
                   {mediaAvaliacoes.toFixed(1)}
                 </Typography>
                 <Rating 
@@ -59,47 +86,65 @@ export default function AvaliacoesPage() {
                   readOnly 
                   precision={0.1} 
                   size="large"
-                  sx={{ color: '#FFD700', mb: 1 }}
+                  sx={{ 
+                    color: '#FFD700',
+                    mb: 1,
+                    '& .MuiRating-iconFilled': {
+                      filter: 'drop-shadow(0 2px 4px rgba(255, 215, 0, 0.5))'
+                    }
+                  }}
                 />
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography variant="body1" sx={{ opacity: 0.95, fontWeight: 'medium' }}>
                   Baseado em {lista.length} {lista.length === 1 ? 'avaliação' : 'avaliações'}
                 </Typography>
               </Box>
 
-              <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+              <Divider 
+                orientation="vertical" 
+                flexItem 
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.3)',
+                  display: { xs: 'none', md: 'block' }
+                }} 
+              />
 
               {/* Distribuição de estrelas */}
-              <Stack spacing={1} flex={2} width="100%">
-                {distribuicao.map(({ estrelas, quantidade }) => (
-                  <Stack key={estrelas} direction="row" alignItems="center" gap={1}>
-                    <Typography variant="body2" fontWeight="medium" sx={{ minWidth: 20 }}>
-                      {estrelas}
-                    </Typography>
-                    <Star fontSize="small" sx={{ color: '#FFD700' }} />
-                    <Box 
-                      sx={{ 
-                        flex: 1, 
-                        height: 8, 
-                        bgcolor: 'rgba(255,255,255,0.2)', 
-                        borderRadius: 1,
-                        overflow: 'hidden'
-                      }}
-                    >
+              <Stack spacing={1.5} flex={2} width="100%">
+                {distribuicao.map(({ estrelas, quantidade }) => {
+                  const percentage = lista.length > 0 ? (quantidade / lista.length) * 100 : 0;
+                  return (
+                    <Stack key={estrelas} direction="row" alignItems="center" gap={1.5}>
+                      <Typography variant="body1" fontWeight="bold" sx={{ minWidth: 20 }}>
+                        {estrelas}
+                      </Typography>
+                      <Star fontSize="small" sx={{ color: '#FFD700' }} />
                       <Box 
                         sx={{ 
-                          height: '100%', 
-                          width: `${lista.length > 0 ? (quantidade / lista.length) * 100 : 0}%`,
-                          bgcolor: '#FFD700',
-                          borderRadius: 1,
-                          transition: 'width 0.3s'
-                        }} 
-                      />
-                    </Box>
-                    <Typography variant="caption" sx={{ minWidth: 30, opacity: 0.9 }}>
-                      ({quantidade})
-                    </Typography>
-                  </Stack>
-                ))}
+                          flex: 1, 
+                          height: 10, 
+                          bgcolor: 'rgba(255,255,255,0.2)', 
+                          borderRadius: 2,
+                          overflow: 'hidden',
+                          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        <Box 
+                          sx={{ 
+                            height: '100%', 
+                            width: `${percentage}%`,
+                            background: 'linear-gradient(90deg, #FFD700 0%, #FFA500 100%)',
+                            borderRadius: 2,
+                            transition: 'width 0.5s ease-in-out',
+                            boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)'
+                          }} 
+                        />
+                      </Box>
+                      <Typography variant="body2" sx={{ minWidth: 50, opacity: 0.95, textAlign: 'right' }}>
+                        {quantidade} ({percentage.toFixed(0)}%)
+                      </Typography>
+                    </Stack>
+                  );
+                })}
               </Stack>
             </Stack>
           </CardContent>
@@ -143,34 +188,74 @@ export default function AvaliacoesPage() {
             variant="outlined"
             sx={{ 
               transition: 'all 0.3s',
+              borderRadius: 3,
               '&:hover': { 
-                transform: 'translateX(4px)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                transform: 'translateX(8px)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                borderColor: 'primary.main'
               }
             }}
           >
             <CardContent sx={{ p: 3 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="start" mb={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="start" mb={2.5}>
                 <Stack direction="row" gap={2} alignItems="center">
                   <Avatar 
                     sx={{ 
                       bgcolor: 'primary.main',
-                      width: 48,
-                      height: 48
+                      width: 56,
+                      height: 56,
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold'
                     }}
                   >
-                    <Person />
+                    {a.clienteNome?.charAt(0).toUpperCase() || <Person />}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle1" fontWeight="bold">
+                    <Typography variant="subtitle1" fontWeight="bold" mb={0.5}>
                       {a.clienteNome || 'Cliente'}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {dayjs(a.dataAvaliacao).fromNow()}
-                    </Typography>
+                    <Stack direction="row" alignItems="center" gap={1}>
+                      <Typography variant="caption" color="text.secondary">
+                        {dayjs(a.dataAvaliacao).fromNow()}
+                      </Typography>
+                      <Box 
+                        sx={{ 
+                          width: 4, 
+                          height: 4, 
+                          borderRadius: '50%', 
+                          bgcolor: 'text.disabled' 
+                        }} 
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {dayjs(a.dataAvaliacao).format('DD/MM/YYYY')}
+                      </Typography>
+                    </Stack>
                   </Box>
                 </Stack>
-                <Rating value={a.nota} readOnly size="medium" sx={{ color: 'warning.main' }} />
+                
+                <Paper
+                  elevation={0}
+                  sx={{
+                    bgcolor: 'warning.50',
+                    border: '2px solid',
+                    borderColor: 'warning.main',
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 0.5
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" gap={0.5}>
+                    <Rating 
+                      value={a.nota} 
+                      readOnly 
+                      size="small" 
+                      sx={{ color: 'warning.main' }} 
+                    />
+                    <Typography variant="body2" fontWeight="bold" color="warning.main">
+                      {a.nota.toFixed(1)}
+                    </Typography>
+                  </Stack>
+                </Paper>
               </Stack>
               
               {a.comentario && (
@@ -178,14 +263,36 @@ export default function AvaliacoesPage() {
                   elevation={0} 
                   sx={{ 
                     bgcolor: 'grey.50', 
-                    p: 2, 
+                    p: 2.5, 
                     borderRadius: 2,
                     borderLeft: '4px solid',
-                    borderColor: 'primary.main'
+                    borderColor: 'primary.main',
+                    position: 'relative'
                   }}
                 >
-                  <Typography variant="body2" sx={{ lineHeight: 1.7, fontStyle: 'italic' }}>
-                    "{a.comentario}"
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 12,
+                      left: 12,
+                      fontSize: '3rem',
+                      color: 'primary.100',
+                      lineHeight: 0,
+                      fontFamily: 'Georgia, serif'
+                    }}
+                  >
+                    "
+                  </Box>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      lineHeight: 1.8, 
+                      fontStyle: 'italic',
+                      pl: 2,
+                      color: 'text.primary'
+                    }}
+                  >
+                    {a.comentario}
                   </Typography>
                 </Paper>
               )}

@@ -5,23 +5,13 @@ import { AppThemeProvider } from './theme/AppThemeProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoutes } from './routes';
 import { SnackbarProvider } from 'notistack';
-import { setDevUserId } from './lib/http';
+import { restoreAuthToken } from './lib/auth';
 
 const queryClient = new QueryClient();
 
-// � SELETOR DE PERFIL (DESENVOLVIMENTO)
-// ID 2 = Dona Maria (Cliente/Idoso)
-// ID 3 = João Cuidador (Cuidador Profissional)
-
-// Verifica se já existe perfil salvo no localStorage
-const savedUserId = localStorage.getItem('devUserId');
-if (savedUserId) {
-  setDevUserId(parseInt(savedUserId));
-} else {
-  // Padrão: Cliente (Dona Maria)
-  setDevUserId(2);
-  localStorage.setItem('devUserId', '2');
-}
+// 🔐 Restaura sessão anterior se existir (SEM auto-login)
+// Agora o usuário DEVE fazer login manualmente
+restoreAuthToken();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

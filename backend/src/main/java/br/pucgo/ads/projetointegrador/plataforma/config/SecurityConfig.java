@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -25,10 +26,12 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAuthenticationFilter authenticationFilter;
+    private final CorsConfigurationSource carehubCorsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(carehubCorsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos de autenticação
