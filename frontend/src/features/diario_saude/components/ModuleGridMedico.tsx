@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { ModuleCard } from './ModuleCard';
+import { ModuleCard } from '../../../components/ModuleCard';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import DescriptionIcon from '@mui/icons-material/Description';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';

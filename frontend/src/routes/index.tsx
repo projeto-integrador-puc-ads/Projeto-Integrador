@@ -10,13 +10,13 @@ import EditCuidadorPage from '@/features/admin/pages/EditCuidadorPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
-import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
-import ReceituarioPage from '@/features/admin/pages/Medico/ReceituarioPage';
-import IniciarConsulta from '@/features/admin/pages/Medico/IniciarConsultaPage';
-import MedicoDashboard from '@/features/admin/pages/Medico/MedicoDashboard';
-import PedirExamesPage from '@/features/admin/pages/Medico/PedirExamesPage';
-import RecomendacaoExerciciosPage from '@/features/admin/pages/Medico/RecomendacaoExerciciosPage';
-import HistoricoConsultasPage from '@/features/atendimento/HistoricoConsultasPage';
+import AtendimentoMedico from '@/features/diario_saude/Idoso/AtendimentoMedico';
+import ReceituarioPage from '@/features/diario_saude/Medico/ReceituarioPage';
+import IniciarConsulta from '@/features/diario_saude/Medico/IniciarConsultaPage';
+import MedicoDashboard from '@/features/diario_saude/Medico/MedicoDashboard';
+import PedirExamesPage from '@/features/diario_saude/Medico/PedirExamesPage';
+import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/RecomendacaoExerciciosPage';
+import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
 
 function Home() {
   return (

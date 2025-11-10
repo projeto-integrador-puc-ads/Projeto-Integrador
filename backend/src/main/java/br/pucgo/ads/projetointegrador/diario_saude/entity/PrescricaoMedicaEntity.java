@@ -1,9 +1,8 @@
 package br.pucgo.ads.projetointegrador.diario_saude.entity;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoMedicaDTO;
@@ -23,86 +22,52 @@ public class PrescricaoMedicaEntity {
     @Column(nullable = true)
     private String observacoes;
 
-    //Relação (M:1) Médico
-    @ManyToOne
+    // Relação (M:1) Médico
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_medico", nullable = false)
     @JsonIgnore
     private MedicoEntity medico;
 
-    //Relação (M:1) Usuário
-    @ManyToOne
+    // Relação (M:1) Usuário
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     @JsonIgnore
     private UsuarioEntity usuario;
 
-    //Relações 1:N com prescricoes
-    @OneToMany(mappedBy = "prescricaoMedica")
+    // Relação 1:N com medicamentos
+    @OneToMany(mappedBy = "prescricaoMedica", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<PrescricaoMedicamentoEntity> prescricoesMedicamentos;
+    private Set<PrescricaoMedicamentoEntity> prescricoesMedicamentos;
 
-    @OneToMany(mappedBy = "prescricaoMedica")
+    // Relação 1:N com exames
+    @OneToMany(mappedBy = "prescricaoMedica", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<PrescricaoExameEntity> prescricoesExames;
+    private Set<PrescricaoExameEntity> prescricoesExames;
 
     public PrescricaoMedicaEntity(PrescricaoMedicaDTO dto){
         BeanUtils.copyProperties(dto, this);
     }
 
-    public List<PrescricaoMedicamentoEntity> getPrescricoesMedicamentos() {
-        return prescricoesMedicamentos;
-    }
-
-    public void setPrescricoesMedicamentos(List<PrescricaoMedicamentoEntity> prescricoesMedicamentos) {
-        this.prescricoesMedicamentos = prescricoesMedicamentos;
-    }
-
-    public List<PrescricaoExameEntity> getPrescricoesExames() {
-        return prescricoesExames;
-    }
-
-    public void setPrescricoesExames(List<PrescricaoExameEntity> prescricoesExames) {
-        this.prescricoesExames = prescricoesExames;
-    }
-
     public PrescricaoMedicaEntity(){}
 
-    public long getId_prescricao() {
-        return id_prescricao;
-    }
+    public long getId_prescricao() { return id_prescricao; }
+    public void setId_prescricao(long id_prescricao) { this.id_prescricao = id_prescricao; }
 
-    public void setId_prescricao(long id_prescricao) {
-        this.id_prescricao = id_prescricao;
-    }
+    public String getData_prescricao() { return data_prescricao; }
+    public void setData_prescricao(String data_prescricao) { this.data_prescricao = data_prescricao; }
 
-    public String getData_prescricao() {
-        return data_prescricao;
-    }
+    public String getObservacoes() { return observacoes; }
+    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
 
-    public void setData_prescricao(String data_prescricao) {
-        this.data_prescricao = data_prescricao;
-    }
+    public MedicoEntity getMedico() { return medico; }
+    public void setMedico(MedicoEntity medico) { this.medico = medico; }
 
-    public String getObservacoes() {
-        return observacoes;
-    }
+    public UsuarioEntity getUsuario() { return usuario; }
+    public void setUsuario(UsuarioEntity usuario) { this.usuario = usuario; }
 
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
-    }
+    public Set<PrescricaoMedicamentoEntity> getPrescricoesMedicamentos() { return prescricoesMedicamentos; }
+    public void setPrescricoesMedicamentos(Set<PrescricaoMedicamentoEntity> prescricoesMedicamentos) { this.prescricoesMedicamentos = prescricoesMedicamentos; }
 
-    public MedicoEntity getMedico() {
-        return medico;
-    }
-
-    public void setMedico(MedicoEntity medico) {
-        this.medico = medico;
-    }
-
-    public UsuarioEntity getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(UsuarioEntity usuario) {
-        this.usuario = usuario;
-    }
+    public Set<PrescricaoExameEntity> getPrescricoesExames() { return prescricoesExames; }
+    public void setPrescricoesExames(Set<PrescricaoExameEntity> prescricoesExames) { this.prescricoesExames = prescricoesExames; }
 }

@@ -35,4 +35,9 @@ public class PrescricaoMedicaController {
         service.excluir(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<List<PrescricaoMedicaDTO>> listarPorUsuario(@PathVariable Long id) {
+        return ResponseEntity.ok(service.listarPorUsuario(id));
+    }
 }

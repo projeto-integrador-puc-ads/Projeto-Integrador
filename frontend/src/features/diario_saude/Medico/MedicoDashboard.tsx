@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Container, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
-import { ModuleGridMedico } from '@/components/ModuleGridMedico';
+import { ModuleGridMedico } from '@/features/diario_saude/components/ModuleGridMedico';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function DashboardMedico() {

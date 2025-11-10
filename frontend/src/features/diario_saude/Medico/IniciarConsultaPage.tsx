@@ -27,13 +27,8 @@ export default function IniciarConsulta() {
       email: "lucas@email.com",
       role: "MEDICO"
     };
-    const tokenSimulado = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjI1MzcxOTMsImV4cCI6MTc2MzE0MTk5M30.yE5nfEbrvnsnfZfte-mi1VRFnEyLdI77SLH4RmIsEo8P2Hd46lWACmCzEsWiUc0g";
-
     if (!localStorage.getItem('usuarioLogado')) {
       localStorage.setItem('usuarioLogado', JSON.stringify(usuarioSimulado));
-    }
-    if (!localStorage.getItem('token')) {
-      localStorage.setItem('token', tokenSimulado);
     }
   }, []);
 
