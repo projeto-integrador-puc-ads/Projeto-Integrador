@@ -1,6 +1,5 @@
 package br.pucgo.ads.projetointegrador.listaCompras.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,34 +10,24 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "historico_compras",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"usuario_id", "produto_a_id", "produto_b_id"}))
+@Table(name = "patologia_itens", uniqueConstraints = @UniqueConstraint(columnNames = {"patologia_id", "produto_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HistoricoCompra {
+public class PatologiaItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produto_a_id", nullable = false)
-    private Produto produtoA;
+    @JoinColumn(name = "patologia_id", nullable = false)
+    private Patologia patologia;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produto_b_id", nullable = false)
-    private Produto produtoB;
-
-    @Column(nullable = false)
-    private Integer frequencia = 0;
-
-    @Column(nullable = false)
-    private Double confianca = 0.0;
+    @JoinColumn(name ="produto_id", nullable = false)
+    private Produto produto;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

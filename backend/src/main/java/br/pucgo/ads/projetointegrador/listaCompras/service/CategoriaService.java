@@ -83,8 +83,8 @@ public class CategoriaService {
                 categoria.getId(),
                 categoria.getDescricao(),
                 categoria.getNome(),
-                categoria.getDataCriacao(),
-                categoria.getDataAtualizacao()
+                categoria.getCreatedAt(),
+                categoria.getUpdatedAt()
         );
     }
 }

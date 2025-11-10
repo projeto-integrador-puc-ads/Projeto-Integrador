@@ -108,8 +108,8 @@ public class ProdutoService {
                 produto.getDescricao(),
                 produto.getUnidadeMedida(),
                 categoriaService.buscarPorId(produto.getCategoria().getId()),
-                produto.getDataCriacao(),
-                produto.getDataAtualizacao()
+                produto.getCreatedAt(),
+                produto.getUpdatedAt()
         );
     }
 }
