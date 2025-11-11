@@ -8,9 +8,9 @@ export default function DashboardMedico() {
   const navigate = useNavigate();
 
   const paciente = location.state?.paciente;
-  const prescricao = location.state?.prescricao; // ✅ PEGOU A PRESCRIÇÃO
+  const prescricao = location.state?.prescricao;
 
-  if (!paciente || !prescricao) { // ✅ Verificação ajustada
+  if (!paciente || !prescricao) {
     navigate('/medico');
     return null;
   }
@@ -49,7 +49,6 @@ export default function DashboardMedico() {
               Funções
             </Typography>
 
-            {/* ✅ Agora o grid recebe a prescrição corretamente */}
             <ModuleGridMedico paciente={paciente} prescricao={prescricao} />
           </Box>
 

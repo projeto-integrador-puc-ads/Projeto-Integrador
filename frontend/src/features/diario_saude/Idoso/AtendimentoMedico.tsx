@@ -61,7 +61,6 @@ export default function AtendimentoMedico() {
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
 
-  // ✅ NOVO: controle do menu de SINTOMAS (estilo do print)
   const [sintomaAnchor, setSintomaAnchor] = useState<null | HTMLElement>(null);
 
   const handleSelectMedico = (nome: string) => {
@@ -94,7 +93,6 @@ export default function AtendimentoMedico() {
     m.nome.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 👇 abre o menu de sintomas (estilo do print)
   const abrirMenuSintomas = (event: React.MouseEvent<HTMLElement>) => {
     setSintomaAnchor(event.currentTarget);
   };

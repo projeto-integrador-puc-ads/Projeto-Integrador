@@ -20,17 +20,16 @@ public class PrescricaoMedicamentoEntity {
     private String frequencia; // via de administração
 
     @Column(nullable = false)
-    private String nome_medicamento; // novo campo
+    private String nome_medicamento;
+    @Column(nullable = false)
+    private String concentracao;
 
     @Column(nullable = false)
-    private String concentracao; // novo campo
-
-    @Column(nullable = false)
-    private String via; // novo campo
+    private String via;
 
     @ManyToOne
     @JoinColumn(name = "id_medicamento")
-    private MedicamentoEntity medicamento; // opcional, se quiser guardar referência
+    private MedicamentoEntity medicamento;
 
     @ManyToOne
     @JoinColumn(name = "id_prescricao", nullable = false)
