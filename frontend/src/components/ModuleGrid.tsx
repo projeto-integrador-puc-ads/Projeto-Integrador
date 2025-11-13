@@ -47,6 +47,14 @@ export function ModuleGrid() {
     },
 
     {
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="primary" />,
+      title: 'Questionário Médico',
+      desc: 'Iniciar questionário.',
+      to: '/atendimento/questionario',
+    },
+
+
+    {
       icon: <EscalatorWarningIcon sx={{ fontSize: 40 }} />,
       title: 'Ajudador',
       desc: 'Dicas rápidas e ajuda no dia a dia.',
