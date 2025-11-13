@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.service;
 
-import br.pucgo.ads.projetointegrador.plataforma.repository.UsuarioRepository;
+import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import br.pucgo.ads.projetointegrador.remember.domain.GatilhoTipo;
 import br.pucgo.ads.projetointegrador.remember.domain.StatusPergunta;
 import br.pucgo.ads.projetointegrador.remember.dto.CandidatoPergunta;
@@ -32,7 +32,7 @@ public class PerguntaCognitivaService {
     private final PerguntaTemplateRepository templateRepository;
     private final LembrancaRepository lembrancaRepository;
     private final DiarioRepository diarioRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository usuarioRepository;
 
     /**
      * Lista todas as perguntas com status ENVIADA para um usuário específico.

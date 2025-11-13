@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.remember.key.UsuarioConquistaKey;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class UsuarioConquista {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("identificadorUsuario")
     @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
+    private User usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("identificadorConquista")

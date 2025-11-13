@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,7 +51,7 @@ public class Lembranca {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false,  insertable = false, updatable = false)
-    private Usuario usuario;
+    private User usuario;
 
     @PrePersist
     protected void onCreate() {

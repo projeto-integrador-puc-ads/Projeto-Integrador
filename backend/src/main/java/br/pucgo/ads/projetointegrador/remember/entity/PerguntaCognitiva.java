@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.remember.domain.StatusPergunta;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -47,10 +47,10 @@ public class PerguntaCognitiva {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
+    private User usuario;
 
-    @OneToOne(mappedBy = "pergunta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private RespostaPerguntaUsuario resposta;
+//    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
+//    private RespostaPerguntaUsuario resposta;
 
     @PrePersist
     protected void onCreate() {

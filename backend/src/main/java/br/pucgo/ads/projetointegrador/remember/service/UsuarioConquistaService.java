@@ -1,8 +1,8 @@
 package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
-import br.pucgo.ads.projetointegrador.plataforma.repository.UsuarioRepository;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
+import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import br.pucgo.ads.projetointegrador.remember.dto.Conquista.UsuarioConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Conquista;
 import br.pucgo.ads.projetointegrador.remember.entity.UsuarioConquista;
@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 public class UsuarioConquistaService {
 
     private final UsuarioConquistaRepository usuarioConquistaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository usuarioRepository;
     private final ConquistaRepository conquistaRepository;
 
     @Autowired
     public UsuarioConquistaService(
             UsuarioConquistaRepository usuarioConquistaRepository,
-            UsuarioRepository usuarioRepository,
+            UserRepository usuarioRepository,
             ConquistaRepository conquistaRepository
     ) {
         this.usuarioConquistaRepository = usuarioConquistaRepository;
@@ -40,7 +40,7 @@ public class UsuarioConquistaService {
      * @return O registro da conquista que foi atribuída ao usuário.
      */
     public UsuarioConquistaResponseDTO concederConquista(Long identificadorUsuario, Long identificadorConquista) {
-        Usuario usuario = usuarioRepository.findById(identificadorUsuario)
+        User usuario = usuarioRepository.findById(identificadorUsuario)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com o ID: " + identificadorUsuario));
         Conquista conquista = conquistaRepository.findById(identificadorConquista)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conquista não encontrada com o ID: " + identificadorConquista));
