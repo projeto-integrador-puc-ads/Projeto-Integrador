@@ -433,7 +433,7 @@ export default function CreateListaPage() {
                     const hasRisk = riscos.length > 0;
 
                     return (
-                        <Box key={li.produto.id}>
+                        <Box  key={li.produto.id}>
                             <ListItem
                                 secondaryAction={
                                     <Stack direction="row" spacing={1} alignItems="center">
@@ -481,21 +481,6 @@ export default function CreateListaPage() {
                                             )}
                                         </Stack>
                                     }
-                                    secondary={
-                                        hasRisk ? (
-                                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
-                                                {riscos.map(r => (
-                                                    <Chip
-                                                        key={`${li.produto.id}-${r.patologia.id}`}
-                                                        size="small"
-                                                        color="warning"
-                                                        variant="outlined"
-                                                        label={`${r.patologia.nome}${r.nivel ? ` (${r.nivel})` : ''}`}
-                                                    />
-                                                ))}
-                                            </Stack>
-                                        ) : undefined
-                                    }
                                 />
                             </ListItem>
                             {idx < listaItens.length - 1 && <Divider />}
@@ -513,26 +498,7 @@ export default function CreateListaPage() {
                 </Button>
             </Stack>
 
-            {/* Snackbar de recomendação (positivo) */}
-            <Snackbar
-                open={snackOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackOpen(false)}
-                message={snackMsg}
-                action={
-                    <Button
-                        color="secondary"
-                        size="small"
-                        onClick={() => {
-                            const sug = snackProdutoSugeridoRef.current;
-                            if (sug) addProdutoNaLista(sug, 1);
-                            setSnackOpen(false);
-                        }}
-                    >
-                        Adicionar
-                    </Button>
-                }
-            />
+
 
             {/* Snackbar de alerta (patologia) com Alert visual */}
             <Snackbar

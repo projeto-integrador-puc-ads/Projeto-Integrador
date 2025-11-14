@@ -5,41 +5,39 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "itens_lista")
+@Table(name = "lista_item")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemLista {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private ItemListaId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "compra_lista_id", nullable = false)
-    private CompraLista compraLista;
-
+    @MapsId("listaId")
+    @JoinColumn(name = "lista_id", nullable = false)
+    private Lista lista;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("produtoId")
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
-    @Column(nullable = false)
-    private Double quantidade;
-
-    @Column(nullable = false)
-    private Boolean comprado = false;
+    @Column(name = "qtd", precision = 10, scale = 2)
+    private BigDecimal quantidade = BigDecimal.ONE;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    // --------- CAMPOS APENAS DA API (NÃO EXISTEM NO SCRIPT) ----------
+
+    @Transient
+    private Boolean comprado = false;
 }

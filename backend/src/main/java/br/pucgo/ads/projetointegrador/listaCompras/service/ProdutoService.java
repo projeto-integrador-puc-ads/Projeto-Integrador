@@ -55,7 +55,7 @@ public class ProdutoService {
         if (!categoriaRepository.existsById(categoriaId)) {
             throw new IllegalArgumentException("Categoria não encontrada");
         }
-        return produtoRepository.findByCategoriaId(categoriaId).stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return produtoRepository.findByCategoria_Id(categoriaId).stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

@@ -11,23 +11,19 @@ import java.util.List;
 @Repository
 public interface ItemListaRepository extends JpaRepository<ItemLista,Long> {
 
-    //Buscar itens por lista
-    List<ItemLista> findByCompraListaId(Long compraListaId);
-
-    // Buscar itens comprados de uma lista
-    List<ItemLista> findByCompraListaIdAndCompradoTrue(Long compraListaId);
-
-    // Buscar itens não comprados de uma lista
-    List<ItemLista> findByCompraListaIdAndCompradoFalse(Long compraListaId);
+    // Buscar itens por lista (campo "lista")
+    List<ItemLista> findByLista_Id(Long listaId);
 
     // Verificar se já existe o produto na lista
-    boolean existsByCompraListaIdAndProdutoId(Long compraListaId, Long produtoId);
+    boolean existsByLista_IdAndProduto_Id(Long listaId, Long produtoId);
 
-    // Query customizada: busca todos os produtos de listas finalizadas de um usuário
-    // (Acho que pode ser útil pro algoritmo de recomendação)
-    @Query("SELECT i FROM ItemLista i " +
-            "JOIN i.compraLista cl " +
-            "WHERE cl.usuario.id = :usuarioId " +
-            "AND cl.status = 'FINALIZADA'")
+    // Itens de listas FINALIZADAS de um usuário (pro algoritmo de recomendação)
+    @Query("""
+           SELECT i
+           FROM ItemLista i
+           JOIN i.lista l
+           WHERE l.usuario.id = :usuarioId
+             AND l.status = 'FINALIZADA'
+           """)
     List<ItemLista> findItensByUsuarioFinalizados(@Param("usuarioId") Long usuarioId);
 }

@@ -20,7 +20,7 @@ public class CategoriaService {
     @Transactional
     public CategoriaResponseDTO criarCategoria(CategoriaRequestDTO dto){
         //verifica se existe uma categoria com mesmo nome
-        categoriaRepository.findByIgnoreCase(dto.getNome()).ifPresent(c -> {
+        categoriaRepository.findByNomeIgnoreCase(dto.getNome()).ifPresent(c -> {
             throw new IllegalArgumentException("Ja existe uma Categoria cadastrada com esse nome: " + dto.getNome());
         });
         Categoria categoria = toEntity(dto);
@@ -52,7 +52,7 @@ public class CategoriaService {
         Categoria categoria = categoriaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Categoria inexistente"));
         // Validação para verificar se o novo nome já existe em outra categoria
         if (!categoria.getNome().equals(dto.getNome())){
-            categoriaRepository.findByIgnoreCase(dto.getNome()).ifPresent(c -> {
+            categoriaRepository.findByNomeIgnoreCase(dto.getNome()).ifPresent(c -> {
                 throw new IllegalArgumentException("Ja existe uma categoria com esse nome");
             });
         }
