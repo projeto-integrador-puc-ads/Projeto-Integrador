@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 @Data
 @NoArgsConstructor
@@ -13,15 +15,15 @@ import lombok.NoArgsConstructor;
 public class ItemListaRequestDTO {
 
     @NotNull
-    private Long compraListaId;
+    private Long ListaId;
 
     @NotNull
     private Long produtoId;
 
 
     @NotNull(message = "A quantidade é obrigatória")
-    @Positive
-    private Double quantidade;
+    @Positive(message = "A quantidade deve ser maior que zero")
+    private BigDecimal quantidade;
 
     private Boolean comprado = false;
 }

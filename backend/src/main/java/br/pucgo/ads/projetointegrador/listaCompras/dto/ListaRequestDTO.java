@@ -11,15 +11,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class CompraListaRequestDTO {
+public class ListaRequestDTO {
 
     @NotBlank(message = "O título da lista é obrigatório")
-    @Size(max = 200)
+    @Size(max = 200, message = "O título deve ter no máximo 200 caracteres")
     private String titulo;
 
-    @Size(max = 500)
-    private String descricao;
-
     @NotNull(message = "O ID do usuário é obrigatório")
-    private Long usuarioId;
+    private Long userId;
+
+    private Boolean template = false;
+
+    // Campos transient (apenas da API)
+    @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres")
+    private String descricao;
 }

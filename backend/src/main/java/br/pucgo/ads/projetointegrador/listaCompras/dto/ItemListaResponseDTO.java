@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,10 +13,12 @@ import java.time.LocalDateTime;
 public class ItemListaResponseDTO {
 
     private Long id;
-    private Long compraListaId;
+    private Long ListaId;
     private ProdutoResponseDTO produto;
-    private Double quantidade;
+    private BigDecimal quantidade;
     private Boolean comprado;
-    private LocalDateTime dataCriacao;
-    private LocalDateTime dataAtualizacao;
+    private LocalDateTime createdAt;
+
+    public ItemListaResponseDTO(Long id, Long ListaId, ProdutoResponseDTO produto, BigDecimal quantidade,LocalDateTime createdAt, Boolean comprado) {
+    }
 }

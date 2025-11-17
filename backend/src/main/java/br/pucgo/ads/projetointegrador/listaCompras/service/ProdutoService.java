@@ -23,93 +23,155 @@ public class ProdutoService {
     private final CategoriaService categoriaService;
 
     @Transactional
-    public ProdutoResponseDTO criarProduto(ProdutoRequestDTO dto){
-        //verifica se o produto já existe
-        produtoRepository.findByNomeIgnoreCase(dto.getNome()).ifPresent(p -> {
-            throw new IllegalArgumentException("Produto já existente");
-        });
+    public ProdutoResponseDTO criar(ProdutoRequestDTO dto) {
+        //verificar se já existe produto com mesmo nome
+        produtoRepository.findByNomeIgnoreCase(dto.getNome())
+                .ifPresent(p -> {
+                    throw new IllegalArgumentException(
+                            "Já existe um produto com o nome: " + dto.getNome());
+                });
 
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada"));
+        //verificar se a categoria existe
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Categoria não encontrada com ID: " + dto.getCategoriaId()));
 
         Produto produto = toEntity(dto, categoria);
         Produto produtoSalvo = produtoRepository.save(produto);
         return toResponseDTO(produtoSalvo);
     }
 
-    @Transactional
-    public ProdutoResponseDTO buscarPorId(Long id){
-        //verifica se o produto existe
-        Produto produto = produtoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+    @Transactional(readOnly = true)
+    public ProdutoResponseDTO buscarPorId(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Produto não encontrado com ID: " + id));
         return toResponseDTO(produto);
     }
 
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> listarTodos() {
-        //não precisa de verificação por que ja lista todos os produtos disponíveis
-        return produtoRepository.findAll().stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return produtoRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDTO> listarPorCategoriaId(Long categoriaId){
-        //verifica se a categoria existe
+    public List<ProdutoResponseDTO> listarAtivos() {
+        return produtoRepository.findByAtivoTrue().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> listarPorCategoria(Long categoriaId) {
+        //verificar se categoria existe
         if (!categoriaRepository.existsById(categoriaId)) {
-            throw new IllegalArgumentException("Categoria não encontrada");
+            throw new IllegalArgumentException(
+                    "Categoria não encontrada com ID: " + categoriaId);
         }
-        return produtoRepository.findByCategoria_Id(categoriaId).stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return produtoRepository.findByCategoriaIdAndAtivoTrue(categoriaId).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCase(nome).stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return produtoRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoResponseDTO> buscarPorTag(String tag) {
+        return produtoRepository.findByTagsContainingIgnoreCaseAndAtivoTrue(tag).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public ProdutoResponseDTO atualizarProduto(Long id, ProdutoRequestDTO dto){
-        Produto produto = produtoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
-        //verifica se novo nome já existe em outro produto
-        if (!produto.getNome().equalsIgnoreCase(dto.getNome())) {
-            produtoRepository.findByNomeIgnoreCase(dto.getNome()).ifPresent(p -> {
-                throw new IllegalArgumentException("Produto já existente");
-            });
-        }
-        //verifica se a categoria ja existe
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId()).orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada"));
+    public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO dto) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Produto não encontrado com ID: " + id));
 
-        produto.setCategoria(categoria);
+        //verificar se novo nome já existe em outro produto
+        if (!produto.getNome().equalsIgnoreCase(dto.getNome())) {
+            produtoRepository.findByNomeIgnoreCase(dto.getNome())
+                    .ifPresent(p -> {
+                        throw new IllegalArgumentException(
+                                "Já existe outro produto com o nome: " + dto.getNome());
+                    });
+        }
+
+        // verificar se a nova categoria existe
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Categoria não encontrada com ID: " + dto.getCategoriaId()));
+
         produto.setNome(dto.getNome());
-        produto.setDescricao(dto.getDescricao());
-        produto.setUnidadeMedida(dto.getUnidadeMedida());
-        Produto produtoAtualizado =  produtoRepository.save(produto);
+        produto.setNomeNormalizado(normalizarNome(dto.getNome()));
+        produto.setPreco(dto.getPreco());
+        produto.setTags(dto.getTags());
+        produto.setAtivo(dto.getAtivo());
+        produto.setIsPersonalizado(dto.getIsPersonalizado());
+        produto.setCategoria(categoria);
+
+        Produto produtoAtualizado = produtoRepository.save(produto);
         return toResponseDTO(produtoAtualizado);
     }
 
     @Transactional
     public void deletar(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Produto não encontrado com ID: " + id));
+
+        // Soft delete - apenas desativa
+        produto.setAtivo(false);
+        produtoRepository.save(produto);
+    }
+
+    @Transactional
+    public void deletarPermanente(Long id) {
         if (!produtoRepository.existsById(id)) {
             throw new IllegalArgumentException(
-                    "Produto não encontrado");
+                    "Produto não encontrado com ID: " + id);
         }
         produtoRepository.deleteById(id);
     }
 
-    private Produto toEntity(ProdutoRequestDTO dto, Categoria categoria){
+    // Métodos que ajuda na conversão
+    private Produto toEntity(ProdutoRequestDTO dto, Categoria categoria) {
         Produto produto = new Produto();
         produto.setNome(dto.getNome());
-        produto.setDescricao(dto.getDescricao());
-        produto.setUnidadeMedida(dto.getUnidadeMedida());
+        produto.setNomeNormalizado(normalizarNome(dto.getNome()));
+        produto.setPreco(dto.getPreco());
+        produto.setTags(dto.getTags());
+        produto.setAtivo(dto.getAtivo() != null ? dto.getAtivo() : true);
+        produto.setIsPersonalizado(dto.getIsPersonalizado() != null ? dto.getIsPersonalizado() : false);
         produto.setCategoria(categoria);
         return produto;
     }
 
-    private ProdutoResponseDTO toResponseDTO(Produto produto){
+    private ProdutoResponseDTO toResponseDTO(Produto produto) {
         return new ProdutoResponseDTO(
                 produto.getId(),
                 produto.getNome(),
-                produto.getDescricao(),
-                produto.getUnidadeMedida(),
+                produto.getNomeNormalizado(),
+                produto.getPreco(),
+                produto.getAtivo(),
+                produto.getIsPersonalizado(),
+                produto.getTags(),
                 categoriaService.buscarPorId(produto.getCategoria().getId()),
                 produto.getCreatedAt(),
-                produto.getUpdatedAt()
+                produto.getUpdatedAt(),
+                null, // descricao (transient)
+                null  // unidadeMedida (transient)
         );
+    }
+
+    private String normalizarNome(String nome) {
+        return nome != null ? nome.toLowerCase().trim() : null;
     }
 }

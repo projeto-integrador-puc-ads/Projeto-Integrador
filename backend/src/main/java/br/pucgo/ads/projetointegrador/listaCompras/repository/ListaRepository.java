@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CompraListaRepository extends JpaRepository<Lista,Long> {
+public interface ListaRepository extends JpaRepository<Lista,Long> {
 
     // Buscar listas por usuário
     List<Lista> findByUsuario_Id(Long usuarioId);
@@ -19,5 +19,20 @@ public interface CompraListaRepository extends JpaRepository<Lista,Long> {
 
     // Buscar listas do usuário por status, ordenadas pela criação (campo REAL da entidade)
     List<Lista> findByUsuario_IdAndStatusOrderByCreatedAtDesc(Long usuarioId, StatusLista status);
+
+    // Buscar listas template
+    List<Lista> findByTemplateTrue();
+
+    // Buscar listas não-template (listas normais do usuário)
+    List<Lista> findByUsuario_IdAndTemplateFalse(Long usuarioId);
+
+    // Buscar templates disponíveis
+    List<Lista> findByTemplateTrueOrderByTituloAsc();
+
+    // Buscar listas do usuário ordenadas por data de criação
+    List<Lista> findByUsuario_IdOrderByCreatedAtDesc(Long usuarioId);
+
+    // Verificar se existe lista com mesmo título para o usuário
+    boolean existsByUsuario_IdAndTituloIgnoreCase(Long usuarioId, String titulo);
 }
 

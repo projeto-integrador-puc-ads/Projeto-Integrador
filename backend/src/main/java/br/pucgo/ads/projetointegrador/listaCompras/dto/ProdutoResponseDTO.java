@@ -3,6 +3,8 @@ package br.pucgo.ads.projetointegrador.listaCompras.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,10 +13,17 @@ import java.time.LocalDateTime;
 public class ProdutoResponseDTO {
 
     private Long id;
-    private String descricao;
     private String nome;
-    private String unidadeMedida;
+    private String nomeNormalizado;
+    private BigDecimal preco;
+    private Boolean ativo;
+    private Boolean isPersonalizado;
+    private String tags;
     private CategoriaResponseDTO categoria;
-    private LocalDateTime dataCriacao;
-    private LocalDateTime dataAtualizacao;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // Campos transient (apenas da API)
+    private String descricao;
+    private String unidadeMedida;
 }

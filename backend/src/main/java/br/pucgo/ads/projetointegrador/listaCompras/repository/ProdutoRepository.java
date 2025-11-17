@@ -10,12 +10,24 @@ import java.util.Optional;
 
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+    // Buscar produtos ativos
+    List<Produto> findByAtivoTrue();
+
     // Buscar produtos por categoria
-    List<Produto> findByCategoria_Id(Long categoriaId);
+    List<Produto> findByCategoriaIdAndAtivoTrue(Long categoriaId);
 
     // Buscar produto por nome
     Optional<Produto> findByNomeIgnoreCase(String nome);
 
     // Buscar produtos por nome contendo (busca)
-    List<Produto> findByNomeContainingIgnoreCase(String nome);
+    List<Produto> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
+
+    // Buscar por nome normalizado (case-insensitive por padrão)
+    Optional<Produto> findByNomeNormalizado(String nomeNormalizado);
+
+    // Buscar produtos por tags
+    List<Produto> findByTagsContainingIgnoreCaseAndAtivoTrue(String tag);
+
+    // Buscar produtos personalizados do sistema ou ativos
+    List<Produto> findByIsPersonalizadoFalseAndAtivoTrue();
 }

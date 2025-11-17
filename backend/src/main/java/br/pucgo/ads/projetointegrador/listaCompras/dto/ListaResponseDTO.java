@@ -10,16 +10,17 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompraListaResponseDTO {
+public class ListaResponseDTO {
 
     private Long id;
     private String titulo;
+    private Long userId;
+    private String userNome;
+    private Boolean template;
+    private LocalDateTime createdAt;
+
+    // Campos transient (apenas da API)
     private String descricao;
-    private Long usuarioId;
-    private String usuarioNome;
-    private StatusLista status;
-    private LocalDateTime dataFinalizacao;
-    private LocalDateTime dataCriacao;
-    private LocalDateTime dataAtualizacao;
+    private String status; // "ABERTA" ou "FINALIZADA"
     private List<ItemListaResponseDTO> itens;
 }
