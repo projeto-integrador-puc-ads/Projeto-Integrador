@@ -13,7 +13,6 @@ public class Mensagem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_mensagem")
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "id_remetente") 
     private Usuario remetente;
