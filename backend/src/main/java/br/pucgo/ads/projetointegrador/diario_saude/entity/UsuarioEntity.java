@@ -2,7 +2,10 @@ package br.pucgo.ads.projetointegrador.diario_saude.entity;
 
 import org.springframework.beans.BeanUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.pucgo.ads.projetointegrador.diario_saude.dto.UsuarioDTO;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,10 +38,14 @@ public class UsuarioEntity {
 
     private String alergias;
 
-    //adicionar doenças
-
     @OneToMany(mappedBy = "usuario")
+    @JsonIgnore
     private List<PrescricaoMedicaEntity> prescricoesMedicas;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<UsuarioDoencasEntity> usuarioDoencas;
+
 
     public UsuarioEntity(UsuarioDTO usuario){
         BeanUtils.copyProperties(usuario, this);
@@ -122,4 +129,11 @@ public class UsuarioEntity {
     public void setPrescricoesMedicas(List<PrescricaoMedicaEntity> prescricoesMedicas) {
         this.prescricoesMedicas = prescricoesMedicas;
     }
+    public List<UsuarioDoencasEntity> getUsuarioDoencas() {
+        return usuarioDoencas;
+    }
+    public void setUsuarioDoencas(List<UsuarioDoencasEntity> usuarioDoencas) {
+        this.usuarioDoencas = usuarioDoencas;
+    }
+    
 }

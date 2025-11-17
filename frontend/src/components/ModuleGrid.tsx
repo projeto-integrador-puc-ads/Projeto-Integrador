@@ -9,9 +9,12 @@ import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Ícone original
 import PersonSearchIcon from '@mui/icons-material/PersonSearch'; // Novo ícone para iniciar consulta
 import { useNavigate } from 'react-router-dom';
+import CoronavirusIcon from '@mui/icons-material/Coronavirus';
+
 
 export function ModuleGrid() {
   const navigate = useNavigate();
+  
 
   const items = [
     {
@@ -32,18 +35,12 @@ export function ModuleGrid() {
       desc: 'Organize compras do mês.',
       to: '/grupo3/compras',
     },
-    {
-      icon: <HistoryIcon sx={{ fontSize: 40 }} />,
-      title: 'Histórico de Consultas',
-      desc: 'Acompanhe suas consultas médicas.',
-      to: '/historico_consultas',
-    },
 
     {
-      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
-      title: 'Atendimento Médico',
-      desc: 'Registre informações de consultas e diagnósticos.',
-      to: '/atendimento',
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="success" />,
+      title: 'Consultas & Saúde',
+      desc: 'Acesse histórico, atendimentos e outras funções.',
+      to: '/saude',
     },
 
     {
@@ -64,6 +61,12 @@ export function ModuleGrid() {
       title: 'Dúvidas',
       desc: 'Dúvidas e sugestões.',
       to: '/grupo6/ajudador',
+    },
+    {
+      icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="warning" />,
+      title: 'Atendimento de Alergias',
+      desc: 'Registre e consulte alergias dos pacientes.',
+      to: '/atendimento/alergias',
     },
   ];
 

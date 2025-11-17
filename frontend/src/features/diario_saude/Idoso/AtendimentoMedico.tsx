@@ -138,11 +138,11 @@ export default function AtendimentoMedico() {
         </Box>
 
         <Typography variant="h5" fontWeight="bold" mb={4} color="primary">
-          Registro de Atendimento
+          Queixa de Sintomas
         </Typography>
 
         <Typography variant="h6" color="text.secondary" mb={1}>
-          Preencha abaixo as informações do seu atendimento médico.
+          Preencha abaixo as informações do seu atendimento.
         </Typography>
 
         <Typography variant="h6" fontWeight="medium" color="text.secondary" mb={1}>
@@ -244,7 +244,7 @@ export default function AtendimentoMedico() {
                 size="large"
                 sx={{ borderRadius: 2 }}
               >
-                Salvar Atendimento
+                Salvar Atendimento  
               </Button>
             </Grid>
           </Grid>
