@@ -9,9 +9,12 @@ import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Ícone original
 import PersonSearchIcon from '@mui/icons-material/PersonSearch'; // Novo ícone para iniciar consulta
 import { useNavigate } from 'react-router-dom';
+import CoronavirusIcon from '@mui/icons-material/Coronavirus';
+
 
 export function ModuleGrid() {
   const navigate = useNavigate();
+  
 
   const items = [
     {
@@ -65,6 +68,13 @@ export function ModuleGrid() {
       desc: 'Dúvidas e sugestões.',
       to: '/grupo6/ajudador',
     },
+    {
+      icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="warning" />,
+      title: 'Atendimento de Alergias',
+      desc: 'Registre e consulte alergias dos pacientes.',
+      to: '/atendimento/alergias',
+    },
+
   ];
 
   return (

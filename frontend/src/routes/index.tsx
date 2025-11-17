@@ -17,6 +17,8 @@ import MedicoDashboard from '@/features/diario_saude/Medico/MedicoDashboard';
 import PedirExamesPage from '@/features/diario_saude/Medico/PedirExamesPage';
 import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/RecomendacaoExerciciosPage';
 import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
+import AlergiasPacientePage from '@/features/diario_saude/Medico/AlergiasPacientePage';
+
 
 function Home() {
   return (
@@ -66,6 +68,14 @@ export function AppRoutes() {
 
         {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />
+
+        {/* rota: Atendimento Médico */}
+        <Route path="atendimento" element={<AtendimentoMedico />} />
+        <Route path="atendimento/receituario" element={<ReceituarioPage />} />
+        <Route path="atendimento/exames" element={<PedirExamesPage />} />
+        <Route path="atendimento/exercicios" element={<RecomendacaoExerciciosPage />} />
+        <Route path="atendimento/alergias" element={<AlergiasPacientePage />} />
+
       </Route>
     </Routes>
   );
