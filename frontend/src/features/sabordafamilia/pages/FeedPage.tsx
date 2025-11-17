@@ -1,68 +1,132 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RecipeCard } from '../components/RecipeCard'; // Assumindo que criaremos este componente
-import { Recipe } from '../../../shared/types/Recipe'; // Nosso modelo de dados
+import { RecipeCard,  } from '../components/RecipeCard';
+import type { Recipe } from '../../../shared/types/Recipe';
+import './FeedPage.css';
+import { useLocation } from 'react-router-dom';
+
+// Simula o usuário logado
+const TEST_USER_ID = '1';
+
+// Define os tipos de abas
+type FeedTab = 'geral' | 'seguindo' | 'minhas';
 
 export function FeedPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { defaultTab?: FeedTab, userIdToFilter?: number };
 
-  // useEffect é um hook que executa código quando o componente é montado.
-  // Perfeito para buscar dados de uma API.
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [activeTab, setActiveTab] = useState<FeedTab>(locationState?.defaultTab || 'geral');
+  const [filterUserId, setFilterUserId] = useState<number | null>(locationState?.userIdToFilter || Number(TEST_USER_ID));
+
   useEffect(() => {
     const fetchRecipes = async () => {
-      try {
-        // Faz a chamada para o endpoint do seu backend
-        const response = await fetch('/api/receitas'); // Ajuste o endpoint se necessário
+      setLoading(true); 
+      setError(null);
+      let apiUrl = '';
 
+      // Define a URL da API com base na aba ativa
+      switch (activeTab) {
+        case 'geral':
+          apiUrl = '/api/sabordafamilia/receitas';
+          break;
+        
+        case 'seguindo':
+          // Agora chama o novo endpoint que criamos
+          apiUrl = '/api/sabordafamilia/receitas/seguindo'; 
+          break;
+          
+        case 'minhas':
+          const idParaFiltrar = filterUserId || TEST_USER_ID; 
+          apiUrl = `/api/sabordafamilia/usuarios/${idParaFiltrar}/receitas`;
+          break;
+      }
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'X-User-Id': TEST_USER_ID // O header é sempre do *usuário logado*
+          }
+        });
+        
         if (!response.ok) {
           throw new Error('Falha ao buscar as receitas.');
         }
-
+        
         const data: Recipe[] = await response.json();
         setRecipes(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
-        setLoading(false); // Termina o carregamento, independentemente de sucesso ou erro
+        setLoading(false);
       }
     };
 
     fetchRecipes();
-  }, []); // O array vazio [] garante que isso execute apenas uma vez
+  }, [activeTab]); // Re-executa quando 'activeTab' muda
 
-  // --- Renderização condicional ---
-
-  if (loading) {
-    return <div>Carregando receitas...</div>;
-  }
-
-  if (error) {
-    return <div>Erro: {error}</div>;
-  }
+  const handleTabClick = (tab: FeedTab) => {
+    setActiveTab(tab);
+    if (tab === 'minhas') {
+      setFilterUserId(Number(TEST_USER_ID)); 
+    }
+    if (tab === 'geral') {
+      setFilterUserId(null);
+    }
+  };
 
   return (
-    <div>
-      <h1>Receitas da Comunidade</h1>
+    <div className="feed-page"> 
+      
+      <div className="feed-tabs">
+        <button 
+          className={activeTab === 'geral' ? 'active' : ''}
+          onClick={() => setActiveTab('geral')}
+        >
+          Geral
+        </button>
+        <button 
+          className={activeTab === 'seguindo' ? 'active' : ''}
+          onClick={() => setActiveTab('seguindo')}
+        >
+          Cozinheiros Favoritos
+        </button>
+        <button 
+          className={activeTab === 'minhas' ? 'active' : ''}
+          onClick={() => setActiveTab('minhas')}
+        >
+          Minhas Receitas
+        </button>
+      </div>
 
-      {recipes.length === 0 ? (
-        <div style={{ textAlign: 'center', marginTop: '50px', color: 'grey' }}>
-          <p>Nenhuma receita cadastrada ainda.</p>
-        </div>
-      ) : (
-        <div className="feed-list">
-          {recipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onClick={() => navigate(`/receita/${recipe.id}`)}
-            />
-          ))}
-        </div>
-      )}
+      {/* O resto da página (lista de receitas) */}
+      <div className="feed-content">
+        {loading && <div className="list-page-message">Carregando receitas...</div>}
+        {error && <div className="list-page-message error">Erro: {error}</div>}
+        
+        {!loading && !error && recipes.length === 0 && (
+          <div className="list-page-message">
+            <p>Nenhuma receita encontrada nesta aba.</p>
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <div className="feed-list"> 
+            {recipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                onClick={() => navigate(`/receita/${recipe.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

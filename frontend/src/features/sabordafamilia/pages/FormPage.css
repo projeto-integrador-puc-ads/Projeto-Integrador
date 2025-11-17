@@ -1,61 +1,252 @@
 .form-page {
-  padding: 20px;
-  max-width: 600px;
-  margin: 0 auto;
+  /* No mobile, removemos a largura máxima para usar o padding do .content */
+  padding: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: none; /* Sem sombra no mobile, fica mais limpo */
 }
 
 .form-page h1 {
+  font-size: 2.5rem; /* Fonte um pouco menor para mobile */
+  font-weight: 700;
+  color: #333;
   text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 3px solid #002fff; /* Cor da navbar */
+  padding-bottom: 10px;
+}
+
+/* O <form> agora é um wrapper */
+.form-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-columns-container {
+  display: flex;
+  flex-direction: column; /* 1 COLUNA POR PADRÃO */
+  gap: 30px; 
+  width: 100%;
   margin-bottom: 25px;
 }
 
-.form-container {
+.form-column-left {
+  width: 100%; /* Ocupa 100% no mobile */
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
+.form-column-right {
+  width: 100%; /* Ocupa 100% no mobile */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+}
+
+
+/* Estilos dos campos (fontes maiores) */
 .form-group {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .form-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 10px;
+  font-weight: 600;
   color: #333;
+  font-size: 1.5rem; /* Reduzido de 2rem para caber melhor no mobile */
 }
 
-.form-group input,
-.form-group textarea {
-  padding: 10px;
+.form-group input[type="text"],
+.form-group textarea,
+.select-field { /* Aplicando o mesmo estilo ao select */
+  padding: 14px; 
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 1.1rem; 
   font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.form-group input[type="text"]:focus,
+.form-group textarea:focus,
+.select-field:focus { /* Aplicando o mesmo estilo ao select */
+  outline: none;
+  border-color: #002fff;
+  box-shadow: 0 0 0 2px rgba(0, 47, 255, 0.2);
+}
+
+/* Estilos do Upload de Imagem */
+.file-input-field {
+  display: none; 
+}
+
+.file-input-label {
+  padding: 14px 15px; 
+  background-color: #f7f9fcff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.1rem; 
+  transition: background-color 0.2s;
+}
+.file-input-label:hover {
+  background-color: #eef2f7;
+}
+
+.file-name {
+  margin-top: 10px;
+  font-style: italic;
+  color: #555;
+  font-size: 1rem;
+}
+
+/* Placeholder da Imagem (Esquerda) */
+.image-placeholder {
+  width: 100%;
+  min-height: 250px; /* Altura menor para mobile */
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  color: #888;
+  margin-top: 10px;
+}
+.image-placeholder span {
+  font-size: 50px; /* Ícone menor */
+}
+.image-placeholder p {
+  font-size: 1.1rem; /* Texto menor */
+  text-align: center;
+  padding: 0 10px;
+}
+
+/* Preview da Imagem (Esquerda) */
+.image-preview {
+  margin-top: 15px;
+  width: 100%;
+  min-height: 250px; /* Altura menor para mobile */
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+}
+
+/* Botão e Erro (Centralizados em baixo) */
 .form-error {
   color: red;
   text-align: center;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
 }
 
 .submit-button {
-  padding: 12px 20px;
-  background-color: teal;
+  padding: 18px 20px; 
+  background-color: #002fff;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 1.3rem; 
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
 }
-
 .submit-button:hover {
-  background-color: #006666;
+  background-color: #001ab3;
 }
-
 .submit-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* Estilo para o <select> (Tipo de Refeição) */
+.select-field {
+  /* (Estilo já aplicado acima) */
+}
+
+/* Container para os checkboxes */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f7f9fcff; 
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem; 
+  color: #333;
+  cursor: pointer;
+}
+
+/* Checkbox customizado (maior e mais fácil de clicar) */
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 25px;
+  width: 25px;
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  position: relative;
+  top: -2px;
+}
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: #002fff; 
+  border-color: #002fff;
+}
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '✔'; 
+  font-size: 18px;
+  color: white;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Aplica 2 colunas e mais espaço APENAS em telas grandes (PCs) */
+@media (min-width: 1024px) {
+  .form-page {
+    max-width: 90%; 
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-page h1 {
+    font-size: 3rem;
+  }
+
+  .form-columns-container {
+    flex-direction: row; /* Volta para 2 colunas */
+    gap: 40px;
+  }
+  .form-column-left {
+    flex: 1; /* 50% */
+  }
+  .form-column-right {
+    flex: 1; /* 50% */
+  }
+
+  .form-group label {
+    font-size: 2rem; /* Fonte gigante no PC */
+  }
+
+  .image-placeholder,
+  .image-preview {
+    min-height: 350px; /* Imagem maior no PC */
+  }
 }

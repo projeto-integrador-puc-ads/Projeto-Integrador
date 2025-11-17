@@ -1,34 +1,73 @@
-
+/* Layout principal */
 .main-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
-.content {
-  flex-grow: 1; /* Faz o conteúdo principal ocupar todo o espaço disponível */
-  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a tela */
-}
 
-.bottom-nav {
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid #ccc;
-  background-color: white;
-}
 
-.bottom-nav a {
-  text-decoration: none;
-  color: grey;
+.bottom-navbar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  background-color: #f7f9fcff; 
+  width: 100%;
+  padding: 0;
+  
+  position: fixed; /* Fica fixo na tela */
+  bottom: 0;       /* Alinhado na parte de baixo */
+  left: 0;
+  z-index: 1000;   /* Fica acima de tudo */
+  
+  /* Estilo visual */
+  border-top: 1px solid #ddd; /* Borda sutil em cima */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05); /* Sombra para cima */
 }
 
-/* Estilo para o link ativo (página atual) */
-.bottom-nav a.active {
-  color: teal;
+/* Botões simétricos (20% cada) */
+.bottom-navbar a {
+  width: 20%;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0; /* Padding vertical para altura */
+  height: 70px; /* Altura fixa (bom para mobile) */
+  
+  border-right: 1px solid rgba(0, 0, 0, 0.05); /* Divisória */
+  color: rgb(0, 0, 0); 
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  
+  font-size: 13px; /* Labels menores são padrão em bottom nav */
+  font-weight: 750;
+}
+
+.bottom-navbar a:last-child {
+  border-right: none;
+}
+
+.bottom-navbar .nav-icon {
+  font-size: 24px; /* Ícone um pouco menor */
+}
+
+.bottom-navbar a:hover {
+  background-color: #eef2f7; 
+}
+
+.bottom-navbar a.active {
+  color: #002fff; /* Sua cor ativa */
   font-weight: bold;
+  /* (Removemos o fundo azulado para ficar mais limpo) */
+}
+
+/* Conteúdo principal da página */
+.content {
+  flex-grow: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
+  
+
+  padding: 20px 20px 90px 20px; /* 70px da barra + 20px de respiro */
 }

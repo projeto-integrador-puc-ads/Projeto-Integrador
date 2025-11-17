@@ -1,73 +1,136 @@
+/* --- ESTILO PADRÃO (MOBILE-FIRST: VERTICAL) --- */
 .recipe-card {
-  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column; /* Vertical no celular (Estilo OLX) */
+  background: #ffffff;
   border-radius: 12px;
-  margin: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden; 
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+  border: 1px solid #eee;
 }
-
 .recipe-card:hover {
-  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .recipe-card-image {
-  width: 100%;
-  height: 180px;
+  width: 100%; /* Imagem inteira no topo */
+  height: 200px; 
   object-fit: cover;
 }
 
 .recipe-card-content {
-  padding: 12px;
+  width: 100%; 
+  padding: 20px; 
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Faz o conteúdo crescer */
+}
+
+/* Tag de Tipo de Refeição */
+.tipo-refeicao-tag {
+  background-color: #e0e7ff;
+  color: #002fff;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  width: fit-content; /* Ajusta ao texto */
 }
 
 .recipe-card-content h3 {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0 0 4px 0;
+  font-size: 1.5rem; 
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #222;
 }
 
 .recipe-card-content .author {
-  font-size: 16px;
+  font-size: 1rem; 
   color: #555;
-  margin-bottom: 6px;
+  margin-bottom: 16px; 
 }
 
-.recipe-card-content .ingredients {
-  font-size: 14px;
-  color: #333;
-  /* Limita o texto a 2 linhas */
+/* Coluna de Ingredientes (Sem Preparo) */
+.card-details-single-column {
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+.card-details-single-column h4 {
+  font-size: 1.1rem; 
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 8px 0;
+}
+.card-details-single-column p {
+  font-size: 1rem; 
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap; 
+  /* Limita o texto no mobile */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4; /* Limita a 4 linhas */
+  line-clamp: 4;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Pílulas de Restrições */
+.card-restricoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.restricao-pill {
+  background-color: #fce8e6;
+  color: #c53929;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Ações (Fontes Maiores) */
 .recipe-card-actions {
+  margin-top: auto; 
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
 }
-
-.action-item {
+.action-item, .share-button {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #555;
+  font-size: 1.1rem; 
+}
+.share-button {
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: #002fff; 
+  font-weight: 600;
 }
 
-.share-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #007bff;
+
+@media (min-width: 1024px) {
+  .recipe-card {
+    flex-direction: row; /* Horizontal no desktop */
+  }
+  .recipe-card-image {
+    width: 35%; /* Imagem na esquerda */
+    height: auto; /* Altura automática */
+  }
+  .recipe-card-content {
+    width: 65%; /* Texto na direita */
+  }
+  .card-details-single-column p {
+    /* Remove o limite de linhas no desktop */
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow: auto;
+  }
 }

@@ -1,5 +1,7 @@
 .chat-list-page {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .chat-list-page h1 {
@@ -43,11 +45,14 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 15px;
+  flex-shrink: 0; /* Impede que a imagem encolha */
 }
 
 .conversation-details {
   display: flex;
   flex-direction: column;
+  flex-grow: 1; /* Ocupa o espaço disponível */
+  overflow: hidden; /* Garante que o texto não vaze */
 }
 
 .conversation-details .contact-name {
@@ -59,5 +64,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 250px; /* encaixa bem mais ou menos */
+  /* max-width: 250px; */ /* Removido - flex-grow e overflow cuidam disso */
+}
+
+.last-message-time {
+  font-size: 0.8rem;
+  color: #888;
+  margin-left: 10px;
+  flex-shrink: 0; /* Impede que a data encolha */
 }

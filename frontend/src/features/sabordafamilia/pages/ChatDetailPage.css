@@ -1,0 +1,105 @@
+/* Estilo principal da página de chat */
+.chat-detail-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px); /* Altura total menos a navbar */
+  max-width: 800px;
+  margin: 0 auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+/* Cabeçalho com o nome do contato */
+.chat-header {
+  padding: 15px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  color: #002fff; /* Cor principal */
+  cursor: pointer; /* Para indicar que é clicável (para voltar) */
+}
+
+/* Área onde as mensagens aparecem */
+.message-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Cada balão de mensagem */
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 70%;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* Mensagem enviada (minha) */
+.message-bubble.sent {
+  background-color: #002fff; /* Cor principal */
+  color: white;
+  align-self: flex-end; /* Alinha à direita */
+  border-bottom-right-radius: 4px;
+}
+
+/* Mensagem recebida (do contato) */
+.message-bubble.received {
+  background-color: #e0e0e0; /* Cinza claro */
+  color: #333;
+  align-self: flex-start; /* Alinha à esquerda */
+  border-bottom-left-radius: 4px;
+}
+
+/* Área de digitação */
+.message-input-area {
+  display: flex;
+  padding: 15px;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  gap: 10px;
+}
+
+.message-input-area input {
+  flex-grow: 1;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 1rem;
+}
+
+.message-input-area input:focus {
+  outline: none;
+  border-color: #002fff;
+  box-shadow: 0 0 0 2px rgba(0, 47, 255, 0.2);
+}
+
+.message-input-area button {
+  padding: 12px 20px;
+  background-color: #002fff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.message-input-area button:hover {
+  background-color: #001ab3;
+}
+
+.chat-loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #555;
+}

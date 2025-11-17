@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RecipeCard } from '../components/RecipeCard';
-import { Recipe } from '../../../shared/types/Recipe';
+import type { Recipe } from '../../../shared/types/Recipe';
 import './ListPage.css'; // Reutilizando o mesmo estilo
 
 export function UserRecipesPage() {

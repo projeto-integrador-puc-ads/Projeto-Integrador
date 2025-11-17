@@ -1,0 +1,39 @@
+/* Container das Abas (Estilo Twitter) */
+.feed-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+.feed-tabs button {
+  flex: 1; /* Divide o espaço igualmente */
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #555;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+.feed-tabs button.active {
+  color: #002fff; /* Cor ativa da navbar */
+  border-bottom-color: #002fff;
+}
+
+/* --- LAYOUT RESPONSIVO (MOBILE-FIRST) --- */
+
+/* Padrão (Mobile): 1 coluna (Estilo OLX) */
+.feed-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  max-width: 100%;
+}
+
+/* Telas Maiores (Desktop): 2 colunas */
+@media (min-width: 1024px) {
+  .feed-list {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}

@@ -1,11 +1,31 @@
-.recipe-detail-page {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+/* --- LAYOUT DAS COLUNAS (MOBILE-FIRST) --- */
+.detail-columns-container {
+  display: flex;
+  flex-direction: column; /* 1-COLUNA POR PADRÃO (MOBILE) */
+  gap: 20px;
 }
 
-.back-button {
+.detail-column-left {
+  width: 100%;
+}
+
+.detail-column-right {
+  width: 100%;
+  background-color: #f7f9fcff; /* Fundo da navbar */
+  border-radius: 12px;
+  padding: 20px;
+}
+
+
+/* Título principal (na coluna esquerda) */
+.detail-column-left h1 {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700;
+  color: #222;
+  margin-top: 0;
   margin-bottom: 20px;
+  border-bottom: 3px solid #002fff; /* Cor da navbar */
+  padding-bottom: 10px;
 }
 
 .recipe-detail-image {
@@ -16,42 +36,197 @@
   margin-bottom: 20px;
 }
 
-.recipe-info p {
-  line-height: 1.6;
+
+p.author-info {
+  font-size: 1.5rem;
+  color: #000000;
+  margin-bottom: 20px;
+  margin-left: 25%;
+  align-items: center;
 }
 
+/* --- ESTILOS (TIPO E RESTRIÇÕES) --- */
+.recipe-metadata {
+  display: flex;
+  flex-direction: column; /* Coloca um em cima do outro */
+  align-items: flex-start; /* Alinha à esquerda */
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.meta-item {
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 1rem; /* Fonte maior */
+  font-weight: 600;
+  align-self: center;
+}
+.tipo-refeicao {
+  background-color: #e0e7ff; /* Azul claro */
+  color: #002fff;
+}
+.restricoes {
+  display: flex;
+  flex-wrap: wrap; /* Permite quebrar a linha se tiver muitas */
+  gap: 8px;
+}
+.restricoes span {
+  background-color: #fce8e6; /* Vermelho claro */
+  color: #c53929;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 1rem; /* Fonte maior */
+  font-weight: 600;
+}
+
+/* Seção de botões de Ação (na coluna esquerda) */
 .recipe-actions-detail {
   display: flex;
+  flex-direction: row; /* Lado a lado */
   gap: 15px;
   margin: 20px 0;
   padding-bottom: 20px;
   border-bottom: 1px solid #eee;
 }
 
+.action-button {
+  flex: 1; /* Faz os botões dividirem o espaço */
+  padding: 15px 10px; /* Botões grandes */
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem; /* Fonte maior */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* --- BOTÃO CURTIR --- */
+
+/* Estado Padrão (Não curtido) */
+.like-button {
+  background-color: #ffffff; /* Fundo branco */
+  border: 1px solid #d32f2f;  /* Borda vermelha */
+  color: #d32f2f;            /* Texto vermelho */
+  transition: all 0.2s ease; /* Transição suave */
+}
+
+.like-button.liked {
+  background-color: #d32f2f; /* Fundo vermelho */
+  border-color: #d32f2f;     /* Borda vermelha */
+  color: #ffffff;            /* Texto branco */
+}
+
+/* Estado Padrão (Não favoritado) */
+.favorite-button {
+  background-color: #ffffff; /* Fundo branco */
+  border: 1px solid #fbc02d;  /* Borda amarela */
+  color: #fbc02d;            /* Texto amarelo */
+  transition: all 0.2s ease; /* Transição suave */
+}
+
+/* Estado Ativo (Favoritado) */
+.favorite-button.favorited {
+  background-color: #fbc02d; /* Fundo amarelo */
+  border-color: #fbc02d;     /* Borda amarela */
+  color: #ffffff;            /* Texto branco */
+}
+
+
+/* --- ESTILOS DA COLUNA DIREITA --- */
+
+.recipe-info h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.recipe-info .recipe-block {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #444;
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-wrap; 
+  word-wrap: break-word;
+  margin-bottom: 20px;
+}
+.recipe-info .story {
+  font-style: italic; border-left: 4px solid #002fff; 
+}
+
+/* Seção de Comentários */
+.comments-section {
+  margin-top: 30px;
+}
 .comments-section h2 {
+  font-size: 1.8rem; margin-bottom: 20px; color: #333;
+}
+.comments-list .comment {
+  background-color: #ffffff; 
+  border-radius: 8px;
+  padding: 15px;
   margin-bottom: 15px;
+  border: 1px solid #eee;
+}
+.comments-list .comment strong {
+  font-size: 1rem; color: #002fff; 
+}
+.comments-list .comment p {
+  font-size: 1rem; line-height: 1.6; margin: 5px 0 0 0;
 }
 
-.comment {
-  border-bottom: 1px solid #f0f0f0;
-  padding: 10px 0;
-}
-
-.comment p {
-  margin-top: 5px;
-}
-
+/* Formulário de adicionar comentário */
 .add-comment {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-top: 30px;
 }
-
+.add-comment h3 {
+  font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;
+}
 .add-comment textarea {
   width: 100%;
-  min-height: 80px;
-  padding: 10px;
-  border-radius: 4px;
+  min-height: 100px;
+  padding: 12px;
   border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.add-comment textarea:focus {
+  outline: none;
+  border-color: #002fff;
+  box-shadow: 0 0 0 2px rgba(0, 47, 255, 0.2);
+}
+.add-comment button {
+  padding: 12px 20px;
+  background-color: #002fff; 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+@media (min-width: 1024px) {
+  /* Aplica as 2 colunas no desktop */
+  .detail-columns-container {
+    flex-direction: row; /* Lado a lado */
+    gap: 40px;
+  }
+  .detail-column-left {
+    flex: 1; /* 50% */
+  }
+  .detail-column-right {
+    flex: 1; /* 50% */
+    padding: 30px;
+  }
+
+  /* Botões de ação lado a lado no desktop */
+  .recipe-actions-detail {
+    flex-direction: row; 
+  }
 }

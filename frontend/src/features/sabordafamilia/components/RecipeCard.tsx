@@ -1,62 +1,124 @@
 import React from 'react';
-import { Recipe } from '../../../shared/types/Recipe';
-import './RecipeCard.css'; // Arquivo de estilo para o card
+// import type { Recipe } from '../../../shared/types/Recipe'; // <-- REMOVIDO
+import './RecipeCard.css'; // <-- VOU RESTAURAR ISTO (descomentado)
 
-// Definimos os tipos das propriedades que o componente receberá
+const API_BASE_URL = 'http://localhost:8080';
+
+// --- DEFINIÇÕES DE TIPO ADICIONADAS LOCALMENTE ---
+// (Copiado do RecipeDetailPage.tsx para consistência)
+type Usuario = {
+  id: number;
+  nome: string;
+};
+
+type Midia = {
+  id: number;
+  caminhoArquivo: string;
+  tipoMidia: string;
+};
+
+type Restricoes = {
+  id: number;
+  temGluten: boolean;
+  temLactose: boolean;
+  temAcucar: boolean;
+};
+
+// Interface principal da Receita, alinhada com o Backend
+type Recipe = {
+  id: number;
+  titulo: string;
+  ingredientes: string;
+  tipoRefeicao?: string;
+  autor: Usuario;
+  midias: Midia[];
+  restricoes?: Restricoes;
+  contagemCurtidas: number; // <-- O campo que precisamos
+};
+
+
 interface RecipeCardProps {
-  recipe: Recipe;
+  recipe: Recipe; // <-- Agora usa a 'Recipe' definida localmente
   onClick: () => void;
+}
+
+// Componente pequeno para as "pílulas" de restrição
+function RestricaoPill({ text }: { text: string }) {
+  // Adicionando um estilo inline simples para as pílulas
+  const pillStyle: React.CSSProperties = {
+    backgroundColor: '#f0f0f0',
+    borderRadius: '12px',
+    padding: '2px 8px',
+    fontSize: '0.75rem',
+    marginRight: '4px',
+    display: 'inline-block'
+  };
+  return <span style={pillStyle}>{text}</span>;
 }
 
 export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   
-  const handleShare = (event: React.MouseEvent) => {
-    // Impede que o clique no botão de compartilhar acione o clique no card inteiro
-    event.stopPropagation();
+  const handleShare = async (event: React.MouseEvent) => {
+    event.stopPropagation(); // Impede que o clique no botão abra o card
     
-    const shareText = `Confira esta receita: ${recipe.titulo}\n\n${recipe.ingredientes}`;
-
-    // A Web Share API é o equivalente do "share_plus" para a web
-    if (navigator.share) {
-      navigator.share({
-        title: recipe.titulo,
-        text: shareText,
-        // url: `url-da-sua-app/receita/${recipe.id}` // Descomente quando tiver o link
-      }).catch(console.error);
-    } else {
-      // Fallback para navegadores que não suportam a API (copiar para clipboard)
-      navigator.clipboard.writeText(shareText);
-      alert('Link da receita copiado para a área de transferência!');
+    const shareUrl = `${window.location.origin}/receita/${recipe.id}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Link da receita copiado!'); 
+    } catch (err) {
+      console.error('Falha ao copiar:', err);
+      console.error('Falha ao copiar o link.');
     }
   };
   
-  // Imagem padrão caso a receita não tenha uma
-  const imageUrl = recipe.midias?.[0]?.caminhoArquivo || '/default-recipe-image.jpg';
+  const imageUrl = recipe.midias && recipe.midias.length > 0
+    ? `${API_BASE_URL}/uploads/${recipe.midias[0].caminhoArquivo}`
+    : '/default-recipe-image.jpg';
 
   return (
-    <div className="recipe-card" onClick={onClick} role="button" tabIndex={0}>
-      <img src={imageUrl} alt={recipe.titulo} className="recipe-card-image" />
-      
-      <div className="recipe-card-content">
-        <h3>{recipe.titulo}</h3>
-        <p className="author">Por: {recipe.autor?.nome || 'Autor desconhecido'}</p>
-        <p className="ingredients">
-          {recipe.ingredientes}
-        </p>
+    <>
 
-        <div className="recipe-card-actions">
-          <div className="action-item">
-            <span>❤️</span>
-            <span>{recipe.curtidas}</span>
+      <div className="recipe-card" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
+        
+        <img src={imageUrl} alt={recipe.titulo} className="recipe-card-image" />
+        
+        <div className="recipe-card-content">
+          
+          {recipe.tipoRefeicao && (
+            <span className="tipo-refeicao-tag">{recipe.tipoRefeicao}</span>
+          )}
+          
+          <h3>{recipe.titulo}</h3>
+          <p className="author">Por: {recipe.autor?.nome || 'Autor desconhecido'}</p>
+          
+          <div className="card-details-single-column">
+            <h4>Ingredientes</h4>
+            {/* Limita a exibição dos ingredientes para não quebrar o card */}
+            <p style={{ maxHeight: '4.5em', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {recipe.ingredientes}
+            </p>
           </div>
-          <div className="action-item">
-            <button onClick={handleShare} className="share-button">
+          
+          {recipe.restricoes && (
+            <div className="card-restricoes" style={{ marginTop: '8px' }}>
+              {recipe.restricoes.temGluten && <RestricaoPill text="Contém Glúten" />}
+              {recipe.restricoes.temLactose && <RestricaoPill text="Contém Lactose" />}
+              {recipe.restricoes.temAcucar && <RestricaoPill text="Contém Açúcar" />}
+            </div>
+          )}
+          
+          <div className="recipe-card-actions">
+            <div className="action-item">
+              <span>❤️</span>
+              <span>{recipe.contagemCurtidas || 0}</span>
+            </div>
+            <button onClick={handleShare} className="share-button" aria-label="Compartilhar receita">
               <span>🔗</span>
               <span>Compartilhar</span>
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
