@@ -35,18 +35,12 @@ export function ModuleGrid() {
       desc: 'Organize compras do mês.',
       to: '/grupo3/compras',
     },
-    {
-      icon: <HistoryIcon sx={{ fontSize: 40 }} />,
-      title: 'Histórico de Consultas',
-      desc: 'Acompanhe suas consultas médicas.',
-      to: '/historico_consultas',
-    },
 
     {
-      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
-      title: 'Atendimento Médico',
-      desc: 'Registre informações de consultas e diagnósticos.',
-      to: '/atendimento',
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="success" />,
+      title: 'Consultas & Saúde',
+      desc: 'Acesse histórico, atendimentos e outras funções.',
+      to: '/saude',
     },
 
     {
@@ -74,7 +68,6 @@ export function ModuleGrid() {
       desc: 'Registre e consulte alergias dos pacientes.',
       to: '/atendimento/alergias',
     },
-
   ];
 
   return (
