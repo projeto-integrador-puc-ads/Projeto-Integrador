@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// import './ChatDetailPage.css'; // <-- Comentado para o preview, lembre-se de descomentar
-import { NarradorButton } from '../components/NarradorButton'; // <-- 1. IMPORTAR O NARRADOR
+import './ChatDetailPage.css'; 
+import { NarradorButton } from '../components/NarradorButton';
 
 // --- DEFINIÇÕES GLOBAIS PARA TESTE ---
 const API_BASE_URL = 'http://localhost:8080';
-const TEST_USER_ID = '1'; // Simula o usuário logado com ID 1
+const TEST_USER_ID = '1'; 
 // ------------------------------------
 
-// --- DEFINIÇÕES DE TIPO (Temporário) ---
 type Usuario = {
   id: number;
   nome: string;
@@ -31,7 +30,6 @@ export function ChatDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Inicializa o estado com um valor para forçar o botão a renderizar
   const [textoNarrador, setTextoNarrador] = useState('Carregando narração...');
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
@@ -42,7 +40,6 @@ export function ChatDetailPage() {
 
   useEffect(scrollToBottom, [messages]);
 
-  // Efeito para buscar o histórico de mensagens
   useEffect(() => {
     const fetchMessages = async () => {
       if (!contactId) return;
@@ -67,7 +64,6 @@ export function ChatDetailPage() {
             : firstMsg.remetente;
           setContactName(contact.nome);
         } else {
-          // Se não há mensagens, busca o nome do usuário
           fetch(`${API_BASE_URL}/api/sabordafamilia/usuarios/${contactId}`, {
              headers: { 'X-User-Id': TEST_USER_ID }
           })
@@ -86,7 +82,6 @@ export function ChatDetailPage() {
     fetchMessages();
   }, [contactId]);
 
-  // Efeito para montar a string do narrador
   useEffect(() => {
     if (loading) {
         setTextoNarrador(`Carregando conversa com ${contactName}`);
@@ -104,8 +99,6 @@ export function ChatDetailPage() {
     }
   }, [messages, contactName, loading]);
 
-
-  // Função para enviar uma nova mensagem
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === '' || !contactId) return;
@@ -161,15 +154,16 @@ export function ChatDetailPage() {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)} // Bug de digitação corrigido aqui
+            onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Digite uma mensagem..."
           />
           <button type="submit">Enviar</button>
         </form>
       </div>
 
-      {/* Renderiza o botão narrador (agora importado) */}
-      {textoNarrador && <NarradorButton textoParaLer={textoNarrador} />}
+      <div style={{ transform: 'translateY(-0px)' }}>
+        {textoNarrador && <NarradorButton textoParaLer={textoNarrador} />}
+      </div>
     </>
   );
 }

@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { UsuarioDTO } from '../../../shared/types/usuario';
+// import type { UsuarioDTO } from '../../../shared/types/usuario';
 import './ProfilePage.css'; 
 
-// --- SIMULAÇÃO DE LOGIN E IMAGEM ---
-const TEST_USER_ID = '1';
-// Link de uma foto de uso livre (via Pexels) de uma cozinheira idosa sorrindo.
+// --- TIPOS LOCAIS ---
+type UsuarioDTO = {
+  id: number;
+  nome: string;
+  fotoPerfil?: string;
+};
+
+const API_BASE_URL = 'http://localhost:8080';
 const PROFILE_IMAGE_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVk5HAAp_moZxzJs-yR5vDpE1IBIktBJjWkMq9uRDg0_-zPSqF8a_anDc9Is5cMLPGSdQ&usqp=CAU';
-// ------------------------------------
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>(); 
@@ -17,15 +21,13 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Busca os dados do usuário logado na API
-  // Busca os dados do usuário com base no ID da URL
   useEffect(() => {
-    if (!id) return; // Não faz nada se não tiver ID
+    if (!id) return;
 
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/sabordafamilia/usuarios/${id}`); 
+        const response = await fetch(`${API_BASE_URL}/api/sabordafamilia/usuarios/${id}`); 
 
         if (!response.ok) {
           throw new Error('Falha ao buscar dados do perfil.');
@@ -41,42 +43,43 @@ export function ProfilePage() {
     };
 
     fetchUserProfile();
-  }, [id]); // <-- Re-executa se o ID da URL mudar
+  }, [id]);
 
   if (loading) {
     return <div className="list-page-message">Carregando perfil...</div>;
   }
-  // ... (o resto da lógica de loading/error) ...
+  
+  if (error) {
+    return <div className="list-page-message error">{error}</div>;
+  }
   
   if (!user) {
     return <div className="list-page-message">Não foi possível carregar os dados do usuário.</div>;
   }
 
   const handleSendMessage = () => {
-    // Navega para a tela de chat com o ID deste usuário
     navigate(`/chat/${user.id}`); 
   };
 
   const handleViewRecipes = () => {
-    // 1. Navega de volta para o Feed (/)
-    // 2. Envia um "state" para o FeedPage, dizendo qual aba abrir
-    //    (e qual usuário filtrar)
+    // Envia o estado para o FeedPage filtrar
     navigate('/', { 
       state: { 
-        defaultTab: 'minhas', // Diz para o Feed abrir a aba "Minhas Receitas"
-        userIdToFilter: user.id // Diz para o Feed filtrar por este usuário
+        defaultTab: 'minhas', 
+        userIdToFilter: user.id 
       } 
     });
   };
-
 
   return (
     <div className="profile-page">
       <div className="profile-header">
         <img 
-          src={PROFILE_IMAGE_URL} 
+          // Tenta usar a foto do usuário, senão usa a padrão
+          src={user.fotoPerfil ? `${API_BASE_URL}/uploads/${user.fotoPerfil}` : PROFILE_IMAGE_URL}
           alt="Foto de perfil" 
           className="profile-avatar"
+          onError={(e) => (e.currentTarget.src = PROFILE_IMAGE_URL)}
         />
         <h2>{user.nome}</h2>
       </div>
@@ -86,7 +89,7 @@ export function ProfilePage() {
           💬 Enviar Mensagem
         </button>
         <button onClick={handleViewRecipes}>
-          📖 Ver Receitas
+          📖 Ver Receitas de {user.nome}
         </button>
       </div>
     </div>

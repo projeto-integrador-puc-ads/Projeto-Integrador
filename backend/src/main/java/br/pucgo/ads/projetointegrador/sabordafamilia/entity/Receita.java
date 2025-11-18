@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.sabordafamilia.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -44,9 +45,9 @@ public class Receita {
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "sabordafamilia_curtida",
-            joinColumns = @JoinColumn(name = "id_receita"),
-            inverseJoinColumns = @JoinColumn(name = "id_usuario")
+        name = "sabordafamilia_curtida",
+        joinColumns = @JoinColumn(name = "id_receita"),
+        inverseJoinColumns = @JoinColumn(name = "id_usuario")
     )
     private Set<Usuario> usuariosCurtiram = new HashSet<>();
     
@@ -56,26 +57,34 @@ public class Receita {
     @OneToOne(mappedBy = "receita", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Restricoes restricoes;
 
+    // Campo auxiliar para transporte de dados (não persiste no banco)
+    @Transient
+    private boolean isCurtidaPeloUsuarioAtual = false;
+
     @PrePersist
     protected void onCreate() {
         dataPostagem = LocalDateTime.now();
     }
 
-    /**
-     * Campo calculado para serialização JSON.
-     * Ele não existe no banco, mas é calculado em memória.
-     * O 'findByIdWithCollections' já carrega 'usuariosCurtiram', 
-     * então este método apenas conta o tamanho da lista carregada.
-     */
-    @Transient // Informa ao JPA para NÃO tentar salvar este campo no banco
+    // --- A CORREÇÃO ESTÁ AQUI ---
+    // Colocamos a anotação no GETTER para garantir que o JSON
+    // use exatamente este nome, sem cortar o "is".
+    @JsonProperty("isCurtidaPeloUsuarioAtual")
+    public boolean isCurtidaPeloUsuarioAtual() {
+        return isCurtidaPeloUsuarioAtual;
+    }
+
+    public void setCurtidaPeloUsuarioAtual(boolean curtidaPeloUsuarioAtual) {
+        isCurtidaPeloUsuarioAtual = curtidaPeloUsuarioAtual;
+    }
+
+    @Transient
+    @JsonProperty("contagemCurtidas")
     public int getContagemCurtidas() {
         return this.usuariosCurtiram != null ? this.usuariosCurtiram.size() : 0;
     }
 
-    @Transient 
-    private boolean isCurtidaPeloUsuarioAtual = false;
-
-
+    // --- Getters e Setters Padrão ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTipoRefeicao() { return tipoRefeicao; }
@@ -100,12 +109,4 @@ public class Receita {
     public void setMidias(List<Midia> midias) { this.midias = midias; }
     public Restricoes getRestricoes() { return restricoes; }
     public void setRestricoes(Restricoes restricoes) { this.restricoes = restricoes; }
-
-    public boolean isCurtidaPeloUsuarioAtual() {
-        return isCurtidaPeloUsuarioAtual;
-    }
-
-    public void setCurtidaPeloUsuarioAtual(boolean curtidaPeloUsuarioAtual) {
-        isCurtidaPeloUsuarioAtual = curtidaPeloUsuarioAtual;
-    }
 }

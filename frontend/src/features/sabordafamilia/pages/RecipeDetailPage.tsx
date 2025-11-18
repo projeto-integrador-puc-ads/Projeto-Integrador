@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Comentario } from '../../../shared/types/Comentario';
-import './RecipeDetailPage.css';
-import { NarradorButton } from '../components/NarradorButton'; 
+import './RecipeDetailPage.css'; 
+import { NarradorButton } from '../components/NarradorButton'; // <-- Importando o componente corretamente
 
-// --- DEFINIÇÕES 
+// --- DEFINIÇÕES DE TIPO ---
 type Usuario = {
   id: number;
   nome: string;
@@ -35,13 +35,13 @@ type Recipe = {
   restricoes?: Restricoes;
   contagemCurtidas: number;
   isCurtidaPeloUsuarioAtual: boolean;
+  // Fallback opcional caso o JSON venha sem o "is" (segurança extra)
+  curtidaPeloUsuarioAtual?: boolean; 
 };
 
-
-// --- DEFINIÇÕES GLOBAIS PARA TESTE ---
+// --- DEFINIÇÕES GLOBAIS ---
 const API_BASE_URL = 'http://localhost:8080';
-const TEST_USER_ID = '1'; // Simula o usuário logado com ID 1
-// ------------------------------------
+const TEST_USER_ID = '1'; 
 
 export function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,13 +53,13 @@ export function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estados de interação
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  // --- 2. NOVO ESTADO PARA O TEXTO DO NARRADOR ---
   const [textoNarrador, setTextoNarrador] = useState('');
 
-  // Função central para buscar os dados da receita (lógica do 'isFavorited' corrigida)
   const fetchRecipeDetails = async () => {
     if (!id) return;
     try {
@@ -72,31 +72,41 @@ export function RecipeDetailPage() {
 
       // Busca tudo em paralelo
       const [recipeResponse, favoritesResponse, commentsResponse] = await Promise.all([
+        // cache: 'no-store' é crucial para evitar dados obsoletos de curtida
         fetch(recipeUrl, {
-          headers: { 'X-User-Id': TEST_USER_ID } // Envia o ID do usuário
+          headers: { 'X-User-Id': TEST_USER_ID },
+          cache: 'no-store' 
         }),
         fetch(favoritesUrl, {
-          headers: { 'X-User-Id': TEST_USER_ID } 
+          headers: { 'X-User-Id': TEST_USER_ID },
+          cache: 'no-store'
         }),
-        fetch(commentsUrl)
+        fetch(commentsUrl, {
+             cache: 'no-store'
+        })
       ]);
 
       if (!recipeResponse.ok) throw new Error('Receita não encontrada.');
       const recipeData: Recipe = await recipeResponse.json();
       setRecipe(recipeData);
 
-      if (!favoritesResponse.ok) throw new Error('Falha ao buscar favoritos.');
-      const favoritesData: Recipe[] = await favoritesResponse.json(); 
-      
-      // Lógica de Favorito (corrigida)
-      if (favoritesData.some(favRecipe => favRecipe.id === recipeData.id)) {
-        setIsFavorited(true);
-      } else {
-        setIsFavorited(false);
+      // Lógica de Favorito
+      let isFav = false;
+      if (favoritesResponse.ok) {
+        const favoritesData: Recipe[] = await favoritesResponse.json();
+        if (favoritesData.some(favRecipe => favRecipe.id === recipeData.id)) {
+          isFav = true;
+        }
       }
+      setIsFavorited(isFav);
       
-      // Lógica de Curtida (corrigida)
-      setIsLiked(recipeData.isCurtidaPeloUsuarioAtual);
+      // --- LÓGICA DE CURTIDA ---
+      // Verifica ambas as possibilidades de nome (com 'is' ou sem 'is') para garantir
+      const curtiu = recipeData.isCurtidaPeloUsuarioAtual !== undefined 
+          ? recipeData.isCurtidaPeloUsuarioAtual 
+          : (recipeData.curtidaPeloUsuarioAtual || false);
+
+      setIsLiked(curtiu);
       
       if (commentsResponse.ok) {
         const commentsData: Comentario[] = await commentsResponse.json();
@@ -110,21 +120,18 @@ export function RecipeDetailPage() {
     }
   };
 
-  // Busca os dados na primeira vez que a página carrega
   useEffect(() => {
     fetchRecipeDetails();
   }, [id]);
 
-  // --- 3. NOVO EFEITO PARA MONTAR A STRING DO NARRADOR ---
+  // Monta o texto do narrador
   useEffect(() => {
     if (recipe) {
       const partes = [];
       partes.push(`Título: ${recipe.titulo}`);
       partes.push(`Por: ${recipe.autor.nome}`);
       
-      if (recipe.tipoRefeicao) {
-        partes.push(`Tipo de refeição: ${recipe.tipoRefeicao}`);
-      }
+      if (recipe.tipoRefeicao) partes.push(`Tipo de refeição: ${recipe.tipoRefeicao}`);
       
       const restricoesTxt: string[] = [];
       if (recipe.restricoes?.temGluten) restricoesTxt.push("Contém Glúten");
@@ -144,13 +151,10 @@ export function RecipeDetailPage() {
         partes.push(`História da receita: ${recipe.historiaReceita}`);
       }
       
-      // Junta tudo com pausas (nova linha)
       setTextoNarrador(partes.join('. \n\n '));
     }
-  }, [recipe]); // Executa sempre que 'recipe' mudar
+  }, [recipe]);
 
-
-  // Função de adicionar comentário
   const handleAddComment = async () => {
     if (newComment.trim() === '' || !recipe || isSubmitting) return;
     setIsSubmitting(true);
@@ -166,8 +170,8 @@ export function RecipeDetailPage() {
 
       if (response.ok) {
         const addedComment: Comentario = await response.json();
-        setComments([...comments, addedComment]); // Atualiza a lista local
-        setNewComment(''); // Limpa o campo
+        setComments([...comments, addedComment]);
+        setNewComment('');
       } else {
         console.error('Erro ao enviar comentário.');
       }
@@ -178,15 +182,17 @@ export function RecipeDetailPage() {
     }
   };
   
- // Função de curtir (Otimista)
  const handleLike = async () => {
     if (!recipe || isSubmitting) return;
 
     const estadoOriginalLike = isLiked;
     const contagemOriginal = recipe.contagemCurtidas;
+    
     const novoEstadoLike = !isLiked;
+    // Ajuste visual: se curtiu agora, soma 1. Se descurtiu, subtrai 1.
     const novaContagem = novoEstadoLike ? contagemOriginal + 1 : contagemOriginal - 1;
 
+    // Atualiza UI (Otimista)
     setIsLiked(novoEstadoLike);
     setRecipe({ ...recipe, contagemCurtidas: novaContagem });
     setIsSubmitting(true);
@@ -197,25 +203,24 @@ export function RecipeDetailPage() {
         headers: { 'X-User-Id': TEST_USER_ID }
       });
       
-      if (!response.ok) {
-        throw new Error("Falha ao processar a curtida");
-      }
+      if (!response.ok) throw new Error("Falha ao processar a curtida");
+      
     } catch (error) {
       console.error('Falha ao curtir:', error);
-      setIsLiked(estadoOriginalLike); // Reverte
-      setRecipe({ ...recipe, contagemCurtidas: contagemOriginal }); // Reverte
+      // Reverte em caso de erro
+      setIsLiked(estadoOriginalLike);
+      setRecipe({ ...recipe, contagemCurtidas: contagemOriginal });
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Função de favoritar (Otimista)
   const handleFavorite = async () => {
     if (!recipe || isSubmitting) return;
     
     setIsSubmitting(true);
     const novoEstadoFavorito = !isFavorited;
-    setIsFavorited(novoEstadoFavorito); // Atualiza a UI imediatamente
+    setIsFavorited(novoEstadoFavorito);
 
     try {
       await fetch(`${API_BASE_URL}/api/sabordafamilia/usuarios/me/favoritos/${recipe.id}`, {
@@ -224,10 +229,15 @@ export function RecipeDetailPage() {
       });
     } catch (error) {
       console.error('Falha ao favoritar:', error);
-      setIsFavorited(!novoEstadoFavorito); // Reverte se a API falhar
-      console.error('Erro ao salvar favorito. Tente novamente.');
+      setIsFavorited(!novoEstadoFavorito);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAuthorClick = () => {
+    if (recipe && recipe.autor) {
+      navigate(`/perfil/${recipe.autor.id}`);
     }
   };
 
@@ -239,12 +249,10 @@ export function RecipeDetailPage() {
     ? `${API_BASE_URL}/uploads/${recipe.midias[0].caminhoArquivo}`
     : 'https://placehold.co/600x400/f0e0d0/555?text=Receita';
 
-  // --- JSX ATUALIZADO ---
   return (
     <> 
       <div className="detail-columns-container">
         
-        {/* --- COLUNA DA ESQUERDA (Resumo) --- */}
         <div className="detail-column-left">
           <h1>{recipe.titulo}</h1>
           <img 
@@ -254,8 +262,16 @@ export function RecipeDetailPage() {
             onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0e0d0/555?text=Receita')}
           />
           
-          <p className="author-info"><strong>Autor:</strong> {recipe.autor.nome}</p>
+          <div className="author-action-container">
+            <button 
+              className="action-button author-button" 
+              onClick={handleAuthorClick}
+            >
+               👤 Ver Perfil de {recipe.autor.nome}
+            </button>
+          </div>
 
+          
           <div className="recipe-metadata">
             {recipe.tipoRefeicao && (
               <span className="meta-item tipo-refeicao">{recipe.tipoRefeicao}</span>
@@ -276,7 +292,7 @@ export function RecipeDetailPage() {
               disabled={isSubmitting} 
               className={`action-button like-button ${isLiked ? 'liked' : ''}`}
             >
-              {isLiked ? '❤️ Curtido!' : '❤️ Curtir'} ({recipe.contagemCurtidas || 0})
+              {isLiked ? '❤️ Curtido!' : '❤️ Curtir'} ({recipe.contagemCurtidas})
             </button>
             <button 
               onClick={handleFavorite} 
@@ -288,16 +304,12 @@ export function RecipeDetailPage() {
           </div>
         </div>
 
-        {/* --- COLUNA DA DIREITA (Detalhes e Comentários) --- */}
         <div className="detail-column-right">
-          
           <div className="recipe-info">
             <h3>Ingredientes</h3>
             <pre className="recipe-block">{recipe.ingredientes}</pre>
-            
             <h3>Modo de Preparo</h3>
             <pre className="recipe-block">{recipe.modoPreparo}</pre>
-            
             {recipe.historiaReceita && (
               <>
                 <h3>História da Receita</h3>
@@ -332,8 +344,7 @@ export function RecipeDetailPage() {
         </div>
       </div>
       
-      {/* --- 4. ADICIONAR O BOTÃO NARRADOR --- */}
-      {/* Ele só renderiza quando o texto estiver pronto e a receita carregada */}
+      {/* Renderiza o botão narrador usando o componente importado */}
       {recipe && textoNarrador && <NarradorButton textoParaLer={textoNarrador} />}
     </>
   );

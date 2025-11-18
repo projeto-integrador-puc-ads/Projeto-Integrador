@@ -230,3 +230,33 @@ p.author-info {
     flex-direction: row; 
   }
 }
+
+.author-action-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.author-button {
+  background-color: #e0e7ff; /* Azul bem claro (combina com o tema) */
+  color: #002fff; /* Azul principal */
+  border: 2px solid #002fff; /* Borda azul para destacar */
+  border-radius: 25px; /* Mais arredondado (estilo pílula) */
+  padding: 12px 25px; /* Maior área de clique */
+  font-size: 1.1rem;
+  width: auto; /* Largura se ajusta ao texto */
+  min-width: 250px; /* Largura mínima para ficar bonito */
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Espaço entre o ícone e o texto */
+}
+
+.author-button:hover {
+  background-color: #002fff;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 47, 255, 0.2);
+}
