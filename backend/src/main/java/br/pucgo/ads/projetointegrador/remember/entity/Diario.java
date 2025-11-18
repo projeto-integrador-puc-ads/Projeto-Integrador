@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,7 +42,7 @@ public class Diario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
+    private User usuario;
 
     @OneToMany(mappedBy = "diario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Midia> midias = new ArrayList<>();

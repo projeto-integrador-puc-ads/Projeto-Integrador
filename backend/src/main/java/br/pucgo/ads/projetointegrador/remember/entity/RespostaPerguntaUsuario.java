@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.Usuario;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,13 +31,13 @@ public class RespostaPerguntaUsuario {
     @Column(name = "data_resposta", nullable = false, updatable = false)
     private LocalDateTime dataResposta;
 
-    @OneToOne
-    @JoinColumn(name = "id_pergunta", insertable = false, updatable = false)
-    private PerguntaCognitiva perguntaCognitiva;
+//    @OneToOne
+//    @JoinColumn(name = "id_pergunta", insertable = false, updatable = false)
+//    private PerguntaCognitiva perguntaCognitiva;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
+    private User usuario;
 
     @PrePersist
     protected void onCreate() {
