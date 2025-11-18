@@ -12,6 +12,8 @@ import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AtendimentoMedico from '@/features/diario_saude/Idoso/AtendimentoMedico';
 import ReceituarioPage from '@/features/diario_saude/Medico/ReceituarioPage';
+import DiagnosticarDoencaPage from '@/features/diario_saude/Medico/DiagnosticarDoencaPage';
+import InformacoesSaude from '@/features/diario_saude/Idoso/InformacoesSaude';
 import IniciarConsulta from '@/features/diario_saude/Medico/IniciarConsultaPage';
 import MedicoDashboard from '@/features/diario_saude/Medico/MedicoDashboard';
 import PedirExamesPage from '@/features/diario_saude/Medico/PedirExamesPage';
@@ -19,6 +21,7 @@ import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/Recomenda
 import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
 import AlergiasPacientePage from '@/features/diario_saude/Medico/AlergiasPacientePage';
 import SaudeMenuPage from '@/features/diario_saude/Idoso/SaudeMenuPage';
+
 
 
 function Home() {
@@ -59,6 +62,7 @@ export function AppRoutes() {
         {/* rota: Saúde do idoso */}
         <Route path="saude" element={<SaudeMenuPage />} />
         <Route path="/historico_consultas" element={<HistoricoConsultasPage />} />
+        <Route path="/informacoes_saude" element={<InformacoesSaude />} />
 
         {/* rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
@@ -66,6 +70,7 @@ export function AppRoutes() {
         <Route path="atendimento/exames" element={<PedirExamesPage />} />
         <Route path="atendimento/exercicios" element={<RecomendacaoExerciciosPage />} />
         <Route path="atendimento/alergias" element={<AlergiasPacientePage />} />
+        <Route path="atendimento/doencas" element={<DiagnosticarDoencaPage />} />
 
         {/* Página inicial do médico */}
         <Route path="medico" element={<IniciarConsulta />} />

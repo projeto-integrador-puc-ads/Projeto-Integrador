@@ -1,5 +1,15 @@
-import React from 'react';
-import { Box, Container, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Button
+} from '@mui/material';
 import { ModuleGridMedico } from '@/features/diario_saude/components/ModuleGridMedico';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -14,6 +24,32 @@ export default function DashboardMedico() {
     navigate('/medico');
     return null;
   }
+
+  const token = localStorage.getItem("token");
+
+  // Estados para edição
+  const [idade, setIdade] = useState(paciente.idade);
+  const [peso, setPeso] = useState(paciente.peso);
+  const [altura, setAltura] = useState(paciente.altura);
+
+  // Estado para armazenar doenças
+  const [doencas, setDoencas] = useState([]);
+
+  // Buscar doenças do paciente via API
+  useEffect(() => {
+    fetch(`http://localhost:8080/usuario-doenca/usuario/${paciente.id_usuario}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setDoencas(data))
+      .catch(err => console.error("Erro ao buscar doenças do paciente:", err));
+  }, [paciente.id_usuario, token]);
+
+  // Função para salvar alterações (chamada ao clicar em "Salvar")
+  const handleSalvar = () => {
+    // Aqui você pode chamar seu endpoint PUT para atualizar o paciente
+    alert('Dados do paciente atualizados (simulação).');
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -34,13 +70,64 @@ export default function DashboardMedico() {
             <Typography variant="h5" fontWeight="bold" mb={2}>
               Informações do Paciente
             </Typography>
-            <List dense>
-              <ListItem><ListItemText primary={`Nome: ${paciente.nome}`} /></ListItem>
-              <ListItem><ListItemText primary={`Idade: ${paciente.idade} anos`} /></ListItem>
-              <ListItem><ListItemText primary={`Peso: ${paciente.peso} kg`} /></ListItem>
-              <ListItem><ListItemText primary={`Altura: ${paciente.altura} m`} /></ListItem>
-              <ListItem><ListItemText primary={`Alergias: ${paciente.alergias || "Nenhuma"}`} /></ListItem>
-            </List>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Nome como texto simples em negrito */}
+              <Typography variant="body1">
+                Paciente: <strong>{paciente.nome}</strong>
+              </Typography>
+
+              <TextField
+                label="Idade"
+                type="number"
+                value={idade}
+                onChange={(e) => setIdade(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Peso (kg)"
+                type="number"
+                value={peso}
+                onChange={(e) => setPeso(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Altura (m)"
+                type="number"
+                value={altura}
+                onChange={(e) => setAltura(e.target.value)}
+                fullWidth
+              />
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSalvar}
+                sx={{ mt: 2 }}
+              >
+                Salvar
+              </Button>
+            </Box>
+
+            {/* Lista de doenças */}
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" fontWeight="bold" mb={1}>
+                Doenças
+              </Typography>
+              <List dense>
+                {doencas.length ? (
+                  doencas.map((d) => (
+                    <ListItem key={d.id}>
+                      <ListItemText primary={d.nome} />
+                    </ListItem>
+                  ))
+                ) : (
+                  <Typography color="text.secondary">
+                    Nenhuma doença cadastrada.
+                  </Typography>
+                )}
+              </List>
+            </Box>
           </Paper>
 
           {/* Painel Modular */}

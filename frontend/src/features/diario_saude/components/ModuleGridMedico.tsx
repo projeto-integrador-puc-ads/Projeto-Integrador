@@ -36,6 +36,12 @@ export function ModuleGridMedico({ paciente, prescricao }: { paciente: Paciente,
       desc: 'Sugira exercícios para o paciente.',
       onClick: () => navigate('/atendimento/exercicios', { state: { paciente, prescricao } }),
     },
+    {
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="success" />,
+      title: 'Diagnosticar Doenças',
+      desc: 'Selecionar doenças para o paciente.',
+      onClick: () => navigate('/atendimento/doencas', { state: { paciente, prescricao } }),
+    },
   ];
 
   return (

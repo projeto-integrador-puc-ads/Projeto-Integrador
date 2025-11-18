@@ -28,6 +28,11 @@ public class UsuarioController {
         return usuarioService.listarTodos();
     }
 
+    @GetMapping("/{id}") // <<< AQUI FALTAVA
+    public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
+    }
+
     @PostMapping
     public void inserir(@RequestBody UsuarioDTO usuario){
         usuarioService.inserir(usuario);

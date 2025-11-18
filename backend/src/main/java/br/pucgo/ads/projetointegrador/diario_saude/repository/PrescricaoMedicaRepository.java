@@ -11,7 +11,7 @@ public interface PrescricaoMedicaRepository extends JpaRepository<PrescricaoMedi
         SELECT p FROM PrescricaoMedicaEntity p
         LEFT JOIN FETCH p.prescricoesMedicamentos pm
         LEFT JOIN FETCH p.prescricoesExames pe
-        WHERE p.usuario.id_usuario = :idUsuario
+        WHERE p.usuario.idUsuario = :idUsuario
     """)
     List<PrescricaoMedicaEntity> findByUsuario(Long idUsuario);
 }

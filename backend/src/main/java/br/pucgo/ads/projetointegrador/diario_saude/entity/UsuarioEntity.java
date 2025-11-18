@@ -22,7 +22,8 @@ public class UsuarioEntity {
 
     @Id//chave primária
     @GeneratedValue(strategy = GenerationType.IDENTITY)//auto incremental
-    private long id_usuario;
+    @Column(name = "id_usuario")
+    private long idUsuario;
 
     @Column(nullable = false)
     private String nome;
@@ -58,7 +59,7 @@ public class UsuarioEntity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (id_usuario ^ (id_usuario >>> 32));
+        result = prime * result + (int) (idUsuario ^ (idUsuario >>> 32));
         return result;
     }
 
@@ -71,17 +72,17 @@ public class UsuarioEntity {
         if (getClass() != obj.getClass())
             return false;
         UsuarioEntity other = (UsuarioEntity) obj;
-        if (id_usuario != other.id_usuario)
+        if (idUsuario != other.idUsuario)
             return false;
         return true;
     }
 
     public long getId_usuario() {
-        return id_usuario;
+        return idUsuario;
     }
 
     public void setId_usuario(long id_usuario) {
-        this.id_usuario = id_usuario;
+        this.idUsuario = id_usuario;
     }
 
     public String getNome() {
