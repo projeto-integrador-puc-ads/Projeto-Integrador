@@ -38,18 +38,29 @@ type Medicamento = {
   via: string;
 };
 
+// 🔹 Componentes reutilizáveis
+function PageContainer({ children }: { children: React.ReactNode }) {
+  return <Container maxWidth="md" sx={{ py: 5 }}>{children}</Container>;
+}
+
+function PageTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography variant="h4" align="center" fontWeight="bold" mb={3}>
+      {children}
+    </Typography>
+  );
+}
+
 export default function ReceituarioPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const paciente = location.state?.paciente as Paciente | undefined;
   const prescricaoExistente = location.state?.prescricao;
 
-  // Redireciona se paciente não existir
   useEffect(() => {
     if (!paciente) navigate("/medico");
   }, [paciente, navigate]);
 
-  // Simula login
   useEffect(() => {
     const usuarioSimulado = {
       id_usuario: 1,
@@ -57,7 +68,6 @@ export default function ReceituarioPage() {
       email: "lucas@email.com",
       role: "MEDICO",
     };
-    
     if (!localStorage.getItem("usuarioLogado"))
       localStorage.setItem("usuarioLogado", JSON.stringify(usuarioSimulado));
   }, []);
@@ -101,23 +111,15 @@ export default function ReceituarioPage() {
   };
 
   const handleSaveReceita = async () => {
-    if (!token) {
-      alert("Token não encontrado.");
-      return;
-    }
-    if (!prescricaoExistente?.id_prescricao) {
-      alert("⚠ Nenhuma prescrição iniciada! Volte para a tela de Atendimento.");
-      return;
-    }
+    if (!token) return alert("Token não encontrado.");
+    if (!prescricaoExistente?.id_prescricao)
+      return alert("⚠ Nenhuma prescrição iniciada! Volte para a tela de Atendimento.");
 
     try {
       for (const med of medList) {
         await fetch("http://localhost:8080/api/diario_saude/prescricao_medicamento", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             id_prescricao: prescricaoExistente.id_prescricao,
             id_medicamento: med.id_medicamento || null,
@@ -138,15 +140,17 @@ export default function ReceituarioPage() {
   const dataHoje = new Date().toLocaleDateString("pt-BR");
 
   return (
-    <Container maxWidth="md" sx={{ py: 5 }}>
+    <PageContainer>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3, backgroundColor: "#f9fafc" }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ textTransform: "none", mb: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          sx={{ textTransform: "none", mb: 2 }}
+        >
           Voltar
         </Button>
 
-        <Typography variant="h4" align="center" fontWeight="bold" mb={3}>
-          RECEITUÁRIO
-        </Typography>
+        <PageTitle>RECEITUÁRIO</PageTitle>
 
         <Typography variant="h6" sx={{ textAlign: "left", mb: 3 }}>
           Paciente: <strong>{paciente?.nome}</strong>
@@ -245,6 +249,6 @@ export default function ReceituarioPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

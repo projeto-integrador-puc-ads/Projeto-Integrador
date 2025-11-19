@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/doencas")
+@RequestMapping("/api/diario_saude/doencas")
 public class DoencaController {
 
     @Autowired

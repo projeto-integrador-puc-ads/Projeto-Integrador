@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/usuario-doenca")
+@RequestMapping("/api/diario_saude/usuario-doenca")
 public class UsuarioDoencaController {
 
     @Autowired

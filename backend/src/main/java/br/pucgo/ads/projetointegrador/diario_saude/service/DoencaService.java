@@ -29,7 +29,7 @@ public class DoencaService {
     public List<DoencasEntity> importarCSV(MultipartFile arquivo) {
         List<DoencasEntity> lista = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(arquivo.getInputStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(arquivo.getInputStream(), "Windows-1252"))) {
 
             String linha;
             boolean primeira = true;

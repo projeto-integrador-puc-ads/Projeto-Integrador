@@ -14,9 +14,22 @@ import {
   TextField,
   Button,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+// 🔹 Componentes reutilizáveis
+function PageContainer({ children }: { children: React.ReactNode }) {
+  return <Container maxWidth="md" sx={{ py: 5 }}>{children}</Container>;
+}
+
+function PageTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography variant="h4" align="center" fontWeight="bold" mb={3}>
+      {children}
+    </Typography>
+  );
+}
 
 export default function RecomendacaoExerciciosPage() {
   const location = useLocation();
@@ -37,7 +50,7 @@ export default function RecomendacaoExerciciosPage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 5 }}>
+    <PageContainer>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -47,9 +60,7 @@ export default function RecomendacaoExerciciosPage() {
           Voltar
         </Button>
 
-        <Typography variant="h4" align="center" fontWeight="bold" mb={3}>
-          Recomendação de Exercícios
-        </Typography>
+        <PageTitle>Recomendação de Exercícios</PageTitle>
 
         <Typography variant="h6" mb={2}>
           Paciente: {pacienteNome}
@@ -64,7 +75,7 @@ export default function RecomendacaoExerciciosPage() {
         </List>
 
         <IconButton onClick={() => setDialogOpen(true)} size="small">
-          <AddIcon /> <Typography ml={1}>Adicionar Exercício</Typography>
+          <ArrowForwardIcon /> <Typography ml={1}>Adicionar Exercício</Typography>
         </IconButton>
 
         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
@@ -86,6 +97,6 @@ export default function RecomendacaoExerciciosPage() {
           </DialogActions>
         </Dialog>
       </Paper>
-    </Container>
+    </PageContainer>
   );
 }

@@ -22,12 +22,6 @@ export function ModuleGridSaude() {
       onClick: () => navigate('/atendimento'),
     },
     {
-      icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="warning" />,
-      title: 'Alergias',
-      desc: 'Ver e registrar alergias.',
-      onClick: () => navigate('/atendimento/alergias'),
-    },
-    {
       icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="info" />,
       title: 'Informações de Saúde',
       desc: 'Doenças cadastradas do paciente.',

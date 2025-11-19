@@ -12,14 +12,23 @@ import {
   Box,
 } from '@mui/material';
 
+//Componentes reutilizáveis "transparentes"
+function PageContainer({ children }: { children: React.ReactNode }) {
+  return <Container maxWidth="sm" sx={{ py: 5 }}>{children}</Container>;
+}
+
+function PageTitle({ children }: { children: React.ReactNode }) {
+  return <Typography variant="h4" mb={3} textAlign="center">{children}</Typography>;
+}
+
 export default function IniciarConsulta() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [selectedPaciente, setSelectedPaciente] = useState(null);
-  const [pacientes, setPacientes] = useState([]);
-  const [error, setError] = useState(null);
+  const [selectedPaciente, setSelectedPaciente] = useState<any>(null);
+  const [pacientes, setPacientes] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simula usuário logado no localStorage
+  // Simula usuário logado
   useEffect(() => {
     const usuarioSimulado = {
       id_usuario: 1,
@@ -37,70 +46,50 @@ export default function IniciarConsulta() {
 
   const API_URL = "http://localhost:8080/api/diario_saude/usuario";
 
-  // Buscar pacientes da API ao carregar
+  // Buscar pacientes
   useEffect(() => {
+    if (!token) return;
     const fetchData = async () => {
       try {
         const response = await fetch(API_URL, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         });
-
-        if (!response.ok) {
-          throw new Error(`Erro HTTP! Status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Erro HTTP! Status: ${response.status}`);
         const result = await response.json();
         setPacientes(result);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
         setError(err.message);
       }
     };
-
-    if (token) fetchData();
+    fetchData();
   }, [token]);
 
-  // Filtrar pacientes
   const filtered = pacientes.filter(p =>
     p.nome.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Iniciar consulta: criar prescrição e redirecionar
   const handleStartConsulta = async () => {
-    if (!selectedPaciente) return;
-
-    if (!token) {
-      alert("Token não encontrado. Faça login primeiro.");
-      return;
-    }
+    if (!selectedPaciente || !token) return;
 
     try {
       const payload = {
         id_medico: usuario.id_usuario,
         id_usuario: selectedPaciente.id_usuario,
-        descricao: "Consulta iniciada", // texto inicial
+        descricao: "Consulta iniciada",
       };
 
       const response = await fetch("http://localhost:8080/api/diario_saude/prescricao", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
-      
       const prescricao = await response.json();
 
-      // Redireciona para o dashboard, passando paciente e prescrição
       navigate('/atendimento/dashboard', { state: { paciente: selectedPaciente, prescricao } });
-
     } catch (err) {
       console.error("❌ Erro ao iniciar consulta:", err);
       alert("Erro ao iniciar a consulta.");
@@ -108,9 +97,9 @@ export default function IniciarConsulta() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 5 }}>
+    <PageContainer>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
-        <Typography variant="h4" mb={3}>Iniciar Consulta</Typography>
+        <PageTitle>Iniciar Consulta</PageTitle>
 
         {error && (
           <Typography color="error" mb={2}>
@@ -154,6 +143,6 @@ export default function IniciarConsulta() {
           </Button>
         </Box>
       </Paper>
-    </Container>
+    </PageContainer>
   );
 }

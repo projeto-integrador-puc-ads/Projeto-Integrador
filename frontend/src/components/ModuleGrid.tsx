@@ -62,12 +62,6 @@ export function ModuleGrid() {
       desc: 'Dúvidas e sugestões.',
       to: '/grupo6/ajudador',
     },
-    {
-      icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="warning" />,
-      title: 'Atendimento de Alergias',
-      desc: 'Registre e consulte alergias dos pacientes.',
-      to: '/atendimento/alergias',
-    },
   ];
 
   return (

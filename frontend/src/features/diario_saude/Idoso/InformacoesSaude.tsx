@@ -2,66 +2,65 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  Container,
-  Paper,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
+  Stack,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Autocomplete,
   TextField,
-  Stack,
-  Divider
 } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
 import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+import PageContainer from "../components/PageContainer";
+import PageTitle from "../components/PageTitle";
+import SectionTitle from "../components/SectionTitle";
+import RoundedTextField from "../components/RoundedTextField";
+import ListItemCard from "../components/ListItemCard";
+import BackButton from "../components/BackButton";
 import { useNavigate } from "react-router-dom";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function InformacoesSaudePage() {
   const navigate = useNavigate();
 
   const usuarioLogado = JSON.parse(localStorage.getItem("usuario") || "null");
   const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!usuarioLogado) navigate("/login");
-  }, [usuarioLogado, navigate]);
-
   const pacienteId = usuarioLogado?.id_usuario;
 
-  const [usuario, setUsuario] = useState(null);
+  const [usuario, setUsuario] = useState<any>(null);
   const [editData, setEditData] = useState({
     nome: "",
     idade: "",
     peso: "",
     altura: "",
-    alergias: ""
+    alergias: "",
   });
 
   // ==========================
-  // ESTADOS DOENÇAS
+  // DOENÇAS
   // ==========================
-  const [listaDoencasSistema, setListaDoencasSistema] = useState([]);
-  const [doencasUsuario, setDoencasUsuario] = useState([]);
+  const [listaDoencasSistema, setListaDoencasSistema] = useState<any[]>([]);
+  const [doencasUsuario, setDoencasUsuario] = useState<any[]>([]);
   const [dialogDoencaOpen, setDialogDoencaOpen] = useState(false);
-  const [doencaSelecionada, setDoencaSelecionada] = useState(null);
+  const [doencaSelecionada, setDoencaSelecionada] = useState<any>(null);
 
   // ==========================
-  // ESTADOS ALERGIAS
+  // ALERGIAS
   // ==========================
-  const [listaAlergiasSistema, setListaAlergiasSistema] = useState([]);
-  const [alergiasUsuario, setAlergiasUsuario] = useState([]);
+  const [listaAlergiasSistema, setListaAlergiasSistema] = useState<any[]>([]);
+  const [alergiasUsuario, setAlergiasUsuario] = useState<any[]>([]);
   const [dialogAlergiaOpen, setDialogAlergiaOpen] = useState(false);
-  const [alergiaSelecionada, setAlergiaSelecionada] = useState(null);
+  const [alergiaSelecionada, setAlergiaSelecionada] = useState<any>(null);
 
   // ==========================
-  // DADOS DO USUÁRIO
+  // LOGIN / USUÁRIO
   // ==========================
+  useEffect(() => {
+    if (!usuarioLogado) navigate("/login");
+  }, [usuarioLogado, navigate]);
+
   useEffect(() => {
     if (!pacienteId || !token) return;
 
@@ -76,16 +75,13 @@ export default function InformacoesSaudePage() {
           idade: data.idade || "",
           peso: data.peso || "",
           altura: data.altura || "",
-          alergias: data.alergias || ""
+          alergias: data.alergias || "",
         });
       })
-      .catch((err) => console.error("Erro ao buscar usuário:", err));
+      .catch(console.error);
   }, [pacienteId, token]);
 
-  // ==========================
-  // ALTERAR CAMPOS
-  // ==========================
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
@@ -95,12 +91,9 @@ export default function InformacoesSaudePage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          id_usuario: pacienteId,
-          ...editData
-        })
+        body: JSON.stringify({ id_usuario: pacienteId, ...editData }),
       });
 
       if (resp.ok) {
@@ -112,52 +105,36 @@ export default function InformacoesSaudePage() {
         alert("Erro ao salvar informações.");
       }
     } catch (err) {
-      console.error("Erro ao atualizar usuário:", err);
+      console.error(err);
     }
   };
 
   // ==========================
-  // CARREGAR LISTA DOENÇAS SISTEMA
+  // FETCH DOENÇAS
   // ==========================
   useEffect(() => {
     if (!token) return;
-
-    fetch("http://localhost:8080/doencas/listar", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch("http://localhost:8080/api/diario_saude/doencas/listar", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => setListaDoencasSistema(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Erro ao listar doenças:", err));
+      .catch(console.error);
   }, [token]);
 
-  // ==========================
-  // CARREGAR DOENÇAS DO USUÁRIO
-  // ==========================
   const loadDoencasUsuario = () => {
-    fetch(`http://localhost:8080/usuario-doenca/usuario/${pacienteId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch(`http://localhost:8080/api/diario_saude/usuario-doenca/usuario/${pacienteId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => setDoencasUsuario(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Erro ao carregar doenças:", err));
+      .catch(console.error);
   };
 
-  useEffect(() => {
-    if (pacienteId) loadDoencasUsuario();
-  }, [pacienteId]);
+  useEffect(() => { if (pacienteId) loadDoencasUsuario(); }, [pacienteId]);
 
   const handleAddDoenca = async () => {
-    if (!doencaSelecionada) {
-      alert("Selecione uma doença.");
-      return;
-    }
+    if (!doencaSelecionada) return alert("Selecione uma doença.");
 
     await fetch(
-      `http://localhost:8080/usuario-doenca/add?usuarioId=${pacienteId}&doencaId=${doencaSelecionada.id}`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      `http://localhost:8080/api/diario_saude/usuario-doenca/add?usuarioId=${pacienteId}&doencaId=${doencaSelecionada.id}`,
+      { method: "POST", headers: { Authorization: `Bearer ${token}` } }
     );
 
     setDialogDoencaOpen(false);
@@ -165,60 +142,40 @@ export default function InformacoesSaudePage() {
     loadDoencasUsuario();
   };
 
-  const handleRemoveDoenca = async (id) => {
-    await fetch(
-      `http://localhost:8080/usuario-doenca/delete?usuarioId=${pacienteId}&doencaId=${id}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
+  const handleRemoveDoenca = async (id: number) => {
+    await fetch(`http://localhost:8080/api/diario_saude/usuario-doenca/delete?usuarioId=${pacienteId}&doencaId=${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
     loadDoencasUsuario();
   };
 
   // ==========================
-  // ALERGIAS - LISTA SISTEMA
+  // FETCH ALERGIAS
   // ==========================
   useEffect(() => {
     if (!token) return;
-
-    fetch("http://localhost:8080/api/diario_saude/alergia/listar", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    fetch("http://localhost:8080/api/diario_saude/alergia/listar", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => setListaAlergiasSistema(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Erro ao listar alergias:", err));
+      .catch(console.error);
   }, [token]);
 
-  // ==========================
-  // ALERGIAS DO USUÁRIO
-  // ==========================
   const loadAlergiasUsuario = () => {
-    fetch(`http://localhost:8080/api/diario_saude/usuario-alergia/usuario/${pacienteId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    fetch(`http://localhost:8080/api/diario_saude/usuario-alergia/usuario/${pacienteId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => setAlergiasUsuario(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Erro ao carregar alergias:", err));
+      .catch(console.error);
   };
 
-  useEffect(() => {
-    if (pacienteId) loadAlergiasUsuario();
-  }, [pacienteId]);
+  useEffect(() => { if (pacienteId) loadAlergiasUsuario(); }, [pacienteId]);
 
   const handleAddAlergia = async () => {
-    if (!alergiaSelecionada) {
-      alert("Selecione uma alergia.");
-      return;
-    }
+    if (!alergiaSelecionada) return alert("Selecione uma alergia.");
 
     await fetch(
       `http://localhost:8080/api/diario_saude/usuario-alergia/add?usuarioId=${pacienteId}&alergiaId=${alergiaSelecionada.id}`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      }
+      { method: "POST", headers: { Authorization: `Bearer ${token}` } }
     );
 
     setDialogAlergiaOpen(false);
@@ -226,15 +183,11 @@ export default function InformacoesSaudePage() {
     loadAlergiasUsuario();
   };
 
-  const handleRemoveAlergia = async (id) => {
+  const handleRemoveAlergia = async (id: number) => {
     await fetch(
       `http://localhost:8080/api/diario_saude/usuario-alergia/delete?usuarioId=${pacienteId}&alergiaId=${id}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      }
+      { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
     );
-
     loadAlergiasUsuario();
   };
 
@@ -242,187 +195,67 @@ export default function InformacoesSaudePage() {
   // RENDER
   // ==========================
   return (
-    <Container maxWidth="sm" sx={{ py: 3 }}>
-      <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
-        Voltar
-      </Button>
+    <PageContainer>
+      <BackButton to="/home" />
+      <PageTitle>Informações de Saúde</PageTitle>
 
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography variant="h5" fontWeight="bold" align="center" sx={{ mb: 2 }}>
-          Informações de Saúde
-        </Typography>
+      <SectionTitle>Dados do Paciente</SectionTitle>
+      <Stack spacing={2}>
+        <RoundedTextField label="Nome" name="nome" value={editData.nome} onChange={handleChange} />
+        <RoundedTextField label="Idade" name="idade" type="number" value={editData.idade} onChange={handleChange} />
+        <RoundedTextField label="Peso (kg)" name="peso" type="number" value={editData.peso} onChange={handleChange} />
+        <RoundedTextField label="Altura (m)" name="altura" type="number" value={editData.altura} onChange={handleChange} />
+        <RoundedTextField label="Alergias (texto)" name="alergias" value={editData.alergias} onChange={handleChange} multiline />
+      </Stack>
+      <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={salvarAlteracoes}>Salvar Alterações</Button>
 
-        {/* DADOS DO PACIENTE */}
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Dados do Paciente
-        </Typography>
+      <Divider sx={{ my: 3 }} />
+      <SectionTitle>Doenças Cadastradas</SectionTitle>
+      {doencasUsuario.length === 0 && <Typography color="text.secondary" align="center">Nenhuma doença cadastrada.</Typography>}
+      {doencasUsuario.map((d) => <ListItemCard key={d.id} title={d.nome} onDelete={() => handleRemoveDoenca(d.id)} />)}
+      <Button variant="contained" fullWidth startIcon={<AddIcon />} sx={{ mt: 2 }} onClick={() => setDialogDoencaOpen(true)}>Adicionar Doença</Button>
 
-        <Stack spacing={2}>
-          <TextField label="Nome" name="nome" value={editData.nome} onChange={handleChange} fullWidth />
-          <TextField label="Idade" name="idade" type="number" value={editData.idade} onChange={handleChange} fullWidth />
-          <TextField label="Peso (kg)" name="peso" type="number" value={editData.peso} onChange={handleChange} fullWidth />
-          <TextField label="Altura (m)" name="altura" type="number" value={editData.altura} onChange={handleChange} fullWidth />
-          <TextField label="Alergias (texto)" name="alergias" value={editData.alergias} onChange={handleChange} fullWidth multiline />
-        </Stack>
-
-        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={salvarAlteracoes}>
-          Salvar Alterações
-        </Button>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* DOENÇAS */}
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Doenças Cadastradas
-        </Typography>
-
-        <List dense>
-          {doencasUsuario.map((d) => (
-            <ListItem
-              key={d.id}
-              sx={{
-                bgcolor: "#f5f5f5",
-                borderRadius: 2,
-                mb: 1,
-                px: 2,
-                flexDirection: "column",
-                alignItems: "flex-start"
-              }}
-            >
-              <ListItemText primary={d.nome} />
-              <Box sx={{ width: "100%", textAlign: "right", mt: 1 }}>
-                <DeleteIcon
-                  onClick={() => handleRemoveDoenca(d.id)}
-                  style={{ color: "#d32f2f", cursor: "pointer" }}
-                  fontSize="medium"
-                />
-              </Box>
-            </ListItem>
-          ))}
-
-          {doencasUsuario.length === 0 && (
-            <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
-              Nenhuma doença cadastrada.
-            </Typography>
-          )}
-        </List>
-
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<AddIcon />}
-          sx={{ mt: 2 }}
-          onClick={() => setDialogDoencaOpen(true)}
-        >
-          Adicionar Doença
-        </Button>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* ALERGIAS */}
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Alergias Cadastradas
-        </Typography>
-
-        <List dense>
-          {alergiasUsuario.map((a) => (
-            <ListItem
-              key={a.id}
-              sx={{
-                bgcolor: "#f5f5f5",
-                borderRadius: 2,
-                mb: 1,
-                px: 2,
-                flexDirection: "column",
-                alignItems: "flex-start"
-              }}
-            >
-              <ListItemText primary={a.nome} />
-              <Box sx={{ width: "100%", textAlign: "right", mt: 1 }}>
-                <DeleteIcon
-                  onClick={() => handleRemoveAlergia(a.id)}
-                  style={{ color: "#d32f2f", cursor: "pointer" }}
-                  fontSize="medium"
-                />
-              </Box>
-            </ListItem>
-          ))}
-
-          {alergiasUsuario.length === 0 && (
-            <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
-              Nenhuma alergia cadastrada.
-            </Typography>
-          )}
-        </List>
-
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<AddIcon />}
-          sx={{ mt: 2 }}
-          onClick={() => setDialogAlergiaOpen(true)}
-        >
-          Adicionar Alergia
-        </Button>
-      </Paper>
+      <Divider sx={{ my: 3 }} />
+      <SectionTitle>Alergias Cadastradas</SectionTitle>
+      {alergiasUsuario.length === 0 && <Typography color="text.secondary" align="center">Nenhuma alergia cadastrada.</Typography>}
+      {alergiasUsuario.map((a) => <ListItemCard key={a.id} title={a.nome} onDelete={() => handleRemoveAlergia(a.id)} />)}
+      <Button variant="contained" fullWidth startIcon={<AddIcon />} sx={{ mt: 2 }} onClick={() => setDialogAlergiaOpen(true)}>Adicionar Alergia</Button>
 
       {/* DIALOG DOENÇAS */}
       <Dialog open={dialogDoencaOpen} fullWidth onClose={() => setDialogDoencaOpen(false)}>
         <DialogTitle>Adicionar Doença</DialogTitle>
-
         <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <Autocomplete
-              options={listaDoencasSistema}
-              getOptionLabel={(op) => op?.nome || ""}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={(e, v) => setDoencaSelecionada(v)}
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  {option.nome}
-                </li>
-              )}
-              renderInput={(params) => <TextField {...params} label="Selecione a doença" />}
-            />
-          </Stack>
+          <Autocomplete
+            options={listaDoencasSistema}
+            getOptionLabel={(op) => op?.nome || ""}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={(e, v) => setDoencaSelecionada(v)}
+            renderInput={(params) => <TextField {...params} label="Selecione a doença" />}
+          />
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setDialogDoencaOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddDoenca}>
-            Adicionar
-          </Button>
+          <Button variant="contained" onClick={handleAddDoenca}>Adicionar</Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG ALERGIAS */}
       <Dialog open={dialogAlergiaOpen} fullWidth onClose={() => setDialogAlergiaOpen(false)}>
         <DialogTitle>Adicionar Alergia</DialogTitle>
-
         <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <Autocomplete
-              options={listaAlergiasSistema}
-              getOptionLabel={(op) => op?.nome || ""}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={(e, v) => setAlergiaSelecionada(v)}
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  {option.nome}
-                </li>
-              )}
-              renderInput={(params) => <TextField {...params} label="Selecione a alergia" />}
-            />
-          </Stack>
+          <Autocomplete
+            options={listaAlergiasSistema}
+            getOptionLabel={(op) => op?.nome || ""}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={(e, v) => setAlergiaSelecionada(v)}
+            renderInput={(params) => <TextField {...params} label="Selecione a alergia" />}
+          />
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setDialogAlergiaOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddAlergia}>
-            Adicionar
-          </Button>
+          <Button variant="contained" onClick={handleAddAlergia}>Adicionar</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

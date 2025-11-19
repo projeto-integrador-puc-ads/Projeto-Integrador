@@ -35,32 +35,10 @@ public class MedicamentoController {
 
     @PostMapping("/import")
     public ResponseEntity<String> importarCSV(@RequestParam("file") MultipartFile file) {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-
-            br.readLine(); // pula cabeçalho
-
-            String linha;
-            while ((linha = br.readLine()) != null) {
-                String[] col = linha.split(";");
-                if(col.length < 11) continue;
-                
-                String nome = col[1];
-                String principio_ativo = col[10];
-                String empresa = col[8];
-                String classe = col[7];
-                String numero_registro = col[4];
-
-                // Evitar duplicar
-                if (!medicamentoRepository.existsByNome(nome)) {
-                    medicamentoRepository.save(
-                        new MedicamentoEntity(nome, principio_ativo, empresa, classe, numero_registro)
-                    );
-                }
-            }
-
+        try {
+            medicamentoService.importarCSV(file);
             return ResponseEntity.ok("Importação concluída.");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body("Erro: " + e.getMessage());
         }
     }

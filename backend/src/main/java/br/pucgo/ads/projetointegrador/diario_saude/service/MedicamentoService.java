@@ -1,8 +1,12 @@
 package br.pucgo.ads.projetointegrador.diario_saude.service;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import br.pucgo.ads.projetointegrador.diario_saude.dto.MedicamentoDTO;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.MedicamentoEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.repository.MedicamentoRepository;
@@ -31,5 +35,34 @@ public class MedicamentoService {
 
     public MedicamentoDTO buscarPorId(Long id){
         return new MedicamentoDTO(medicamentoRepository.findById(id).get());
+    }
+
+    public void importarCSV(MultipartFile file) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), "Windows-1252"))) {
+
+            br.readLine(); // pula cabeçalho
+
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                String[] col = linha.split(";");
+                if (col.length < 11) continue;
+
+                String nome = col[1];
+                String principio_ativo = col[10];
+                String empresa = col[8];
+                String classe = col[7];
+                String numero_registro = col[4];
+
+                if (!medicamentoRepository.existsByNome(nome)) {
+                    medicamentoRepository.save(
+                        new MedicamentoEntity(nome, principio_ativo, empresa, classe, numero_registro)
+                    );
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao importar CSV de medicamentos: " + e.getMessage(), e);
+        }
     }
 }

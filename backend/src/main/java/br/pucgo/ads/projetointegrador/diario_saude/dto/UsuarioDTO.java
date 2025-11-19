@@ -3,7 +3,6 @@ package br.pucgo.ads.projetointegrador.diario_saude.dto;
 import org.springframework.beans.BeanUtils;
 
 import br.pucgo.ads.projetointegrador.diario_saude.entity.UsuarioEntity;
-import jakarta.persistence.Column;
 
 public class UsuarioDTO {
 

@@ -2,268 +2,156 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  Container,
-  Paper,
   Typography,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  TextField,
   Stack,
   Dialog,
-  DialogContent,
   DialogTitle,
+  DialogContent,
   DialogActions,
-  useMediaQuery
+  Autocomplete,
+  TextField,
+  useMediaQuery,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate, useLocation } from "react-router-dom";
-import Autocomplete from "@mui/material/Autocomplete";
 import { useTheme } from "@mui/material/styles";
+
+//Componentes
+import PageContainer from "../components/PageContainer";
+import PageTitle from "../components/PageTitle";
+import SectionTitle from "../components/SectionTitle";
+import ListItemCard from "../components/ListItemCard";
 
 export default function DoencasPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const paciente = location.state?.paciente;
+  const token = localStorage.getItem("token");
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
 
+  const [listaDoencasSistema, setListaDoencasSistema] = useState<any[]>([]);
+  const [doencasPaciente, setDoencasPaciente] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [doencaSelecionada, setDoencaSelecionada] = useState<any>(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // REDIRECIONA SE NÃO HOUVER PACIENTE
   useEffect(() => {
     if (!paciente) navigate("/medico");
   }, [paciente, navigate]);
 
-  const token = localStorage.getItem("token");
-  const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
-
-  const [listaDoencasSistema, setListaDoencasSistema] = useState([]);
-  const [doencasPaciente, setDoencasPaciente] = useState([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [doencaSelecionada, setDoencaSelecionada] = useState(null);
-
-  // RESPONSIVIDADE MUI
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   // LISTA TODAS AS DOENÇAS DO SISTEMA
   useEffect(() => {
     if (!token) return;
-
-    fetch("http://localhost:8080/doencas/listar", {
+    fetch("http://localhost:8080/api/diario_saude/doencas/listar", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then(data => setListaDoencasSistema(data))
-      .catch(err => console.error("Erro ao buscar doenças:", err));
+      .catch(console.error);
   }, [token]);
 
-  // BUSCA AS DOENÇAS DO PACIENTE
+  // LISTA AS DOENÇAS DO PACIENTE
   const loadDoencasPaciente = () => {
     if (!paciente) return;
-
-    fetch(`http://localhost:8080/usuario-doenca/usuario/${paciente.id_usuario}`, {
+    fetch(`http://localhost:8080/api/diario_saude/usuario-doenca/usuario/${paciente.id_usuario}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then(data => setDoencasPaciente(data))
-      .catch(err => console.error("Erro ao buscar doenças do paciente:", err));
+      .catch(console.error);
   };
 
-  useEffect(() => {
-    loadDoencasPaciente();
-  }, [paciente]);
+  useEffect(() => { loadDoencasPaciente(); }, [paciente]);
 
-  // ADICIONAR
+  // ADICIONAR DOENÇA
   const handleAddDoenca = async () => {
-    if (!doencaSelecionada) {
-      alert("Selecione uma doença antes de adicionar.");
-      return;
-    }
+    if (!doencaSelecionada) return alert("Selecione uma doença antes de adicionar.");
 
-    try {
-      await fetch(
-        `http://localhost:8080/usuario-doenca/add?usuarioId=${paciente.id_usuario}&doencaId=${doencaSelecionada.id}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    await fetch(
+      `http://localhost:8080/api/diario_saude/usuario-doenca/add?usuarioId=${paciente.id_usuario}&doencaId=${doencaSelecionada.id}`,
+      { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      setDialogOpen(false);
-      setDoencaSelecionada(null);
-      loadDoencasPaciente();
-    } catch (err) {
-      console.error("Erro ao adicionar doença:", err);
-    }
+    setDialogOpen(false);
+    setDoencaSelecionada(null);
+    loadDoencasPaciente();
   };
 
-  // REMOVER
-  const handleRemoveDoenca = async (idDoenca) => {
-    try {
-      await fetch(
-        `http://localhost:8080/usuario-doenca/delete?usuarioId=${paciente.id_usuario}&doencaId=${idDoenca}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      loadDoencasPaciente();
-    } catch (err) {
-      console.error("Erro ao remover doença:", err);
-    }
+  // REMOVER DOENÇA
+  const handleRemoveDoenca = async (id: number) => {
+    await fetch(
+      `http://localhost:8080/api/diario_saude/usuario-doenca/delete?usuarioId=${paciente.id_usuario}&doencaId=${id}`,
+      { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+    );
+    loadDoencasPaciente();
   };
 
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        py: isMobile ? 2 : 5,
-        px: isMobile ? 1 : 2,
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          p: isMobile ? 2 : 4,
-          borderRadius: 3,
-        }}
+    <PageContainer>
+      <Button
+        onClick={() => navigate(-1)}
+        startIcon={<ArrowBackIcon />}
+        fullWidth={isMobile}
+        sx={{ mb: 2, textTransform: "none" }}
       >
-        {/* BOTÃO VOLTAR */}
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
-          fullWidth={isMobile}
-          sx={{
-            textTransform: "none",
-            mb: isMobile ? 1 : 2,
-            fontSize: isMobile ? "0.85rem" : "1rem",
-          }}
-        >
-          Voltar
-        </Button>
+        Voltar
+      </Button>
 
-        {/* TÍTULO */}
-        <Typography
-          variant={isMobile ? "h5" : "h4"}
-          align="center"
-          fontWeight="bold"
-          mb={3}
-        >
-          Doenças do Paciente
+      <PageTitle>Doenças do Paciente</PageTitle>
+
+      <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 2 }}>
+        Paciente: <strong>{paciente?.nome}</strong>
+      </Typography>
+
+      <SectionTitle>Doenças cadastradas</SectionTitle>
+
+      {doencasPaciente.length === 0 && (
+        <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
+          Nenhuma doença cadastrada para este paciente.
         </Typography>
+      )}
 
-        {/* PACIENTE */}
-        <Typography
-          variant={isMobile ? "body1" : "h6"}
-          sx={{ mb: 2, textAlign: isMobile ? "center" : "left" }}
-        >
-          Paciente: <strong>{paciente?.nome}</strong>
-        </Typography>
+      {doencasPaciente.map((d) => (
+        <ListItemCard key={d.id} title={d.nome} onDelete={() => handleRemoveDoenca(d.id)} />
+      ))}
 
-        {/* LISTA */}
-        <Typography
-          variant={isMobile ? "body1" : "h6"}
-          mb={1}
-        >
-          Doenças cadastradas:
-        </Typography>
+      <Button
+        startIcon={<AddIcon />}
+        fullWidth
+        sx={{ mt: 2 }}
+        onClick={() => setDialogOpen(true)}
+      >
+        Adicionar Doença
+      </Button>
 
-        <List dense sx={{ width: "100%" }}>
-          {doencasPaciente.map((d) => (
-            <ListItem
-              key={d.id}
-              sx={{
-                flexDirection: isMobile ? "column" : "row",
-                alignItems: isMobile ? "flex-start" : "center",
-                gap: isMobile ? 1 : 0,
-                borderBottom: "1px solid #e0e0e0",
-              }}
-              secondaryAction={
-                <Button
-                  color="error"
-                  onClick={() => handleRemoveDoenca(d.id)}
-                  size={isMobile ? "small" : "medium"}
-                >
-                  Remover
-                </Button>
-              }
-            >
-              <ListItemText
-                primary={d.nome}
-                primaryTypographyProps={{
-                  fontSize: isMobile ? "0.95rem" : "1rem",
-                }}
-              />
-            </ListItem>
-          ))}
-
-          {doencasPaciente.length === 0 && (
-            <Typography
-              color="text.secondary"
-              sx={{ mt: 1, textAlign: "center" }}
-            >
-              Nenhuma doença cadastrada para este paciente.
-            </Typography>
-          )}
-        </List>
-
-        {/* BOTÃO ADICIONAR */}
-        <Button
-          startIcon={<AddIcon />}
-          fullWidth={isMobile}
-          sx={{ mt: 2 }}
-          onClick={() => setDialogOpen(true)}
-        >
-          Adicionar Doença
-        </Button>
-
-        {/* RODAPÉ */}
-        <Box textAlign="center" mt={6}>
-          <Typography variant={isMobile ? "body1" : "h6"}>
-            {usuario?.nome}
-          </Typography>
-          <Typography variant="body2">
-            {new Date().toLocaleDateString("pt-BR")}
-          </Typography>
-        </Box>
-      </Paper>
+      <Box textAlign="center" mt={6}>
+        <Typography variant={isMobile ? "body1" : "h6"}>{usuario?.nome}</Typography>
+        <Typography variant="body2">{new Date().toLocaleDateString("pt-BR")}</Typography>
+      </Box>
 
       {/* DIALOG */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        fullWidth
-        maxWidth={isMobile ? "xs" : "sm"}
-      >
-        <DialogTitle sx={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>
-          Adicionar Doença
-        </DialogTitle>
-
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>Adicionar Doença</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
             <Autocomplete
               options={listaDoencasSistema}
               getOptionLabel={(option) => option.nome}
               onChange={(e, v) => setDoencaSelecionada(v)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pesquise a doença"
-                  fullWidth
-                />
-              )}
+              renderInput={(params) => <TextField {...params} label="Pesquise a doença" fullWidth />}
             />
           </Stack>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddDoenca}>
-            Adicionar
-          </Button>
+          <Button variant="contained" onClick={handleAddDoenca}>Adicionar</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

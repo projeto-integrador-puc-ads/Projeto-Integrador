@@ -11,7 +11,7 @@ public interface UsuarioDoencaRepository extends JpaRepository<UsuarioDoencasEnt
 
     List<UsuarioDoencasEntity> findByUsuario_IdUsuario(Long usuarioId);
 
-    void deleteByUsuario_IdUsuarioAndDoenca_Id(Long usuarioId, Long doencaId); // ← ADICIONE ESTO
+    void deleteByUsuario_IdUsuarioAndDoenca_Id(Long usuarioId, Long doencaId);
 
     @Query("""
         SELECT ud FROM UsuarioDoencasEntity ud

@@ -13,26 +13,38 @@ import {
   Box,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useNavigate, useLocation } from "react-router-dom";
+
+// 🔹 Componentes reutilizáveis
+function PageContainer({ children }: { children: React.ReactNode }) {
+  return <Container maxWidth="sm" sx={{ mt: 4 }}>{children}</Container>;
+}
+
+function PageTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography variant="h5" fontWeight="bold" align="center" gutterBottom>
+      {children}
+    </Typography>
+  );
+}
 
 export default function PrescreverExamePage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //usa localStorage (mesmo modelo das outras páginas)
   const token = localStorage.getItem("token");
-
-  //id da prescrição médica criada ao iniciar consulta
   const prescricao = location.state?.prescricao;
-  const idPrescricaoMedica = prescricao?.id_prescricao_medica ?? prescricao?.id_prescricao ?? prescricao?.id;
+  const idPrescricaoMedica =
+    prescricao?.id_prescricao_medica ?? prescricao?.id_prescricao ?? prescricao?.id;
 
-  //estado
   const [listaExames, setListaExames] = useState<Array<any>>([]);
   const [exameSelecionado, setExameSelecionado] = useState<number | "">("");
   const [examesPrescritos, setExamesPrescritos] = useState<Array<any>>([]);
   const [loadingExames, setLoadingExames] = useState(false);
 
-  //se não tiver idPrescricaoMedica - avisa e volta
+  // verifica se existe prescrição
   useEffect(() => {
     if (!idPrescricaoMedica) {
       alert("Prescrição médica não encontrada. Inicie a consulta primeiro.");
@@ -40,12 +52,9 @@ export default function PrescreverExamePage() {
     }
   }, [idPrescricaoMedica, navigate]);
 
-  //busca exames disponíveis
+  // busca exames
   useEffect(() => {
-    if (!token) {
-      console.warn("Token não encontrado no localStorage.");
-      return;
-    }
+    if (!token) return;
     setLoadingExames(true);
     fetch("http://localhost:8080/api/diario_saude/exames", {
       headers: { Authorization: `Bearer ${token}` },
@@ -56,78 +65,52 @@ export default function PrescreverExamePage() {
           navigate("/login");
           throw new Error("401");
         }
-        if (!resp.ok) {
-          throw new Error(`Falha ao buscar exames: ${resp.status}`);
-        }
+        if (!resp.ok) throw new Error(`Falha ao buscar exames: ${resp.status}`);
         return resp.json();
       })
-      .then((data) => {
-        //espera um array de objetos com { id_exame, nome_exame }
-        setListaExames(Array.isArray(data) ? data : []);
-      })
+      .then((data) => setListaExames(Array.isArray(data) ? data : []))
       .catch((err) => {
         if (err.message !== "401") console.error("Erro ao carregar exames:", err);
       })
       .finally(() => setLoadingExames(false));
   }, [token, navigate]);
 
-  //adiciona exame à lista visual (evita duplicados)
+  // adicionar exame
   const handleAddExame = () => {
     if (!exameSelecionado) return;
     const exame = listaExames.find((x) => x.id_exame === exameSelecionado);
-    if (!exame) {
-      alert("Exame selecionado não encontrado.");
-      return;
-    }
-    if (examesPrescritos.some((x) => x.id_exame === exameSelecionado)) {
-      //já adicionado
-      return;
-    }
+    if (!exame) return alert("Exame selecionado não encontrado.");
+    if (examesPrescritos.some((x) => x.id_exame === exameSelecionado)) return;
     setExamesPrescritos((prev) => [...prev, exame]);
   };
 
-  //remove exame da lista visual
+  // remover exame
   const handleRemove = (id: number) => {
     setExamesPrescritos((prev) => prev.filter((e) => e.id_exame !== id));
   };
 
-  //salva todos os exames prescritos no backend
+  // salvar exames
   const handleSalvar = async () => {
-    if (!token) {
-      alert("Token não encontrado. Faça login.");
-      return;
-    }
-    if (!idPrescricaoMedica) {
-      alert("Prescrição médica inválida. Retorne e inicie a consulta.");
-      return;
-    }
-    if (examesPrescritos.length === 0) {
-      alert("Nenhum exame para salvar.");
-      return;
-    }
+    if (!token || !idPrescricaoMedica || examesPrescritos.length === 0) return;
 
     try {
       for (const e of examesPrescritos) {
         const body = {
           id_exame: e.id_exame,
           id_prescricao_medica: idPrescricaoMedica,
-          data_prescricao: new Date().toISOString().split("T")[0], //YYYY-MM-DD — compatível com LocalDate
-          observacao: ""
+          data_prescricao: new Date().toISOString().split("T")[0],
+          observacao: "",
         };
 
         const resp = await fetch("http://localhost:8080/api/diario_saude/prescricao/exame", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(body),
         });
 
         if (!resp.ok) {
-          //tenta extrair corpo com detalhe do erro para log
           let text = "";
-          try { text = await resp.text(); } catch (e) { /* ignore */ }
+          try { text = await resp.text(); } catch (e) {}
           console.error("Erro ao salvar exame:", resp.status, text);
           throw new Error(`Erro ao salvar exame (status ${resp.status})`);
         }
@@ -142,11 +125,14 @@ export default function PrescreverExamePage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
+    <PageContainer>
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h5" fontWeight="bold" align="center" gutterBottom>
-          Prescrever Exames
-        </Typography>
+        {/* Ícone de voltar azul */}
+        <IconButton onClick={() => navigate(-1)} color="primary" sx={{ mb: 2 }}>
+          <ArrowBackIcon />
+        </IconButton>
+
+        <PageTitle>Prescrever Exames</PageTitle>
 
         <Box mb={1}>
           <Typography variant="body2" color="textSecondary">
@@ -171,28 +157,36 @@ export default function PrescreverExamePage() {
           ))}
         </TextField>
 
-        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={handleAddExame}>
-          Adicionar
-        </Button>
+        {/* Botão adicionar azul */}
+        <IconButton
+          onClick={handleAddExame}
+          size="small"
+          color="primary"
+          sx={{ mt: 2, display: "flex", alignItems: "center" }}
+        >
+          <ArrowForwardIcon />
+          <Typography ml={1} color="primary">Adicionar Exame</Typography>
+        </IconButton>
 
         <List sx={{ mt: 2, border: "1px solid #ddd", borderRadius: 2, maxHeight: 240, overflow: "auto" }}>
-          {examesPrescritos.map((ex) => (
-            <ListItem
-              key={ex.id_exame}
-              secondaryAction={
-                <IconButton edge="end" onClick={() => handleRemove(ex.id_exame)}>
-                  <DeleteIcon />
-                </IconButton>
-              }
-            >
-              <ListItemText primary={ex.nome_exame} />
-            </ListItem>
-          ))}
-          {examesPrescritos.length === 0 && (
-            <ListItem>
-              <ListItemText primary="Nenhum exame adicionado." />
-            </ListItem>
-          )}
+          {examesPrescritos.length
+            ? examesPrescritos.map((ex) => (
+                <ListItem
+                  key={ex.id_exame}
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => handleRemove(ex.id_exame)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={ex.nome_exame} />
+                </ListItem>
+              ))
+            : (
+              <ListItem>
+                <ListItemText primary="Nenhum exame adicionado." />
+              </ListItem>
+            )}
         </List>
 
         <Button
@@ -205,11 +199,7 @@ export default function PrescreverExamePage() {
         >
           Salvar Prescrição
         </Button>
-
-        <Button variant="outlined" fullWidth sx={{ mt: 1 }} onClick={() => navigate(-1)}>
-          Voltar
-        </Button>
       </Paper>
-    </Container>
+    </PageContainer>
   );
 }
