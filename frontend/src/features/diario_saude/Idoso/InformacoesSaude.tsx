@@ -32,7 +32,7 @@ export default function InformacoesSaudePage() {
     if (!usuarioLogado) navigate("/login");
   }, [usuarioLogado, navigate]);
 
-  const pacienteId = usuarioLogado?.id_usuario; // <-- idoso
+  const pacienteId = usuarioLogado?.id_usuario;
 
   const [usuario, setUsuario] = useState(null);
   const [editData, setEditData] = useState({
@@ -43,12 +43,25 @@ export default function InformacoesSaudePage() {
     alergias: ""
   });
 
+  // ==========================
+  // ESTADOS DOENÇAS
+  // ==========================
   const [listaDoencasSistema, setListaDoencasSistema] = useState([]);
   const [doencasUsuario, setDoencasUsuario] = useState([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogDoencaOpen, setDialogDoencaOpen] = useState(false);
   const [doencaSelecionada, setDoencaSelecionada] = useState(null);
 
-  // Buscar informações do usuário (IDOSO)
+  // ==========================
+  // ESTADOS ALERGIAS
+  // ==========================
+  const [listaAlergiasSistema, setListaAlergiasSistema] = useState([]);
+  const [alergiasUsuario, setAlergiasUsuario] = useState([]);
+  const [dialogAlergiaOpen, setDialogAlergiaOpen] = useState(false);
+  const [alergiaSelecionada, setAlergiaSelecionada] = useState(null);
+
+  // ==========================
+  // DADOS DO USUÁRIO
+  // ==========================
   useEffect(() => {
     if (!pacienteId || !token) return;
 
@@ -69,6 +82,9 @@ export default function InformacoesSaudePage() {
       .catch((err) => console.error("Erro ao buscar usuário:", err));
   }, [pacienteId, token]);
 
+  // ==========================
+  // ALTERAR CAMPOS
+  // ==========================
   const handleChange = (e) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
@@ -89,20 +105,20 @@ export default function InformacoesSaudePage() {
 
       if (resp.ok) {
         alert("Informações atualizadas!");
-
         const atualizado = { ...usuarioLogado, ...editData };
         localStorage.setItem("usuario", JSON.stringify(atualizado));
-
         setUsuario(atualizado);
       } else {
-        alert("Erro ao salvar alterações.");
+        alert("Erro ao salvar informações.");
       }
     } catch (err) {
       console.error("Erro ao atualizar usuário:", err);
     }
   };
 
-  // Carrega lista geral de doenças
+  // ==========================
+  // CARREGAR LISTA DOENÇAS SISTEMA
+  // ==========================
   useEffect(() => {
     if (!token) return;
 
@@ -110,18 +126,20 @@ export default function InformacoesSaudePage() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => setListaDoencasSistema(data))
+      .then((data) => setListaDoencasSistema(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Erro ao listar doenças:", err));
   }, [token]);
 
-  // Carrega doenças do idoso
+  // ==========================
+  // CARREGAR DOENÇAS DO USUÁRIO
+  // ==========================
   const loadDoencasUsuario = () => {
     fetch(`http://localhost:8080/usuario-doenca/usuario/${pacienteId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => setDoencasUsuario(data))
-      .catch((err) => console.error("Erro ao carregar doenças do usuário:", err));
+      .then((data) => setDoencasUsuario(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Erro ao carregar doenças:", err));
   };
 
   useEffect(() => {
@@ -134,46 +152,98 @@ export default function InformacoesSaudePage() {
       return;
     }
 
-    try {
-      await fetch(
-        `http://localhost:8080/usuario-doenca/add?usuarioId=${pacienteId}&doencaId=${doencaSelecionada.id}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    await fetch(
+      `http://localhost:8080/usuario-doenca/add?usuarioId=${pacienteId}&doencaId=${doencaSelecionada.id}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
-      setDialogOpen(false);
-      setDoencaSelecionada(null);
-      loadDoencasUsuario();
-    } catch (err) {
-      console.error("Erro ao adicionar doença:", err);
-    }
+    setDialogDoencaOpen(false);
+    setDoencaSelecionada(null);
+    loadDoencasUsuario();
   };
 
-  const handleRemove = async (doencaId) => {
-    try {
-      await fetch(
-        `http://localhost:8080/usuario-doenca/delete?usuarioId=${pacienteId}&doencaId=${doencaId}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  const handleRemoveDoenca = async (id) => {
+    await fetch(
+      `http://localhost:8080/usuario-doenca/delete?usuarioId=${pacienteId}&doencaId=${id}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
-      loadDoencasUsuario();
-    } catch (err) {
-      console.error("Erro ao remover doença:", err);
-    }
+    loadDoencasUsuario();
   };
 
+  // ==========================
+  // ALERGIAS - LISTA SISTEMA
+  // ==========================
+  useEffect(() => {
+    if (!token) return;
+
+    fetch("http://localhost:8080/api/diario_saude/alergia/listar", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then((data) => setListaAlergiasSistema(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Erro ao listar alergias:", err));
+  }, [token]);
+
+  // ==========================
+  // ALERGIAS DO USUÁRIO
+  // ==========================
+  const loadAlergiasUsuario = () => {
+    fetch(`http://localhost:8080/api/diario_saude/usuario-alergia/usuario/${pacienteId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then((data) => setAlergiasUsuario(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Erro ao carregar alergias:", err));
+  };
+
+  useEffect(() => {
+    if (pacienteId) loadAlergiasUsuario();
+  }, [pacienteId]);
+
+  const handleAddAlergia = async () => {
+    if (!alergiaSelecionada) {
+      alert("Selecione uma alergia.");
+      return;
+    }
+
+    await fetch(
+      `http://localhost:8080/api/diario_saude/usuario-alergia/add?usuarioId=${pacienteId}&alergiaId=${alergiaSelecionada.id}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    setDialogAlergiaOpen(false);
+    setAlergiaSelecionada(null);
+    loadAlergiasUsuario();
+  };
+
+  const handleRemoveAlergia = async (id) => {
+    await fetch(
+      `http://localhost:8080/api/diario_saude/usuario-alergia/delete?usuarioId=${pacienteId}&alergiaId=${id}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    loadAlergiasUsuario();
+  };
+
+  // ==========================
+  // RENDER
+  // ==========================
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 2 }}
-        onClick={() => navigate(-1)}
-      >
+      <Button startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} onClick={() => navigate(-1)}>
         Voltar
       </Button>
 
@@ -182,60 +252,51 @@ export default function InformacoesSaudePage() {
           Informações de Saúde
         </Typography>
 
-        {/* SEÇÃO EDITÁVEL DO USUÁRIO */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            Dados do Paciente
-          </Typography>
-
-          <Stack spacing={2}>
-            <TextField label="Nome" name="nome" value={editData.nome} onChange={handleChange} fullWidth />
-            <TextField label="Idade" name="idade" type="number" value={editData.idade} onChange={handleChange} fullWidth />
-            <TextField label="Peso (kg)" name="peso" type="number" value={editData.peso} onChange={handleChange} fullWidth />
-            <TextField label="Altura (m)" name="altura" type="number" value={editData.altura} onChange={handleChange} fullWidth />
-            <TextField label="Alergias" name="alergias" value={editData.alergias} onChange={handleChange} fullWidth multiline />
-          </Stack>
-
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={salvarAlteracoes}
-          >
-            Salvar Alterações
-          </Button>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* SEÇÃO DOENÇAS */}
+        {/* DADOS DO PACIENTE */}
         <Typography variant="h6" sx={{ mb: 1 }}>
-          Doenças cadastradas
+          Dados do Paciente
+        </Typography>
+
+        <Stack spacing={2}>
+          <TextField label="Nome" name="nome" value={editData.nome} onChange={handleChange} fullWidth />
+          <TextField label="Idade" name="idade" type="number" value={editData.idade} onChange={handleChange} fullWidth />
+          <TextField label="Peso (kg)" name="peso" type="number" value={editData.peso} onChange={handleChange} fullWidth />
+          <TextField label="Altura (m)" name="altura" type="number" value={editData.altura} onChange={handleChange} fullWidth />
+          <TextField label="Alergias (texto)" name="alergias" value={editData.alergias} onChange={handleChange} fullWidth multiline />
+        </Stack>
+
+        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={salvarAlteracoes}>
+          Salvar Alterações
+        </Button>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* DOENÇAS */}
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          Doenças Cadastradas
         </Typography>
 
         <List dense>
           {doencasUsuario.map((d) => (
             <ListItem
-            key={d.id}
-            sx={{
+              key={d.id}
+              sx={{
                 bgcolor: "#f5f5f5",
                 borderRadius: 2,
                 mb: 1,
                 px: 2,
-                flexDirection: "column",   // 👈 torna vertical
+                flexDirection: "column",
                 alignItems: "flex-start"
-            }}
+              }}
             >
-            <ListItemText primary={d.nome} />
-
-            {/* Linha da lixeira separada */}
-            <Box sx={{ width: "100%", textAlign: "right", mt: 1 }}>
+              <ListItemText primary={d.nome} />
+              <Box sx={{ width: "100%", textAlign: "right", mt: 1 }}>
                 <DeleteIcon
-                onClick={() => handleRemove(d.id)}
-                style={{ color: "#d32f2f", cursor: "pointer" }}
-                fontSize="medium"
+                  onClick={() => handleRemoveDoenca(d.id)}
+                  style={{ color: "#d32f2f", cursor: "pointer" }}
+                  fontSize="medium"
                 />
-            </Box>
+              </Box>
             </ListItem>
           ))}
 
@@ -251,36 +312,113 @@ export default function InformacoesSaudePage() {
           fullWidth
           startIcon={<AddIcon />}
           sx={{ mt: 2 }}
-          onClick={() => setDialogOpen(true)}
+          onClick={() => setDialogDoencaOpen(true)}
         >
           Adicionar Doença
         </Button>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* ALERGIAS */}
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          Alergias Cadastradas
+        </Typography>
+
+        <List dense>
+          {alergiasUsuario.map((a) => (
+            <ListItem
+              key={a.id}
+              sx={{
+                bgcolor: "#f5f5f5",
+                borderRadius: 2,
+                mb: 1,
+                px: 2,
+                flexDirection: "column",
+                alignItems: "flex-start"
+              }}
+            >
+              <ListItemText primary={a.nome} />
+              <Box sx={{ width: "100%", textAlign: "right", mt: 1 }}>
+                <DeleteIcon
+                  onClick={() => handleRemoveAlergia(a.id)}
+                  style={{ color: "#d32f2f", cursor: "pointer" }}
+                  fontSize="medium"
+                />
+              </Box>
+            </ListItem>
+          ))}
+
+          {alergiasUsuario.length === 0 && (
+            <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
+              Nenhuma alergia cadastrada.
+            </Typography>
+          )}
+        </List>
+
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<AddIcon />}
+          sx={{ mt: 2 }}
+          onClick={() => setDialogAlergiaOpen(true)}
+        >
+          Adicionar Alergia
+        </Button>
       </Paper>
 
-      {/* DIALOG */}
-      <Dialog open={dialogOpen} fullWidth onClose={() => setDialogOpen(false)}>
+      {/* DIALOG DOENÇAS */}
+      <Dialog open={dialogDoencaOpen} fullWidth onClose={() => setDialogDoencaOpen(false)}>
         <DialogTitle>Adicionar Doença</DialogTitle>
 
         <DialogContent>
           <Stack spacing={2} mt={1}>
             <Autocomplete
-            options={listaDoencasSistema}
-            getOptionLabel={(op) => op.nome}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            onChange={(e, v) => setDoencaSelecionada(v)}
-            renderOption={(props, option) => (
+              options={listaDoencasSistema}
+              getOptionLabel={(op) => op?.nome || ""}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onChange={(e, v) => setDoencaSelecionada(v)}
+              renderOption={(props, option) => (
                 <li {...props} key={option.id}>
-                {option.nome}
+                  {option.nome}
                 </li>
-            )}
-            renderInput={(params) => <TextField {...params} label="Selecione a doença" />}
+              )}
+              renderInput={(params) => <TextField {...params} label="Selecione a doença" />}
             />
           </Stack>
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={() => setDialogDoencaOpen(false)}>Cancelar</Button>
           <Button variant="contained" onClick={handleAddDoenca}>
+            Adicionar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DIALOG ALERGIAS */}
+      <Dialog open={dialogAlergiaOpen} fullWidth onClose={() => setDialogAlergiaOpen(false)}>
+        <DialogTitle>Adicionar Alergia</DialogTitle>
+
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <Autocomplete
+              options={listaAlergiasSistema}
+              getOptionLabel={(op) => op?.nome || ""}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onChange={(e, v) => setAlergiaSelecionada(v)}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  {option.nome}
+                </li>
+              )}
+              renderInput={(params) => <TextField {...params} label="Selecione a alergia" />}
+            />
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setDialogAlergiaOpen(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleAddAlergia}>
             Adicionar
           </Button>
         </DialogActions>

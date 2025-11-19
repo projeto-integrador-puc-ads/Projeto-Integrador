@@ -19,7 +19,7 @@ import MedicoDashboard from '@/features/diario_saude/Medico/MedicoDashboard';
 import PedirExamesPage from '@/features/diario_saude/Medico/PedirExamesPage';
 import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/RecomendacaoExerciciosPage';
 import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
-import AlergiasPacientePage from '@/features/diario_saude/Medico/AlergiasPacientePage';
+import AlergiasPage from '@/features/diario_saude/Medico/AlergiasPage';
 import SaudeMenuPage from '@/features/diario_saude/Idoso/SaudeMenuPage';
 
 
@@ -69,7 +69,7 @@ export function AppRoutes() {
         <Route path="atendimento/receituario" element={<ReceituarioPage />} />
         <Route path="atendimento/exames" element={<PedirExamesPage />} />
         <Route path="atendimento/exercicios" element={<RecomendacaoExerciciosPage />} />
-        <Route path="atendimento/alergias" element={<AlergiasPacientePage />} />
+        <Route path="atendimento/alergias" element={<AlergiasPage />} />
         <Route path="atendimento/doencas" element={<DiagnosticarDoencaPage />} />
 
         {/* Página inicial do médico */}

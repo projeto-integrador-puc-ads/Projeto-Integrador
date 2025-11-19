@@ -42,6 +42,14 @@ export function ModuleGridMedico({ paciente, prescricao }: { paciente: Paciente,
       desc: 'Selecionar doenças para o paciente.',
       onClick: () => navigate('/atendimento/doencas', { state: { paciente, prescricao } }),
     },
+
+    // 🔥 Novo módulo de Alergias
+    {
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="warning" />,
+      title: 'Alergias',
+      desc: 'Visualizar e editar alergias do paciente.',
+      onClick: () => navigate('/atendimento/alergias', { state: { paciente, prescricao } }),
+    },
   ];
 
   return (
