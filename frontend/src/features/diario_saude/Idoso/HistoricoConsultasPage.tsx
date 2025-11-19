@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { List, ListItemButton, ListItemText, Typography, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-// 🔹 Componentes
+//Componentes
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import SectionTitle from "../components/SectionTitle";
@@ -43,7 +43,12 @@ export default function HistoricoConsultasPage() {
       },
     })
       .then(res => res.json())
-      .then(data => setConsultas(Array.isArray(data) ? data : []))
+      .then(data => {
+        const consultasArray = Array.isArray(data) ? data : [];
+        // Ordena do mais recente para o mais antigo
+        consultasArray.sort((a, b) => new Date(b.data_prescricao).getTime() - new Date(a.data_prescricao).getTime());
+        setConsultas(consultasArray);
+      })
       .catch(() => setConsultas([]));
   }, [pacienteId]);
 

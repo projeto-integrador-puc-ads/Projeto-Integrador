@@ -27,6 +27,12 @@ export function ModuleGridSaude() {
       desc: 'Doenças cadastradas do paciente.',
       onClick: () => navigate('/informacoes_saude'),
     },
+    {
+      icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="success" />,
+      title: 'Questionário de Saúde',
+      desc: 'Responda o questionário de avaliação.',
+      onClick: () => navigate('/questionario_saude'),
+    },
   ];
 
   return (

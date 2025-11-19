@@ -1,0 +1,22 @@
+[
+  { "texto": "1. Qual é a sua idade:", "opcoes": { "60 a 74": 0, "75 a 85": 1, ">= 85": 2 } },
+  { "texto": "2. Em geral, comparando com outras pessoas de sua idade você diria que sua saúde é:", "opcoes": { "Excelente, muito boa ou boa": 0, "Regular ou ruim": 1 } },
+  { "texto": "3. Por causa de sua saúde ou condição física, você deixou de fazer compras?", "opcoes": { "Sim": 4, "Não ou não faz compras por outros motivos que não a saúde": 0 } },
+  { "texto": "4. Por causa de sua saúde ou condição física, você deixou de controlar seu dinheiro, gastos ou pagar as contas de sua casa?", "opcoes": { "Sim": 4, "Não ou não controla o dinheiro por outros motivos que não a saúde": 0 } },
+  { "texto": "5. Por causa de sua saúde ou condição física, você deixou de realizar pequenos trabalhos domésticos, como lavar louça, arrumar a casa ou fazer limpeza leve?", "opcoes": { "Sim": 4, "Não ou não faz mais pequenos trabalhos domésticos por outros motivos que não a saúde": 0 } },
+  { "texto": "6. Por causa de sua saúde ou condição física, você deixou de tomar banho sozinho?", "opcoes": { "Sim": 6, "Não": 0 } },
+  { "texto": "7. Algum familiar ou amigo falou que você está ficando esquecido?", "opcoes": { "Sim": 1, "Não": 0 } },
+  { "texto": "8. Este esquecimento está piorando nos últimos meses?", "opcoes": { "Sim": 1, "Não": 0 } },
+  { "texto": "9. Este esquecimento está impedindo a realização de alguma atividade do cotidiano?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "10. No último mês, você ficou com desânimo, tristeza ou desesperança?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "11. No último mês, você perdeu o interesse ou prazer em atividades anteriormente prazerosas?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "12. Você é incapaz de elevar os braços acima do nível do ombro?", "opcoes": { "Sim": 1, "Não": 0 } },
+  { "texto": "13. Você é incapaz de manusear ou segurar pequenos objetos?", "opcoes": { "Sim": 1, "Não": 0 } },
+  { "texto": "14. Você tem alguma das quatro condições abaixo relacionadas?", "opcoes": { "Perda de peso não intencional de 4,5 kg ou 5% do peso corporal no último ano ou 6 kg nos últimos 6 meses ou 3kg no ultimo mês": 2, "Indice de massa corporal (IMC) menor que 22kg/m²": 2, "Circunferencia da panturrilha <31cm": 2, "Tempo gasto no teste de velocidade da marcha (4m) > 5 segundos": 2 } },
+  { "texto": "15. Você tem dificuldade para caminhar capaz de impedir a realização de alguma atividade do cotidiano?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "16. Você teve duas ou mais quedas no último ano?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "17. Você perde urina ou fezes, sem querer, em algum momento?", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "18. Você tem problemas de visão capazes de impedir a realização de alguma atividade do cotidiano? (é permitido o uso de óculos ou lentes de contato)", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "19. Você tem problemas de audição capazes de impedir a realização de alguma atividade do cotidiano? (é permitido o uso de aparelhos de audição)", "opcoes": { "Sim": 2, "Não": 0 } },
+  { "texto": "20. Você tem alguma das três condições abaixo relacionadas?\n- Cinco ou mais doenças crônicas\n- Uso regular de cinco ou mais medicamentos diferentes, todo dia\n- Internação recente, nos últimos 6 meses", "opcoes": { "Sim": 4, "Não": 0 } }
+]

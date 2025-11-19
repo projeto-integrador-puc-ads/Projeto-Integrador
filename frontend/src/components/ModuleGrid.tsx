@@ -44,6 +44,13 @@ export function ModuleGrid() {
     },
 
     {
+      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="primary" />,
+      title: 'Meu Perfil',
+      desc: 'Atualize seus dados de médico.',
+      to: '/informacoes_medico',
+    },
+    
+    {
       icon: <PersonSearchIcon sx={{ fontSize: 40 }} color="primary" />,
       title: 'Iniciar Consulta',
       desc: 'Selecione o paciente para iniciar o atendimento.',

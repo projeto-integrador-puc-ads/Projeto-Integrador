@@ -16,7 +16,9 @@ import DiagnosticarDoencaPage from '@/features/diario_saude/Medico/DiagnosticarD
 import InformacoesSaude from '@/features/diario_saude/Idoso/InformacoesSaude';
 import IniciarConsulta from '@/features/diario_saude/Medico/IniciarConsultaPage';
 import MedicoDashboard from '@/features/diario_saude/Medico/MedicoDashboard';
+import InformacoesMedicoPage from '@/features/diario_saude/Medico/InformacoesMedicoPage';
 import PedirExamesPage from '@/features/diario_saude/Medico/PedirExamesPage';
+import QuestionarioPage from '@/features/diario_saude/Idoso/QuestionarioPage';
 import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/RecomendacaoExerciciosPage';
 import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
 import AlergiasPage from '@/features/diario_saude/Medico/AlergiasPage';
@@ -63,6 +65,7 @@ export function AppRoutes() {
         <Route path="saude" element={<SaudeMenuPage />} />
         <Route path="/historico_consultas" element={<HistoricoConsultasPage />} />
         <Route path="/informacoes_saude" element={<InformacoesSaude />} />
+        <Route path="/questionario_saude" element={<QuestionarioPage />} />
 
         {/* rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
@@ -75,6 +78,9 @@ export function AppRoutes() {
         {/* Página inicial do médico */}
         <Route path="medico" element={<IniciarConsulta />} />
         <Route path="atendimento/dashboard" element={<MedicoDashboard />} />
+
+        {/* Página de edição do médico */}
+        <Route path="/informacoes_medico" element={<InformacoesMedicoPage />} />
 
         {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />

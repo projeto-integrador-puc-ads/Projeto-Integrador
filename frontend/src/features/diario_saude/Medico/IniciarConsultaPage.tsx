@@ -12,7 +12,7 @@ import {
   Box,
 } from '@mui/material';
 
-//Componentes reutilizáveis "transparentes"
+// Componentes reutilizáveis
 function PageContainer({ children }: { children: React.ReactNode }) {
   return <Container maxWidth="sm" sx={{ py: 5 }}>{children}</Container>;
 }
@@ -28,42 +28,31 @@ export default function IniciarConsulta() {
   const [pacientes, setPacientes] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Simula usuário logado
-  useEffect(() => {
-    const usuarioSimulado = {
-      id_usuario: 1,
-      nome: "Dr. Lucas Gabriel",
-      email: "lucas@email.com",
-      role: "MEDICO"
-    };
-    if (!localStorage.getItem('usuarioLogado')) {
-      localStorage.setItem('usuarioLogado', JSON.stringify(usuarioSimulado));
-    }
-  }, []);
-
+  const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
   const token = localStorage.getItem('token');
-  const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || "null");
 
   const API_URL = "http://localhost:8080/api/diario_saude/usuario";
 
   // Buscar pacientes
   useEffect(() => {
     if (!token) return;
-    const fetchData = async () => {
+
+    const fetchPacientes = async () => {
       try {
         const response = await fetch(API_URL, {
           method: "GET",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         });
         if (!response.ok) throw new Error(`Erro HTTP! Status: ${response.status}`);
-        const result = await response.json();
-        setPacientes(result);
+        const data = await response.json();
+        setPacientes(data);
       } catch (err: any) {
         console.error(err);
         setError(err.message);
       }
     };
-    fetchData();
+
+    fetchPacientes();
   }, [token]);
 
   const filtered = pacientes.filter(p =>
@@ -71,7 +60,7 @@ export default function IniciarConsulta() {
   );
 
   const handleStartConsulta = async () => {
-    if (!selectedPaciente || !token) return;
+    if (!selectedPaciente || !token || !usuario) return;
 
     try {
       const payload = {

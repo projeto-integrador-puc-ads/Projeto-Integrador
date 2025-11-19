@@ -47,6 +47,9 @@ public class UsuarioEntity {
     @JsonIgnore
     private List<UsuarioDoencasEntity> usuarioDoencas;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<RespostaQuestionarioEntity> respostasQuestionario;
 
     public UsuarioEntity(UsuarioDTO usuario){
         BeanUtils.copyProperties(usuario, this);
@@ -75,6 +78,14 @@ public class UsuarioEntity {
         if (idUsuario != other.idUsuario)
             return false;
         return true;
+    }
+
+    public List<RespostaQuestionarioEntity> getRespostasQuestionario() {
+        return respostasQuestionario;
+    }
+
+    public void setRespostasQuestionario(List<RespostaQuestionarioEntity> respostasQuestionario) {
+        this.respostasQuestionario = respostasQuestionario;
     }
 
     public long getId_usuario() {

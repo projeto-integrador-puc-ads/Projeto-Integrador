@@ -1,12 +1,11 @@
 import requests
-import json
 import os
 
 BASE_URL = "http://localhost:8080/api/diario_saude"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 headers_auth = {
-    "Authorization": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjMxNDgyOTUsImV4cCI6MTc2Mzc1MzA5NX0.Bfs0H3jlRz_82lLXTa5yI3SFPUWMLijEWnrroc4hl2Jw4crypNTzWzgX_xP00Izr"
+    "Authorization": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjM1ODE4NDQsImV4cCI6MTc2NDE4NjY0NH0.U7eQbSFF78CReda8vMjS0tFX1BbghgvnmHraP3auU6pgfo_4Ve3wCjo4-n_xNHv3"
 }
 
 # --- Importar Doenças (CSV) ---
@@ -20,14 +19,3 @@ with open(os.path.join(BASE_DIR, "DADOS_ABERTOS_MEDICAMENTOS.csv"), "rb") as f:
     files = {"file": f}
     resp = requests.post(f"{BASE_URL}/medicamentos/import", files=files, headers=headers_auth)
     print("Medicamentos:", resp.status_code, resp.text)
-
-# --- Importar Alergias (JSON) ---
-with open(os.path.join(BASE_DIR, "alergias.json"), "r", encoding="utf-8") as f:
-    alergias = json.load(f)
-
-resp = requests.post(
-    f"{BASE_URL}/alergia/criar-multiplas",
-    headers={**headers_auth, "Content-Type": "application/json"},
-    json=alergias
-)
-print("Alergias:", resp.status_code, resp.text)
