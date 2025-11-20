@@ -707,9 +707,9 @@ export default function CreateListaPage() {
             </Paper>
 
             <Stack direction="row" justifyContent={'end'} spacing={1} sx={{ mt: 3 }}>
-                <Button variant="outlined" onClick={() => navigate(-1)}>
-                    Salvar como rascunho
-                </Button>
+                {/*<Button variant="outlined" onClick={() => navigate(-1)}>*/}
+                {/*    Salvar como rascunho*/}
+                {/*</Button>*/}
                 <Button
                     variant="contained"
                     onClick={handleFinalizarLista}
