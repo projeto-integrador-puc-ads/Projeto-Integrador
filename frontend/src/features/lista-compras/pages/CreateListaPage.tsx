@@ -11,7 +11,6 @@ import {
     ListItem,
     ListItemText,
     IconButton,
-    Divider,
     Stack,
     Snackbar,
     Paper,
@@ -76,6 +75,15 @@ export default function CreateListaPage() {
     const [warnOpen, setWarnOpen] = useState(false);
     const [warnMsg, setWarnMsg] = useState('');
 
+    const [tituloLista, setTituloLista] = useState('');
+
+    const [saving, setSaving] = useState(false);
+
+    const [errorOpen, setErrorOpen] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    const [successOpen, setSuccessOpen] = useState(false);
+
     // índices úteis
     const produtosPorId = useMemo(() => {
         const map = new Map<number, Produto>();
@@ -87,6 +95,11 @@ export default function CreateListaPage() {
         () => new Set(listaItens.map(li => li.produto.id)),
         [listaItens]
     );
+
+    const showError = (msg: string) => {
+        setErrorMsg(msg);
+        setErrorOpen(true);
+    };
 
     // índice produto_id -> [patologias que disparam]
     const patPorProduto = useMemo(() => {
@@ -122,8 +135,8 @@ export default function CreateListaPage() {
                 const patItems = await listaComprasService.getPatologiaItens();
                 setPatologiaItens(patItems);
             } catch (e) {
+                showError('Erro ao carregar dados iniciais da lista de compras');
                 console.error('Erro ao carregar dados iniciais da lista de compras', e);
-                setLoadingPats(false);
             }
         };
 
@@ -150,7 +163,7 @@ export default function CreateListaPage() {
                     }))
                 );
             } catch (e) {
-                console.error('Erro ao buscar produtos para autocomplete', e);
+                showError('Erro ao buscar produtos para autocomplete.');
             }
         }, 300);
 
@@ -197,6 +210,66 @@ export default function CreateListaPage() {
 
         // recomendação
         simulateFetchRecomendacao(produto);
+    };
+
+    const handleLimparLista = () => {
+        setListaItens([]);
+        setProdutoSelecionado(null);
+        setInputValue('');
+    };
+
+    const resetState = () => {
+        setTituloLista('');
+        setListaItens([]);
+        setProdutoSelecionado(null);
+        setInputValue('');
+        setOpcoesAutocomplete([]);
+    }
+
+
+    const handleFinalizarLista = async () => {
+        if (saving) return;
+        const titulo = tituloLista.trim();
+
+        if (!titulo) {
+            alert('Informe um título para a lista.');
+            return;
+        }
+
+        if (listaItens.length === 0) {
+            alert('Adicione ao menos um item na lista.');
+            return;
+        }
+
+        // ⚠️ Por enquanto só envia itens com ID > 0 (existem no backend)
+        const itensValidos = listaItens.filter(li => li.produto.id > 0);
+
+        if (itensValidos.length === 0) {
+            alert('Não há itens válidos para salvar (apenas personalizados locais).');
+            return;
+        }
+
+        const payload = {
+            titulo,
+            itens: itensValidos.map(li => ({
+                produtoId: li.produto.id,
+                qtd: li.qtd,
+            })),
+        };
+
+        try {
+            setSaving(true);
+            const userId = 16;            // TODO: substituir 1 pelo userId real quando estiver integrado
+
+            const listaCriada = await listaComprasService.criarLista(payload, userId);
+            resetState()
+            setSuccessOpen(true);
+
+        } catch (e) {
+            showError('Erro ao carregar dados iniciais da lista de compras. Tente novamente.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const simulateFetchRecomendacao = (base: Produto) => {
@@ -279,6 +352,14 @@ export default function CreateListaPage() {
                 Monte sua lista adicionando itens ou use um modelo pronto.
             </Typography>
 
+            <TextField
+                sx={{ mt: 3 }}
+                fullWidth
+                label="Título da lista"
+                placeholder="Ex: Compras da semana"
+                value={tituloLista}
+                onChange={(e) => setTituloLista(e.target.value)}
+            />
             {/* Patologias do usuário */}
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 3 }}>
                 {patologias.length === 0 ? (
@@ -326,6 +407,8 @@ export default function CreateListaPage() {
                     backgroundColor: '#ffffff',
                 }}
             >
+
+
                 <Stack spacing={2}>
                     {/* Modelos rápidos */}
                     <Box>
@@ -342,66 +425,85 @@ export default function CreateListaPage() {
                             >
                                 Modelos rápidos
                             </Typography>
+
                             <Typography variant="caption" color="text.secondary">
                                 Clique para preencher a lista com um modelo pronto
                             </Typography>
                         </Stack>
-
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                height: 50,
-                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                                gap: 1.5,
-                            }}
+                        <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
                         >
-                            {templates.map((t) => (
-                                <Card
-                                    key={t.id}
-                                    elevation={0}
-                                    sx={{
-                                        borderRadius: 2,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                        transition:
-                                            'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: 3,
-                                            borderColor: 'primary.light',
-                                        },
-                                    }}
-                                >
-                                    <CardActionArea onClick={() => copiarTemplate(t)} sx={{ py: 1, px: 1.5 }}>
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <Box
-                                                sx={{
-                                                    width: 30,
-                                                    height: 30,
-                                                    borderRadius: '50%',
-                                                    bgcolor: 'primary.light',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                }}
-                                            >
-                                                <ContentCopyIcon sx={{ color: 'white', fontSize: '1rem' }} />
-                                            </Box>
-                                            <Box>
-                                                <Typography
-                                                    fontWeight={600}
-                                                    variant="body2"
-                                                    sx={{ fontSize: '0.9rem' }}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    height: 50,
+                                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                                    gap: 1.5,
+                                }}
+                            >
+                                {templates.map((t) => (
+                                    <Card
+                                        key={t.id}
+                                        elevation={0}
+                                        sx={{
+                                            borderRadius: 2,
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            transition:
+                                                'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: 3,
+                                                borderColor: 'primary.light',
+                                            },
+                                        }}
+                                    >
+                                        <CardActionArea onClick={() => copiarTemplate(t)} sx={{ py: 1, px: 1.5 }}>
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <Box
+                                                    sx={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        borderRadius: '50%',
+                                                        bgcolor: 'primary.light',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                    }}
                                                 >
-                                                    {t.titulo}
-                                                </Typography>
-                                            </Box>
-                                        </Stack>
-                                    </CardActionArea>
-                                </Card>
-                            ))}
-                        </Box>
+                                                    <ContentCopyIcon sx={{ color: 'white', fontSize: '1rem' }} />
+                                                </Box>
+                                                <Box>
+                                                    <Typography
+                                                        fontWeight={600}
+                                                        variant="body2"
+                                                        sx={{ fontSize: '0.9rem' }}
+                                                    >
+                                                        {t.titulo}
+                                                    </Typography>
+                                                </Box>
+                                            </Stack>
+                                        </CardActionArea>
+                                    </Card>
+                                ))}
+                            </Box>
+
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                sx={{
+                                    height: 40,
+                                }}
+                                onClick={handleLimparLista}
+                                disabled={saving}
+                            >
+                                Limpar lista
+                            </Button>
+
+                        </Stack>
                     </Box>
 
                     {/* Campo de adição */}
@@ -608,8 +710,13 @@ export default function CreateListaPage() {
                 <Button variant="outlined" onClick={() => navigate(-1)}>
                     Salvar como rascunho
                 </Button>
-                <Button variant="contained" startIcon={<RecommendIcon />}>
-                    Finalizar lista
+                <Button
+                    variant="contained"
+                    onClick={handleFinalizarLista}
+                    startIcon={<RecommendIcon />}
+                    disabled={saving || listaItens.length === 0}
+                >
+                    {saving ? 'Salvando...' : 'Finalizar lista'}
                 </Button>
             </Stack>
 
@@ -626,6 +733,38 @@ export default function CreateListaPage() {
                     sx={{ width: '100%' }}
                 >
                     {warnMsg}
+                </Alert>
+            </Snackbar>
+
+            <Snackbar
+                open={successOpen}
+                autoHideDuration={4000}
+                onClose={() => setSuccessOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setSuccessOpen(false)}
+                    severity="success"
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    Lista criada com sucesso!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar
+                open={errorOpen}
+                autoHideDuration={6000}
+                onClose={() => setErrorOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setErrorOpen(false)}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    {errorMsg}
                 </Alert>
             </Snackbar>
         </Box>
