@@ -1,6 +1,4 @@
 package br.pucgo.ads.projetointegrador.eldercare.dto;
 
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
-
-public record EnvioQuestionarioDTO(@NotNull Long idosoId, @NotNull List<RespostaQuestionarioDTO> respostas) {}
+/** Placeholder para não quebrar a assinatura atual de service/controller. Ajuste depois conforme seu questionário. */
+public record EnvioQuestionarioDTO() {}

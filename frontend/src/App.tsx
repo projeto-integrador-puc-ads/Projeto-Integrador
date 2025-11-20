@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+// importe sua página do módulo Eldercare
+import QuestionarioDemo from "./features/eldercare/QuestionarioDemo";
 
+function Home() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <main style={{ padding: 24 }}>
+      <h1>Plataforma de Auxílio ao Idoso</h1>
+      <p>Bem-vindo(a)! Selecione um módulo abaixo.</p>
+
+      <div style={{ marginTop: 24 }}>
+        <Link
+          to="/eldercare/questionario"
+          style={{
+            padding: "12px 16px",
+            borderRadius: 12,
+            display: "inline-block",
+            border: "1px solid #ddd",
+            textDecoration: "none",
+          }}
+        >
+          🧩 Eldercare — Questionário e Plano
+        </Link>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </main>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/eldercare/questionario" element={<QuestionarioDemo />} />
+        {/* fallback pra qualquer rota desconhecida */}
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

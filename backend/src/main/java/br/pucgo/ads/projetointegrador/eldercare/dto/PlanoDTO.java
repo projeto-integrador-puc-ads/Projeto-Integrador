@@ -1,9 +1,17 @@
 package br.pucgo.ads.projetointegrador.eldercare.dto;
 
-import br.pucgo.ads.projetointegrador.eldercare.domain.NivelTreino;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
+/** DTO de saída do plano (ex_plano + ex_dia_plano + ex_item_plano). */
 public record PlanoDTO(
-        Long id, Long idosoId, LocalDate dataCriacao, NivelTreino nivel, String observacoes, List<ItemPlanoDTO> itens
+        UUID id,
+        UUID participanteId,
+        LocalDate mes,
+        String objetivo,
+        String nivel,
+        Integer freqSemana,
+        Integer tempoSessaoMin,
+        List<ItemPlanoDTO> itens
 ) {}

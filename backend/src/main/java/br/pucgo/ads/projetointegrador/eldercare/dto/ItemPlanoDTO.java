@@ -1,8 +1,14 @@
 package br.pucgo.ads.projetointegrador.eldercare.dto;
 
-import br.pucgo.ads.projetointegrador.eldercare.domain.Intensidade;
-import java.time.DayOfWeek;
+import java.util.UUID;
 
+/** item do plano agrupado por dia/ordem; diaSemana pode ser nulo se o campo for textual. */
 public record ItemPlanoDTO(
-        DayOfWeek diaSemana, String atividade, Integer duracaoMin, Intensidade intensidade, String observacoes
+        String dataOuOrdem,   // vem de ex_dia_plano.data_ou_ordem (texto)
+        Integer ordem,        // ordem do item dentro do dia
+        UUID exercicioId,
+        String exercicioNome,
+        Integer series,
+        Integer repeticoes,
+        Integer duracaoSeg
 ) {}

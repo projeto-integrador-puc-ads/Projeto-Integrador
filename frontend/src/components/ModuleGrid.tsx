@@ -1,12 +1,15 @@
 import { Box } from '@mui/material';
 import { ModuleCard } from './ModuleCard';
+
 import MedicationIcon from '@mui/icons-material/Medication';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { useNavigate } from 'react-router-dom';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import ElderlyIcon from '@mui/icons-material/Elderly';
+
+import { useNavigate } from 'react-router-dom';
 
 export function ModuleGrid() {
   const navigate = useNavigate();
@@ -42,7 +45,14 @@ export function ModuleGrid() {
       desc: 'Dicas rápidas e ajuda no dia a dia.',
       to: '/grupo5/ajudador',
     },
-        {
+    // ⬇️ NOVO CARD: ELDERCARE
+    {
+      icon: <ElderlyIcon sx={{ fontSize: 40 }} />,
+      title: 'Eldercare',
+      desc: 'Questionário + Plano de Exercícios',
+      to: '/eldercare/questionario',
+    },
+    {
       icon: <HelpOutlineIcon sx={{ fontSize: 40 }} />,
       title: 'Dúvidas',
       desc: 'Dúvidas e sugestões.',
@@ -54,11 +64,7 @@ export function ModuleGrid() {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: '1fr 1fr',
-          md: '1fr 1fr 1fr',
-        },
+        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
         gap: 2,
         mt: 2,
       }}
@@ -75,3 +81,5 @@ export function ModuleGrid() {
     </Box>
   );
 }
+
+export default ModuleGrid;

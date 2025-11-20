@@ -10,6 +10,7 @@ import EditCuidadorPage from '@/features/admin/pages/EditCuidadorPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
+import QuestionarioDemo from '@/features/eldercare/QuestionarioDemo';
 
 function Home() {
   return (
@@ -41,6 +42,10 @@ export function AppRoutes() {
         <Route path="admin/medicos/:id/edit" element={<EditMedicoPage />} />
         <Route path="admin/cuidadores/:id/edit" element={<EditCuidadorPage />} />
         <Route path="usuarios" element={<UsuariosPage />} />
+
+        {/* 👉 NOVA ROTA DO MÓDULO ELDERCARE */}
+        <Route path="eldercare/questionario" element={<QuestionarioDemo />} />
+
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>
