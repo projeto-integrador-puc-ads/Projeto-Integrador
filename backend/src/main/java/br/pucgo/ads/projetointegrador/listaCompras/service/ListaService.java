@@ -1,19 +1,21 @@
 package br.pucgo.ads.projetointegrador.listaCompras.service;
 
-import br.pucgo.ads.projetointegrador.listaCompras.dto.ItemListaResponseDTO;
-import br.pucgo.ads.projetointegrador.listaCompras.dto.ListaRequestDTO;
-import br.pucgo.ads.projetointegrador.listaCompras.dto.ListaResponseDTO;
+import br.pucgo.ads.projetointegrador.listaCompras.dto.*;
 import br.pucgo.ads.projetointegrador.listaCompras.entity.ItemLista;
 import br.pucgo.ads.projetointegrador.listaCompras.entity.ItemListaId;
 import br.pucgo.ads.projetointegrador.listaCompras.entity.Lista;
+import br.pucgo.ads.projetointegrador.listaCompras.entity.Produto;
 import br.pucgo.ads.projetointegrador.listaCompras.repository.ItemListaRepository;
 import br.pucgo.ads.projetointegrador.listaCompras.repository.ListaRepository;
+import br.pucgo.ads.projetointegrador.listaCompras.repository.ProdutoRepository;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,22 +28,56 @@ public class ListaService {
     private final UserRepository userRepository;
     private final ItemListaRepository itemListaRepository;
     private final ItemListaService itemListaService;
+    private final ProdutoRepository produtoRepository;
 
+    /**
+     * Cria uma lista já com seus itens (usada pelo front da lista de compras).
+     *
+     * @param userId ID do usuário dono da lista
+     * @param dto    payload com título e itens (produtoId + qtd)
+     */
     @Transactional
-    public ListaResponseDTO criar(ListaRequestDTO dto) {
-        // Validação: verificar se usuário existe
-        User user = userRepository.findById(dto.getUserId())
+    public ListaResponseDTO criarComItens(Long userId, ListaCreateRequestDTO dto) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuário não encontrado com ID: " + dto.getUserId()));
+                        "Usuário não encontrado com ID: " + userId));
 
-        // Validação: verificar se já existe lista com mesmo título
-        if (listaRepository.existsByUsuario_IdAndTituloIgnoreCase(dto.getUserId(), dto.getTitulo())) {
+        if (listaRepository.existsByUsuario_IdAndTituloIgnoreCase(userId, dto.getTitulo())) {
             throw new IllegalArgumentException(
                     "Já existe uma lista com o título: " + dto.getTitulo());
         }
 
-        Lista lista = toEntity(dto, user);
+        Lista lista = new Lista();
+        lista.setTitulo(dto.getTitulo());
+        lista.setUsuario(user);
+        lista.setTemplate(false);
+
         Lista listaSalva = listaRepository.save(lista);
+
+        // 4) Criar itens da lista
+        if (dto.getItens() != null) {
+            for (ListaItemCreateDTO itemDTO : dto.getItens()) {
+
+                Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Produto não encontrado com ID: " + itemDTO.getProdutoId()));
+
+                ItemListaId id = new ItemListaId(listaSalva.getId(), produto.getId());
+
+                ItemLista item = new ItemLista();
+                item.setId(id);
+                item.setLista(listaSalva);
+                item.setProduto(produto);
+                item.setQuantidade(
+                        itemDTO.getQtd() != null
+                                ? BigDecimal.valueOf(itemDTO.getQtd())
+                                : BigDecimal.ONE
+                );
+
+                itemListaRepository.save(item);
+            }
+        }
+
         return toResponseDTO(listaSalva);
     }
 
