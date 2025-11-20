@@ -77,7 +77,7 @@ public class ProdutoService {
 
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome).stream()
+        return produtoRepository.findTop5ByNomeContainingIgnoreCaseAndAtivoTrue(nome).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

@@ -28,6 +28,9 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     // Buscar produtos por tags
     List<Produto> findByTagsContainingIgnoreCaseAndAtivoTrue(String tag);
 
+    List<Produto> findTop5ByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
+
+
     // Buscar produtos personalizados do sistema ou ativos
     List<Produto> findByIsPersonalizadoFalseAndAtivoTrue();
 }

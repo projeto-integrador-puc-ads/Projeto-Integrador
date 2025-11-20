@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/produtos")
+@RequestMapping("/lista-compras/produtos")
 @RequiredArgsConstructor
 public class ProdutoController {
 
@@ -49,8 +49,6 @@ public class ProdutoController {
     @GetMapping("/buscar")
     public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutos(@RequestParam String param) {
         List<ProdutoResponseDTO> produtos = produtoService.buscarPorNome(param);
-        //limita pra 5 resultados só
-        List<ProdutoResponseDTO> limitado = produtos.stream().limit(5).toList();
-        return ResponseEntity.ok(limitado);
+        return ResponseEntity.ok(produtos);
     }
 }
