@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 export const listaComprasApi = axios.create({
-    baseURL: '/api/lista-compras', // quando tiver back real, ajusta aqui
+    baseURL: 'http://localhost:8080/api/lista-compras', // URL real do backend
     timeout: 10000,
 });
 
 listaComprasApi.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    response => response,
+    error => {
         console.error('[ListaCompras API] erro na chamada:', error);
         return Promise.reject(error);
     }

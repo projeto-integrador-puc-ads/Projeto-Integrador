@@ -13,21 +13,11 @@ import { mockTemplates } from './mocks/templates.mock';
 import { mockPatologiaItens } from './mocks/patologia-itens.mock';
 import { mockFetchUserPatologias } from './mocks/patologias.mock';
 import { mockRelacionados, mockPopulares } from './mocks/relacionados.mock';
+import {listaComprasApi} from "@/features/lista-compras/api/http.ts";
+import type {ListaDeComprasDTO, ListaDeComprasSalva} from "@/features/lista-compras/api/dtos.ts";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-/** Payload que o front envia para criar/atualizar uma lista de compras */
-export type ListaDeComprasDTO = {
-    titulo: string;
-    itens: {
-        produto_id: number;
-        qtd: number;
-    }[];
-};
-
-export type ListaDeComprasSalva = ListaDeComprasDTO & {
-    id: number;
-};
 
 let listasStore: ListaDeComprasSalva[] = [];
 
@@ -50,29 +40,25 @@ export const listaComprasService = {
      * - só busca se termo >= 3 caracteres
      * - retorna no máximo `limit` resultados
      */
-    async searchProdutosByNome(
-        termo: string,
-        limit = 5
-    ): Promise<Produto[]> {
-        const termoNorm = termo.trim().toLowerCase();
-        if (termoNorm.length < 3) {
-            return [];
-        }
+    async searchProdutosByNome(termo: string): Promise<Produto[]> {
+        const clean = termo.trim();
+        if (clean.length < 3) return [];
 
-        await delay(250);
-
-        const filtrados = mockProdutos.filter((p) =>
-            p.nome_normalizado.includes(termoNorm)
+        const { data } = await listaComprasApi.get(
+            `/produtos/buscar?param=${encodeURIComponent(clean)}`
         );
 
-        return filtrados.slice(0, limit);
-
-        // Versão real (exemplo):
-        // const { data } = await listaComprasApi.get<Produto[]>('/produtos', {
-        //   params: { q: termo, limit },
-        // });
-        // return data;
+        return data.map((dto: any) => ({
+            id: dto.id,
+            nome: dto.nome,
+            nome_normalizado:
+                dto.nomeNormalizado?.toLowerCase().trim()
+                ?? dto.nome.toLowerCase().trim(),
+            ativo: dto.ativo ?? true,
+            is_personalizado: dto.isPersonalizado ?? false,
+        }));
     },
+
 
     // ===== TEMPLATES =====================================================
 
@@ -125,33 +111,15 @@ export const listaComprasService = {
 
     // ===== LISTAS DE COMPRAS (CRUD SIMULADO) ============================
 
-    /** Cria uma nova lista de compras no "banco" em memória */
-    async criarLista(
-        payload: ListaDeComprasDTO
-    ): Promise<ListaDeComprasSalva> {
-        await delay(400);
+    async criarLista(payload: ListaDeComprasDTO, userId: number): Promise<ListaDeComprasSalva> {
+        // chama: POST /api/lista-compras/listas?userId=XYZ
+        const { data } = await listaComprasApi.post<ListaDeComprasSalva>(
+            '/listas',
+            payload,
+            { params: { userId } }
+        );
 
-        const novoId = listasStore.length
-            ? Math.max(...listasStore.map((l) => l.id)) + 1
-            : 1;
-
-        const novaLista: ListaDeComprasSalva = {
-            id: novoId,
-            ...payload,
-        };
-
-        listasStore.push(novaLista);
-
-        console.log('[listaComprasService] lista criada:', novaLista);
-
-        // Versão real:
-        // const { data } = await listaComprasApi.post<ListaDeComprasSalva>(
-        //   '/listas',
-        //   payload
-        // );
-        // return data;
-
-        return novaLista;
+        return data;
     },
 
     /** Lista todas as listas salvas (no mock em memória) */
