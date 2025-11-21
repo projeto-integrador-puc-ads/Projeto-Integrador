@@ -5,7 +5,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.MedicoDTO;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "medico")
+@Table(name = "ds_medico")
 public class MedicoEntity {
 
     @Id

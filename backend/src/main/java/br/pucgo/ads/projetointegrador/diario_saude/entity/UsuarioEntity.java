@@ -17,7 +17,7 @@ import jakarta.persistence.OneToMany;
 
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario_info_clinica")
 public class UsuarioEntity {
 
     @Id//chave primária

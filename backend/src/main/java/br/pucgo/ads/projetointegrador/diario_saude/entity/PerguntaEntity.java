@@ -1,10 +1,9 @@
 package br.pucgo.ads.projetointegrador.diario_saude.entity;
 
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
-@Table(name = "pergunta")
+@Table(name = "ds_pergunta")
 public class PerguntaEntity {
 
     @Id

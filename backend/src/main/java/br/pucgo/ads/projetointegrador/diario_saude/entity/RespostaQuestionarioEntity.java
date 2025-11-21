@@ -3,7 +3,7 @@ package br.pucgo.ads.projetointegrador.diario_saude.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "resposta_questionario")
+@Table(name = "ds_resposta_questionario")
 public class RespostaQuestionarioEntity {
 
     @Id

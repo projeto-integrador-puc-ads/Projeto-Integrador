@@ -9,7 +9,7 @@ import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoMedicaDTO;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "prescricao_medica")
+@Table(name = "ds_prescricao_medica")
 public class PrescricaoMedicaEntity {
 
     @Id
