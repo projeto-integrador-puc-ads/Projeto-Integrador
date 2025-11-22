@@ -17,78 +17,72 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
-//Componentes
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import SectionTitle from "../components/SectionTitle";
 import ListItemCard from "../components/ListItemCard";
 
-export default function DoencasPage() {
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { doencaApi } from "../api/doencaApi";
+import { usuarioDoencaApi } from "../api/usuarioDoencaApi";
+
+export default function DiagnosticarDoencaPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const paciente = location.state?.paciente;
-  const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
 
-  const [listaDoencasSistema, setListaDoencasSistema] = useState<any[]>([]);
-  const [doencasPaciente, setDoencasPaciente] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [doencaSelecionada, setDoencaSelecionada] = useState<any>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // REDIRECIONA SE NÃO HOUVER PACIENTE
   useEffect(() => {
     if (!paciente) navigate("/medico");
   }, [paciente, navigate]);
 
-  // LISTA TODAS AS DOENÇAS DO SISTEMA
-  useEffect(() => {
-    if (!token) return;
-    fetch("http://localhost:8080/api/diario_saude/doencas/listar", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setListaDoencasSistema(data))
-      .catch(console.error);
-  }, [token]);
+  // LISTA DOENÇAS DO SISTEMA
+  const { data: listaDoencasSistema = [] } = useQuery({
+    queryKey: ["doencas", "sistema"],
+    queryFn: () => doencaApi.listar(),
+  });
 
-  // LISTA AS DOENÇAS DO PACIENTE
-  const loadDoencasPaciente = () => {
-    if (!paciente) return;
-    fetch(`http://localhost:8080/api/diario_saude/usuario-doenca/usuario/${paciente.id_usuario}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setDoencasPaciente(data))
-      .catch(console.error);
-  };
-
-  useEffect(() => { loadDoencasPaciente(); }, [paciente]);
+  // LISTA DOENÇAS DO PACIENTE
+  const { data: doencasPaciente = [] } = useQuery({
+    queryKey: ["usuario", paciente?.id_usuario, "doencas"],
+    queryFn: () => usuarioDoencaApi.listar(paciente.id_usuario),
+    enabled: !!paciente?.id_usuario,
+  });
 
   // ADICIONAR DOENÇA
-  const handleAddDoenca = async () => {
-    if (!doencaSelecionada) return alert("Selecione uma doença antes de adicionar.");
+  const addDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.adicionar(usuarioId, doencaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["usuario", paciente?.id_usuario, "doencas"]);
+      setDialogOpen(false);
+      setDoencaSelecionada(null);
+    },
+  });
 
-    await fetch(
-      `http://localhost:8080/api/diario_saude/usuario-doenca/add?usuarioId=${paciente.id_usuario}&doencaId=${doencaSelecionada.id}`,
-      { method: "POST", headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    setDialogOpen(false);
-    setDoencaSelecionada(null);
-    loadDoencasPaciente();
+  const handleAddDoenca = () => {
+    if (!doencaSelecionada || !paciente) return alert("Selecione uma doença.");
+    addDoencaMutation.mutate({ usuarioId: paciente.id_usuario, doencaId: doencaSelecionada.id });
   };
 
   // REMOVER DOENÇA
-  const handleRemoveDoenca = async (id: number) => {
-    await fetch(
-      `http://localhost:8080/api/diario_saude/usuario-doenca/delete?usuarioId=${paciente.id_usuario}&doencaId=${id}`,
-      { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
-    );
-    loadDoencasPaciente();
+  const removeDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.remover(usuarioId, doencaId),
+    onSuccess: () => queryClient.invalidateQueries(["usuario", paciente?.id_usuario, "doencas"]),
+  });
+
+  const handleRemoveDoenca = (id: number) => {
+    if (!paciente) return;
+    removeDoencaMutation.mutate({ usuarioId: paciente.id_usuario, doencaId: id });
   };
 
   return (
@@ -110,15 +104,19 @@ export default function DoencasPage() {
 
       <SectionTitle>Doenças cadastradas</SectionTitle>
 
-      {doencasPaciente.length === 0 && (
+      {doencasPaciente.length === 0 ? (
         <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
           Nenhuma doença cadastrada para este paciente.
         </Typography>
+      ) : (
+        doencasPaciente.map((d) => (
+          <ListItemCard
+            key={d.id || d.doenca?.id}
+            title={d.nome || d.doenca?.nome}
+            onDelete={() => handleRemoveDoenca(d.id || d.doenca?.id)}
+          />
+        ))
       )}
-
-      {doencasPaciente.map((d) => (
-        <ListItemCard key={d.id} title={d.nome} onDelete={() => handleRemoveDoenca(d.id)} />
-      ))}
 
       <Button
         startIcon={<AddIcon />}
@@ -142,6 +140,7 @@ export default function DoencasPage() {
             <Autocomplete
               options={listaDoencasSistema}
               getOptionLabel={(option) => option.nome}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(e, v) => setDoencaSelecionada(v)}
               renderInput={(params) => <TextField {...params} label="Pesquise a doença" fullWidth />}
             />
@@ -149,7 +148,9 @@ export default function DoencasPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddDoenca}>Adicionar</Button>
+          <Button variant="contained" onClick={handleAddDoenca} disabled={addDoencaMutation.isLoading}>
+            {addDoencaMutation.isLoading ? "Adicionando..." : "Adicionar"}
+          </Button>
         </DialogActions>
       </Dialog>
     </PageContainer>

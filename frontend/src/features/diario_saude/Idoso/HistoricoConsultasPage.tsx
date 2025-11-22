@@ -1,20 +1,15 @@
-import { useState, useEffect } from "react";
 import { List, ListItemButton, ListItemText, Typography, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-//Componentes
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import SectionTitle from "../components/SectionTitle";
 import BackButton from "../components/BackButton";
 
-type Prescricao = {
-  id_prescricao: number;
-  data_prescricao: string;
-  nomeMedico: string;
-  medicamentos: string[];
-  exames: string[];
-};
+import { prescricaoApi } from "../api/prescricaoApi";
+import type { Prescricao } from "../api/prescricaoApi";
 
 export default function HistoricoConsultasPage() {
   const navigate = useNavigate();
@@ -27,30 +22,20 @@ export default function HistoricoConsultasPage() {
   const pacienteNome = usuarioLogado?.nome || "Paciente";
   const pacienteId = usuarioLogado?.id_usuario;
 
-  const [consultas, setConsultas] = useState<Prescricao[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [consultaSelecionada, setConsultaSelecionada] = useState<Prescricao | null>(null);
 
-  useEffect(() => {
-    if (!pacienteId) return;
-
-    const token = localStorage.getItem("token");
-
-    fetch(`http://localhost:8080/api/diario_saude/prescricao/usuario/${pacienteId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        const consultasArray = Array.isArray(data) ? data : [];
-        // Ordena do mais recente para o mais antigo
-        consultasArray.sort((a, b) => new Date(b.data_prescricao).getTime() - new Date(a.data_prescricao).getTime());
-        setConsultas(consultasArray);
-      })
-      .catch(() => setConsultas([]));
-  }, [pacienteId]);
+  const { data: consultas = [], isLoading } = useQuery({
+    queryKey: ["prescricao", pacienteId],
+    queryFn: () => prescricaoApi.porUsuario(pacienteId),
+    enabled: !!pacienteId, // só busca quando tiver ID
+    select: (lista) =>
+      lista.sort(
+        (a, b) =>
+          new Date(b.data_prescricao).getTime() -
+          new Date(a.data_prescricao).getTime()
+      ),
+  });
 
   const handleClickConsulta = (consulta: Prescricao) => {
     setConsultaSelecionada(consulta);
@@ -70,7 +55,11 @@ export default function HistoricoConsultasPage() {
         Paciente: <b>{pacienteNome}</b>
       </SectionTitle>
 
-      {consultas.length === 0 ? (
+      {isLoading ? (
+        <Typography color="text.secondary" align="center" mt={2}>
+          Carregando…
+        </Typography>
+      ) : consultas.length === 0 ? (
         <Typography color="text.secondary" align="center" mt={2}>
           Nenhuma consulta encontrada.
         </Typography>
@@ -98,7 +87,7 @@ export default function HistoricoConsultasPage() {
         </List>
       )}
 
-      {/* Dialog de detalhes */}
+      {/* Dialog */}
       <Dialog open={dialogOpen} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
           {consultaSelecionada?.nomeMedico} — {consultaSelecionada?.data_prescricao}

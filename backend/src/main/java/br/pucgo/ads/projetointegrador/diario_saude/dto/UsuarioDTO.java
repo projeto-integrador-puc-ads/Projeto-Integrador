@@ -11,7 +11,6 @@ public class UsuarioDTO {
     private int idade;
     private float peso;
     private float altura;
-    private String alergias;
 
     public UsuarioDTO(UsuarioEntity usuario){
         BeanUtils.copyProperties(usuario, this);
@@ -50,13 +49,5 @@ public class UsuarioDTO {
     }
     public void setAltura(float altura) {
         this.altura = altura;
-    }
-    public String getAlergias() {
-        return alergias;
-    }
-    public void setAlergias(String alergias) {
-        this.alergias = alergias;
-    }
-
-    
+    }   
 }

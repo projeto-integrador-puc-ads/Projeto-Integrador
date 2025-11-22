@@ -14,10 +14,10 @@ public class PrescricaoMedicamentoEntity {
     private long id_prescricao_medicamento;
 
     @Column(nullable = false)
-    private String dosagem; // pode ser a concentração do medicamento
+    private String dosagem;
 
     @Column(nullable = false)
-    private String frequencia; // via de administração
+    private String frequencia;
 
     @Column(nullable = false)
     private String nome_medicamento;

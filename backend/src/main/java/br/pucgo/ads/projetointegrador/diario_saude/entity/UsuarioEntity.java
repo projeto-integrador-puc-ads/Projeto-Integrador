@@ -37,8 +37,6 @@ public class UsuarioEntity {
     @Column(nullable = false)
     private float altura;
 
-    private String alergias;
-
     @OneToMany(mappedBy = "usuario")
     @JsonIgnore
     private List<PrescricaoMedicaEntity> prescricoesMedicas;
@@ -127,14 +125,7 @@ public class UsuarioEntity {
     public void setAltura(float altura) {
         this.altura = altura;
     }
-
-    public String getAlergias() {
-        return alergias;
-    }
-
-    public void setAlergias(String alergias) {
-        this.alergias = alergias;
-    }
+    
     public List<PrescricaoMedicaEntity> getPrescricoesMedicas() {
         return prescricoesMedicas;
     }

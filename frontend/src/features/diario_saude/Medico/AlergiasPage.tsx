@@ -9,86 +9,81 @@ import {
   DialogContent,
   DialogActions,
   Autocomplete,
-  useMediaQuery,
   TextField,
+  useMediaQuery,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
-// 🔹 Componentes
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import SectionTitle from "../components/SectionTitle";
 import ListItemCard from "../components/ListItemCard";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { alergiaApi } from "../api/alergiaApi";
+import { usuarioAlergiaApi } from "../api/usuarioAlergiaApi";
+
+import type { Alergia } from "../api/types";
+
 export default function AlergiasPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const paciente = location.state?.paciente;
-  const token = localStorage.getItem("token");
-  const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
-
-  const [listaAlergiasSistema, setListaAlergiasSistema] = useState<any[]>([]);
-  const [alergiasPaciente, setAlergiasPaciente] = useState<any[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [alergiaSelecionada, setAlergiaSelecionada] = useState<any>(null);
+  const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // REDIRECIONA SE NÃO HOUVER PACIENTE
+  const pacienteId = paciente?.id_usuario;
+
   useEffect(() => {
     if (!paciente) navigate("/medico");
   }, [paciente, navigate]);
 
-  // LISTAR TODAS AS ALERGIAS DO SISTEMA
-  useEffect(() => {
-    if (!token) return;
-    fetch("http://localhost:8080/api/diario_saude/alergia/listar", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setListaAlergiasSistema(data))
-      .catch(console.error);
-  }, [token]);
+  // LISTAR TODAS AS ALERGIAS
+  const { data: listaAlergiasSistema = [] } = useQuery<Alergia[]>({
+    queryKey: ["alergias", "sistema"],
+    queryFn: () => alergiaApi.listarSistema(),
+  });
 
   // LISTAR ALERGIAS DO PACIENTE
-  const loadAlergiasPaciente = () => {
-    if (!paciente) return;
-    fetch(`http://localhost:8080/api/diario_saude/usuario-alergia/usuario/${paciente.id_usuario}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setAlergiasPaciente(data))
-      .catch(console.error);
-  };
+  const { data: alergiasPaciente = [] } = useQuery<Alergia[]>({
+    queryKey: ["usuario", pacienteId, "alergias"],
+    queryFn: () => usuarioAlergiaApi.listar(pacienteId!),
+    enabled: !!pacienteId,
+  });
 
-  useEffect(() => { loadAlergiasPaciente(); }, [paciente]);
+  // MUTAÇÕES
+  const addAlergiaMutation = useMutation({
+    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
+      usuarioAlergiaApi.adicionar(usuarioId, alergiaId),
+    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]),
+  });
 
-  // ADICIONAR ALERGIA
-  const handleAddAlergia = async () => {
-    if (!alergiaSelecionada) return alert("Selecione uma alergia antes de adicionar.");
+  const removeAlergiaMutation = useMutation({
+    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
+      usuarioAlergiaApi.remover(usuarioId, alergiaId),
+    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]),
+  });
 
-    await fetch(
-      `http://localhost:8080/api/diario_saude/usuario-alergia/add?usuarioId=${paciente.id_usuario}&alergiaId=${alergiaSelecionada.id}`,
-      { method: "POST", headers: { Authorization: `Bearer ${token}` } }
-    );
+  const [dialogAlergiaOpen, setDialogAlergiaOpen] = useState(false);
+  const [alergiaSelecionada, setAlergiaSelecionada] = useState<Alergia | null>(null);
 
-    setDialogOpen(false);
+  const handleAddAlergia = () => {
+    if (!alergiaSelecionada || !pacienteId) return alert("Selecione uma alergia.");
+    addAlergiaMutation.mutate({ usuarioId: pacienteId, alergiaId: alergiaSelecionada.id });
+    setDialogAlergiaOpen(false);
     setAlergiaSelecionada(null);
-    loadAlergiasPaciente();
   };
 
-  // REMOVER ALERGIA
-  const handleRemoveAlergia = async (id: number) => {
-    await fetch(
-      `http://localhost:8080/api/diario_saude/usuario-alergia/delete?usuarioId=${paciente.id_usuario}&alergiaId=${id}`,
-      { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
-    );
-    loadAlergiasPaciente();
+  const handleRemoveAlergia = (id: number) => {
+    if (!pacienteId) return;
+    removeAlergiaMutation.mutate({ usuarioId: pacienteId, alergiaId: id });
   };
 
   return (
@@ -103,57 +98,57 @@ export default function AlergiasPage() {
       </Button>
 
       <PageTitle>Alergias do Paciente</PageTitle>
-
       <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 2 }}>
         Paciente: <strong>{paciente?.nome}</strong>
       </Typography>
 
       <SectionTitle>Alergias cadastradas</SectionTitle>
 
-      {alergiasPaciente.length === 0 && (
+      {alergiasPaciente.length === 0 ? (
         <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
           Nenhuma alergia cadastrada para este paciente.
         </Typography>
+      ) : (
+        alergiasPaciente.map((a) => (
+          <ListItemCard key={a.id} title={a.nome} onDelete={() => handleRemoveAlergia(a.id)} />
+        ))
       )}
-
-      {alergiasPaciente.map((a) => (
-        <ListItemCard key={a.id} title={a.nome} onDelete={() => handleRemoveAlergia(a.id)} />
-      ))}
 
       <Button
         startIcon={<AddIcon />}
         fullWidth
         sx={{ mt: 2 }}
-        onClick={() => setDialogOpen(true)}
+        onClick={() => setDialogAlergiaOpen(true)}
       >
         Adicionar Alergia
       </Button>
 
-      <Box textAlign="center" mt={6}>
-        <Typography variant={isMobile ? "body1" : "h6"}>{usuario?.nome}</Typography>
-        <Typography variant="body2">{new Date().toLocaleDateString("pt-BR")}</Typography>
-      </Box>
-
       {/* DIALOG */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+      <Dialog open={dialogAlergiaOpen} onClose={() => setDialogAlergiaOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle sx={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>Adicionar Alergia</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
             <Autocomplete
               options={listaAlergiasSistema}
               getOptionLabel={(option) => option.nome}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
               onChange={(e, v) => setAlergiaSelecionada(v)}
-              renderInput={(params) => <TextField {...params} label="Pesquise a alergia" fullWidth />}
+              renderInput={(params) => <TextField {...params} label="Selecione a alergia" fullWidth />}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddAlergia}>
-            Adicionar
+          <Button onClick={() => setDialogAlergiaOpen(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleAddAlergia} disabled={addAlergiaMutation.isLoading}>
+            {addAlergiaMutation.isLoading ? "Adicionando..." : "Adicionar"}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Box textAlign="center" mt={6}>
+        <Typography variant={isMobile ? "body1" : "h6"}>{usuarioLogado?.nome}</Typography>
+        <Typography variant="body2">{new Date().toLocaleDateString("pt-BR")}</Typography>
+      </Box>
     </PageContainer>
   );
 }

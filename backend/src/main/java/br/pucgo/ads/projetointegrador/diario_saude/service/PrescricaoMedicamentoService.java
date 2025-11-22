@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.pucgo.ads.projetointegrador.diario_saude.dto.PrescricaoMedicamentoDTO;
-import br.pucgo.ads.projetointegrador.diario_saude.entity.MedicamentoEntity;
-import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoMedicaEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoMedicamentoEntity;
 import br.pucgo.ads.projetointegrador.diario_saude.repository.MedicamentoRepository;
 import br.pucgo.ads.projetointegrador.diario_saude.repository.PrescricaoMedicaRepository;

@@ -28,7 +28,7 @@ public class UsuarioController {
         return usuarioService.listarTodos();
     }
 
-    @GetMapping("/{id}") // <<< AQUI FALTAVA
+    @GetMapping("/{id}")
     public ResponseEntity<UsuarioDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }

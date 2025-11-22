@@ -64,9 +64,6 @@ public class AlergiaDTO {
         return Objects.hash(code);
     }
 
-    // ============================
-    //      INNER CLASS
-    // ============================
     public static class PropertyDTO {
 
         private String code;

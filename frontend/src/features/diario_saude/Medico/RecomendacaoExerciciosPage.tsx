@@ -18,7 +18,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// 🔹 Componentes reutilizáveis
+//Componentes reutilizáveis
 function PageContainer({ children }: { children: React.ReactNode }) {
   return <Container maxWidth="md" sx={{ py: 5 }}>{children}</Container>;
 }

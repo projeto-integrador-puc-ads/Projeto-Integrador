@@ -1,25 +1,33 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Container,
   Paper,
   Typography,
   List,
   ListItem,
   ListItemText,
   TextField,
-  Button
+  Button,
+  Container,
 } from "@mui/material";
-import { ModuleGridMedico } from '@/features/diario_saude/components/ModuleGridMedico';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { ModuleGridMedico } from "@/features/diario_saude/components/ModuleGridMedico";
+import { useLocation, useNavigate } from "react-router-dom";
 
-//Componentes reutilizáveis
+import { usuarioAlergiaApi } from "../api/usuarioAlergiaApi";
+import { usuarioDoencaApi } from "../api/usuarioDoencaApi";
+import type { Alergia, Doenca } from "../api/types";
+
+// Componentes reutilizáveis
 function PageContainer({ children }: { children: React.ReactNode }) {
   return <Container maxWidth="lg" sx={{ py: 5 }}>{children}</Container>;
 }
 
 function PageTitle({ children }: { children: React.ReactNode }) {
-  return <Typography variant="h4" fontWeight="bold" mb={4} align="center">{children}</Typography>;
+  return (
+    <Typography variant="h4" fontWeight="bold" mb={4} align="center">
+      {children}
+    </Typography>
+  );
 }
 
 export default function DashboardMedico() {
@@ -30,44 +38,30 @@ export default function DashboardMedico() {
   const prescricao = location.state?.prescricao;
 
   if (!paciente || !prescricao) {
-    navigate('/medico');
+    navigate("/medico");
     return null;
   }
 
-  const token = localStorage.getItem("token");
-
-  // Estados para edição
+  // Estados para edição de informações básicas
   const [idade, setIdade] = useState(paciente.idade);
   const [peso, setPeso] = useState(paciente.peso);
   const [altura, setAltura] = useState(paciente.altura);
 
-  // Estado para armazenar doenças
-  const [doencas, setDoencas] = useState<any[]>([]);
-  const [alergias, setAlergias] = useState<any[]>([]);
+  // Estados para doenças e alergias
+  const [doencas, setDoencas] = useState<Doenca[]>([]);
+  const [alergias, setAlergias] = useState<Alergia[]>([]);
 
-  // Buscar doenças do paciente via API
+  // Buscar doenças e alergias do paciente
   useEffect(() => {
-    fetch(`http://localhost:8080/api/diario_saude/usuario-doenca/usuario/${paciente.id_usuario}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setDoencas(data))
-      .catch(err => console.error("Erro ao buscar doenças do paciente:", err));
-  }, [paciente.id_usuario, token]);
+    if (!paciente?.id_usuario) return;
 
-  // Buscar alergias do paciente via API
-  useEffect(() => {
-    fetch(`http://localhost:8080/api/diario_saude/usuario-alergia/usuario/${paciente.id_usuario}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setAlergias(data))
-      .catch(err => console.error("Erro ao buscar alergias do paciente:", err));
-  }, [paciente.id_usuario, token]);
+    usuarioDoencaApi.listar(paciente.id_usuario).then(setDoencas);
+    usuarioAlergiaApi.listar(paciente.id_usuario).then(setAlergias);
+  }, [paciente?.id_usuario]);
 
-  // Função para salvar alterações
+  // Função para salvar alterações (simulação)
   const handleSalvar = () => {
-    alert('Dados do paciente atualizados (simulação).');
+    alert("Dados do paciente atualizados (simulação).");
   };
 
   return (
@@ -75,15 +69,14 @@ export default function DashboardMedico() {
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         <PageTitle>Dashboard Médico</PageTitle>
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4 }}>
           {/* Painel do Paciente */}
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, flex: '1 1 300px', minWidth: 250 }}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, flex: "1 1 300px", minWidth: 250 }}>
             <Typography variant="h5" fontWeight="bold" mb={2}>
               Informações do Paciente
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Typography variant="body1">
                 Paciente: <strong>{paciente.nome}</strong>
               </Typography>
@@ -92,30 +85,25 @@ export default function DashboardMedico() {
                 label="Idade"
                 type="number"
                 value={idade}
-                onChange={(e) => setIdade(e.target.value)}
+                onChange={(e) => setIdade(Number(e.target.value))}
                 fullWidth
               />
               <TextField
                 label="Peso (kg)"
                 type="number"
                 value={peso}
-                onChange={(e) => setPeso(e.target.value)}
+                onChange={(e) => setPeso(Number(e.target.value))}
                 fullWidth
               />
               <TextField
                 label="Altura (m)"
                 type="number"
                 value={altura}
-                onChange={(e) => setAltura(e.target.value)}
+                onChange={(e) => setAltura(Number(e.target.value))}
                 fullWidth
               />
 
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSalvar}
-                sx={{ mt: 2 }}
-              >
+              <Button variant="contained" color="primary" onClick={handleSalvar} sx={{ mt: 2 }}>
                 Salvar
               </Button>
             </Box>
@@ -133,9 +121,7 @@ export default function DashboardMedico() {
                     </ListItem>
                   ))
                 ) : (
-                  <Typography color="text.secondary">
-                    Nenhuma doença cadastrada.
-                  </Typography>
+                  <Typography color="text.secondary">Nenhuma doença cadastrada.</Typography>
                 )}
               </List>
             </Box>
@@ -153,23 +139,19 @@ export default function DashboardMedico() {
                     </ListItem>
                   ))
                 ) : (
-                  <Typography color="text.secondary">
-                    Nenhuma alergia cadastrada.
-                  </Typography>
+                  <Typography color="text.secondary">Nenhuma alergia cadastrada.</Typography>
                 )}
               </List>
             </Box>
           </Paper>
 
           {/* Painel Modular */}
-          <Box sx={{ flex: '2 1 600px' }}>
+          <Box sx={{ flex: "2 1 600px" }}>
             <Typography variant="h5" fontWeight="bold" mb={2}>
               Funções
             </Typography>
-
             <ModuleGridMedico paciente={paciente} prescricao={prescricao} />
           </Box>
-
         </Box>
       </Paper>
     </PageContainer>

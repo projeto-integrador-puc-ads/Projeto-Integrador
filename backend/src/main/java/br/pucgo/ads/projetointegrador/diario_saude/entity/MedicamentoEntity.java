@@ -14,10 +14,10 @@ public class MedicamentoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_medicamento;
 
-    @Column(nullable = false, length = 500) // Nome pode ser grande
+    @Column(nullable = false, length = 500)
     private String nome;
 
-    @Column(nullable = false, length = 1000) // Princípio ativo pode ser bem grande
+    @Column(nullable = false, length = 1000)
     private String principio_ativo;
 
     @Column(length = 500) // Empresa

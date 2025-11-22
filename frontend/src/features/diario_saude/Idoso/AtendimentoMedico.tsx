@@ -57,7 +57,7 @@ export default function AtendimentoMedico() {
     prescricao: '',
   });
 
-  // controle do modal de busca de médicos (o seu de antes)
+  // controle do modal de busca de médicos
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
 
