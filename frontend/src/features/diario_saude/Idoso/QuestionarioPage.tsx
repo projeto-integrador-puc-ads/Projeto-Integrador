@@ -1,4 +1,3 @@
-// src/pages/QuestionarioPage.tsx
 import { useState } from "react";
 import { Box, Button, Typography, Stack, Collapse } from "@mui/material";
 import PageContainer from "../components/PageContainer";

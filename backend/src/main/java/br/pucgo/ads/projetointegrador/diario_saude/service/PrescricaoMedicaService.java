@@ -45,7 +45,7 @@ public class PrescricaoMedicaService {
     }
 
     public PrescricaoMedicaDTO alterar(PrescricaoMedicaDTO dto){
-        return inserir(dto); // mesma lógica
+        return inserir(dto);
     }
 
     public void excluir(Long id){

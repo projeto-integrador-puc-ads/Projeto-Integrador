@@ -63,30 +63,6 @@ export type UsuarioAlergia = {
   alergia?: Alergia;
 };
 
-export type Prescricao = {
-  id_prescricao: number;
-  data_prescricao: string;
-  observacoes?: string;
-
-  nomeMedico?: string;
-  medicoId?: number;
-
-  usuarioId?: number;
-
-  medicamentos: PrescricaoMedicamento[];
-  exames: PrescricaoExame[];
-  exercicios?: PrescricaoExercicio[];
-};
-
-export type PrescricaoExame = {
-  id_prescricao_exame: number;
-  data_prescricao: string;
-  observacao?: string;
-
-  id_exame?: number;
-  exame?: Exame;
-};
-
 export type PrescricaoExercicio = {
   id_prescricao_exercicio: number;
 
@@ -126,5 +102,21 @@ export type PrescricaoMedicamento = {
   principio_ativo?: string;
   concentracao: string;
   via: string;
-  medicamento?: Medicamento;
+  dosagem?: string;
+  frequencia?: string;
+};
+
+export type PrescricaoExame = {
+  id_prescricao_exame: number;
+  exame?: { nome: string };
+  observacao?: string;
+};
+
+export type Prescricao = {
+  id_prescricao: number;
+  data_prescricao: string;
+  nomeMedico: string;
+  observacoes?: string;
+  medicamentos: PrescricaoMedicamento[];
+  exames: PrescricaoExame[];
 };

@@ -12,54 +12,63 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Container,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-
-import PageContainer from "../components/PageContainer";
-import PageTitle from "../components/PageTitle";
-import SectionTitle from "../components/SectionTitle";
-import BackButton from "../components/BackButton";
-
-import { prescricaoApi } from "../api/prescricaoApi";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { Prescricao, PrescricaoMedicamento, PrescricaoExame } from "../api/types";
+import { prescricaoApi } from "../api/prescricaoApi";
 
+function PageContainer({ children }: { children: React.ReactNode }) {
+  return <Container maxWidth="xl" sx={{ py: 5 }}>{children}</Container>;
+}
+
+function PageTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography variant="h4" fontWeight="bold" mb={4} align="center">
+      {children}
+    </Typography>
+  );
+}
+
+// Função para formatar a frequência em horas
 function formatFrequencia(f: string | number | undefined) {
   if (!f) return "-";
   const num = typeof f === "string" ? parseInt(f) : f;
   return isNaN(num) ? f : `${num}h`;
 }
 
-export default function HistoricoConsultasPacientePage() {
+export default function HistoricoConsultasMedicoPage() {
+  const location = useLocation();
   const navigate = useNavigate();
-  const usuarioLogado = JSON.parse(localStorage.getItem("usuario") || "null");
 
-  useEffect(() => {
-    if (!usuarioLogado) navigate("/login");
-  }, [usuarioLogado, navigate]);
+  const paciente = location.state?.paciente;
+  if (!paciente) {
+    navigate("/medico");
+    return null;
+  }
 
-  const pacienteNome = usuarioLogado?.nome || "Paciente";
-  const pacienteId = usuarioLogado?.id_usuario;
-
+  const [consultas, setConsultas] = useState<Prescricao[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [consultaSelecionada, setConsultaSelecionada] = useState<Prescricao | null>(null);
 
-  const { data: consultas = [], isLoading } = useQuery({
-    queryKey: ["prescricao", pacienteId],
-    queryFn: () => prescricaoApi.porUsuario(pacienteId),
-    enabled: !!pacienteId,
-    select: (lista) =>
-      lista
-        .filter(
-          (c) =>
-            (c.medicamentos?.length ?? 0) > 0 || (c.exames?.length ?? 0) > 0
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.data_prescricao).getTime() -
-            new Date(a.data_prescricao).getTime()
-        ),
-  });
+  useEffect(() => {
+    if (!paciente?.id_usuario) return;
+
+    prescricaoApi.porUsuario(paciente.id_usuario)
+      .then((res) => {
+        const filtradas = res
+          .filter(c => ((c.medicamentos ?? []).length > 0) || ((c.exames ?? []).length > 0))
+          .sort((a, b) => new Date(b.data_prescricao).getTime() - new Date(a.data_prescricao).getTime());
+
+        setConsultas(filtradas);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [paciente?.id_usuario]);
 
   const handleClickConsulta = (consulta: Prescricao) => {
     setConsultaSelecionada(consulta);
@@ -73,13 +82,9 @@ export default function HistoricoConsultasPacientePage() {
 
   return (
     <PageContainer>
-      <BackButton to="/home" />
-      <PageTitle>Histórico de Consultas</PageTitle>
-      <SectionTitle>
-        Paciente: <b>{pacienteNome}</b>
-      </SectionTitle>
+      <PageTitle>Histórico de Consultas — {paciente.nome}</PageTitle>
 
-      {isLoading ? (
+      {loading ? (
         <Typography color="text.secondary" align="center" mt={2}>
           Carregando…
         </Typography>
@@ -89,18 +94,11 @@ export default function HistoricoConsultasPacientePage() {
         </Typography>
       ) : (
         <List>
-          {consultas.map((c) => (
+          {consultas.map(c => (
             <ListItemButton
               key={c.id_prescricao}
               onClick={() => handleClickConsulta(c)}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                bgcolor: "#f5f5f5",
-                "&:hover": { bgcolor: "#e0e0e0" },
-                py: 2,
-                px: 2,
-              }}
+              sx={{ mb:1, borderRadius:2, bgcolor:"#f5f5f5", "&:hover":{bgcolor:"#e0e0e0"}, py:2, px:2 }}
             >
               <ListItemText
                 primary={c.nomeMedico}
@@ -111,11 +109,11 @@ export default function HistoricoConsultasPacientePage() {
         </List>
       )}
 
+      {/* Dialog detalhado */}
       <Dialog open={dialogOpen} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
           {consultaSelecionada?.nomeMedico} — {consultaSelecionada?.data_prescricao}
         </DialogTitle>
-
         <DialogContent dividers>
           {/* Medicamentos */}
           <Typography variant="subtitle1" fontWeight="bold" mb={1}>
@@ -123,7 +121,7 @@ export default function HistoricoConsultasPacientePage() {
           </Typography>
           <List dense>
             {consultaSelecionada?.medicamentos?.map((m: PrescricaoMedicamento, i) => (
-              <Paper key={i} sx={{ p: 2, mb: 1 }}>
+              <Paper key={i} sx={{ p:2, mb:1 }}>
                 <Box display="flex" flexDirection="column" gap={0.5}>
                   <Typography fontWeight="bold">{m.nome_medicamento || "-"}</Typography>
                   <Box display="flex" gap={2} flexWrap="wrap">
@@ -140,7 +138,7 @@ export default function HistoricoConsultasPacientePage() {
             )) ?? <Typography>-</Typography>}
           </List>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my:2 }}/>
 
           {/* Exames */}
           <Typography variant="subtitle1" fontWeight="bold">
@@ -159,7 +157,7 @@ export default function HistoricoConsultasPacientePage() {
           {/* Observações */}
           {consultaSelecionada?.observacoes && (
             <>
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my:2 }}/>
               <Typography variant="subtitle1" fontWeight="bold">
                 Observações:
               </Typography>

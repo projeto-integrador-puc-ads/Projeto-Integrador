@@ -23,7 +23,8 @@ import RecomendacaoExerciciosPage from '@/features/diario_saude/Medico/Recomenda
 import HistoricoConsultasPage from '@/features/diario_saude/Idoso/HistoricoConsultasPage';
 import AlergiasPage from '@/features/diario_saude/Medico/AlergiasPage';
 import SaudeMenuPage from '@/features/diario_saude/Idoso/SaudeMenuPage';
-
+import RespostasPage from '@/features/diario_saude/Idoso/RespostasPage';
+import HistoricoConsultasMedicoPage from '@/features/diario_saude/Medico/HistoricoConsultasMedicoPage';
 
 
 function Home() {
@@ -66,6 +67,7 @@ export function AppRoutes() {
         <Route path="/historico_consultas" element={<HistoricoConsultasPage />} />
         <Route path="/informacoes_saude" element={<InformacoesSaude />} />
         <Route path="/questionario_saude" element={<QuestionarioPage />} />
+        <Route path="/respostas_questionario" element={<RespostasPage />} />
 
         {/* rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
@@ -74,6 +76,7 @@ export function AppRoutes() {
         <Route path="atendimento/exercicios" element={<RecomendacaoExerciciosPage />} />
         <Route path="atendimento/alergias" element={<AlergiasPage />} />
         <Route path="atendimento/doencas" element={<DiagnosticarDoencaPage />} />
+        <Route path="/atendimento/historico-medico" element={<HistoricoConsultasMedicoPage />} />
 
         {/* Página inicial do médico */}
         <Route path="medico" element={<IniciarConsulta />} />

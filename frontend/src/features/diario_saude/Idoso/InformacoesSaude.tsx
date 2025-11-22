@@ -23,20 +23,19 @@ import ListItemCard from "../components/ListItemCard";
 import BackButton from "../components/BackButton";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { usuarioApi } from "../api/usuarioApi";
 import { doencaApi } from "../api/doencaApi";
-import { alergiaApi } from "../api/alergiaApi";
 import { usuarioDoencaApi } from "../api/usuarioDoencaApi";
+import { alergiaApi } from "../api/alergiaApi";
 import { usuarioAlergiaApi } from "../api/usuarioAlergiaApi";
 
 import type { Usuario, Doenca, Alergia } from "../api/types";
 
 export default function InformacoesSaudePage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const usuarioLogado = JSON.parse(localStorage.getItem("usuario") || "null");
   const pacienteId = usuarioLogado?.id_usuario as number | undefined;
+  const navigate = useNavigate();
 
   // REDIRECIONA SE NÃO HOUVER USUARIO LOGADO
   useEffect(() => {
@@ -44,7 +43,7 @@ export default function InformacoesSaudePage() {
   }, [usuarioLogado, navigate]);
 
   // -----------------------------
-  // USUARIO
+  // DADOS DO USUÁRIO
   // -----------------------------
   const { data: usuario } = useQuery({
     queryKey: ["usuario", pacienteId],
@@ -79,10 +78,7 @@ export default function InformacoesSaudePage() {
       queryClient.invalidateQueries(["usuario", pacienteId]);
       alert("Informações atualizadas!");
     },
-    onError: (err) => {
-      console.error(err);
-      alert("Erro ao salvar informações.");
-    },
+    onError: () => alert("Erro ao salvar informações."),
   });
 
   const salvarAlteracoes = () => {
@@ -105,30 +101,32 @@ export default function InformacoesSaudePage() {
 
   const { data: doencasUsuario = [] } = useQuery({
     queryKey: ["usuario", pacienteId, "doencas"],
-    queryFn: () => usuarioDoencaApi.listarPorUsuario(pacienteId),
+    queryFn: () => usuarioDoencaApi.listar(pacienteId!),
     enabled: !!pacienteId,
-  });
-
-  const addDoencaMutation = useMutation({
-    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
-      usuarioDoencaApi.add(usuarioId, doencaId),
-    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]),
-  });
-
-  const removeDoencaMutation = useMutation({
-    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
-      usuarioDoencaApi.remove(usuarioId, doencaId),
-    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]),
   });
 
   const [dialogDoencaOpen, setDialogDoencaOpen] = useState(false);
   const [doencaSelecionada, setDoencaSelecionada] = useState<Doenca | null>(null);
 
+  const addDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.adicionar(usuarioId, doencaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]);
+      setDialogDoencaOpen(false);
+      setDoencaSelecionada(null);
+    },
+  });
+
+  const removeDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.remover(usuarioId, doencaId),
+    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]),
+  });
+
   const handleAddDoenca = () => {
     if (!doencaSelecionada || !pacienteId) return alert("Selecione uma doença.");
     addDoencaMutation.mutate({ usuarioId: pacienteId, doencaId: doencaSelecionada.id });
-    setDialogDoencaOpen(false);
-    setDoencaSelecionada(null);
   };
 
   const handleRemoveDoenca = (id: number) => {
@@ -146,30 +144,32 @@ export default function InformacoesSaudePage() {
 
   const { data: alergiasUsuario = [] } = useQuery({
     queryKey: ["usuario", pacienteId, "alergias"],
-    queryFn: () => usuarioAlergiaApi.listar(pacienteId!), // <- padronizado
+    queryFn: () => usuarioAlergiaApi.listar(pacienteId!),
     enabled: !!pacienteId,
-  });
-
-  const addAlergiaMutation = useMutation({
-    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
-      usuarioAlergiaApi.adicionar(usuarioId, alergiaId), // <- padronizado
-    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]),
-  });
-
-  const removeAlergiaMutation = useMutation({
-    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
-      usuarioAlergiaApi.remover(usuarioId, alergiaId), // <- padronizado
-    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]),
   });
 
   const [dialogAlergiaOpen, setDialogAlergiaOpen] = useState(false);
   const [alergiaSelecionada, setAlergiaSelecionada] = useState<Alergia | null>(null);
 
+  const addAlergiaMutation = useMutation({
+    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
+      usuarioAlergiaApi.adicionar(usuarioId, alergiaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]);
+      setDialogAlergiaOpen(false);
+      setAlergiaSelecionada(null);
+    },
+  });
+
+  const removeAlergiaMutation = useMutation({
+    mutationFn: ({ usuarioId, alergiaId }: { usuarioId: number; alergiaId: number }) =>
+      usuarioAlergiaApi.remover(usuarioId, alergiaId),
+    onSuccess: () => queryClient.invalidateQueries(["usuario", pacienteId, "alergias"]),
+  });
+
   const handleAddAlergia = () => {
     if (!alergiaSelecionada || !pacienteId) return alert("Selecione uma alergia.");
     addAlergiaMutation.mutate({ usuarioId: pacienteId, alergiaId: alergiaSelecionada.id });
-    setDialogAlergiaOpen(false);
-    setAlergiaSelecionada(null);
   };
 
   const handleRemoveAlergia = (id: number) => {
@@ -213,7 +213,11 @@ export default function InformacoesSaudePage() {
         <Typography color="text.secondary" align="center">Nenhuma doença cadastrada.</Typography>
       ) : (
         doencasUsuario.map((d: any) => (
-          <ListItemCard key={d.id || d.doencaId} title={d.nome ?? d.doencaNome ?? ""} onDelete={() => handleRemoveDoenca(d.id ?? d.doencaId)} />
+          <ListItemCard
+            key={d.id || d.doencaId}
+            title={d.nome ?? d.doencaNome ?? ""}
+            onDelete={() => handleRemoveDoenca(d.id ?? d.doencaId)}
+          />
         ))
       )}
       <Button variant="contained" fullWidth startIcon={<AddIcon />} sx={{ mt: 2 }} onClick={() => setDialogDoencaOpen(true)}>
@@ -228,7 +232,11 @@ export default function InformacoesSaudePage() {
         <Typography color="text.secondary" align="center">Nenhuma alergia cadastrada.</Typography>
       ) : (
         alergiasUsuario.map((a: any) => (
-          <ListItemCard key={a.id || a.alergiaId} title={a.nome ?? a.alergiaNome ?? ""} onDelete={() => handleRemoveAlergia(a.id ?? a.alergiaId)} />
+          <ListItemCard
+            key={a.id || a.alergiaId}
+            title={a.nome ?? a.alergiaNome ?? ""}
+            onDelete={() => handleRemoveAlergia(a.id ?? a.alergiaId)}
+          />
         ))
       )}
       <Button variant="contained" fullWidth startIcon={<AddIcon />} sx={{ mt: 2 }} onClick={() => setDialogAlergiaOpen(true)}>

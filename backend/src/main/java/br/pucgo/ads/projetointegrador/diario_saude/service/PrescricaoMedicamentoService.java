@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.diario_saude.service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,29 +23,56 @@ public class PrescricaoMedicamentoService {
     @Autowired
     private PrescricaoMedicaRepository prescricaoRepo;
 
-    public List<PrescricaoMedicamentoDTO> listarTodos(){
-        return repo.findAll().stream().map(PrescricaoMedicamentoDTO::new).toList();
+    // Listar todos os medicamentos
+    public List<PrescricaoMedicamentoDTO> listarTodos() {
+        return repo.findAll().stream()
+                   .map(PrescricaoMedicamentoDTO::new)
+                   .toList();
     }
 
-    public void inserir(PrescricaoMedicamentoDTO dto){
-        PrescricaoMedicamentoEntity entity = new PrescricaoMedicamentoEntity(dto);
-        entity.setDosagem(dto.getConcentracao());
-        entity.setFrequencia(dto.getVia());
-        //Associa medicamento e prescrição
-        entity.setMedicamento(medicamentoRepo.findById(dto.getId_medicamento()).orElseThrow());
+    // Inserir novo medicamento na prescrição
+    public void inserir(PrescricaoMedicamentoDTO dto) {
+        PrescricaoMedicamentoEntity entity = new PrescricaoMedicamentoEntity();
+        entity.setDosagem(dto.getDosagem());
+        entity.setFrequencia(dto.getFrequencia());
+        entity.setConcentracao(dto.getConcentracao());
+        entity.setVia(dto.getVia());
+
+        if (dto.getId_medicamento() != 0) {
+            // medicamento existente no banco
+            var med = medicamentoRepo.findById(dto.getId_medicamento()).orElseThrow();
+            entity.setMedicamento(med);
+            entity.setNome_medicamento(med.getNome());
+        } else {
+            // medicamento digitado manualmente
+            entity.setMedicamento(null);
+            entity.setNome_medicamento(dto.getNome_medicamento());
+        }
+
         entity.setPrescricaoMedica(prescricaoRepo.findById(dto.getId_prescricao()).orElseThrow());
 
         repo.save(entity);
     }
 
-    public PrescricaoMedicamentoDTO alterar(PrescricaoMedicamentoDTO dto){
-        PrescricaoMedicamentoEntity entity = new PrescricaoMedicamentoEntity(dto);
-        entity.setMedicamento(medicamentoRepo.findById(dto.getId_medicamento()).get());
-        entity.setPrescricaoMedica(prescricaoRepo.findById(dto.getId_prescricao()).get());
+    // Alterar medicamento existente
+    public PrescricaoMedicamentoDTO alterar(PrescricaoMedicamentoDTO dto) {
+        PrescricaoMedicamentoEntity entity = repo.findById(dto.getId_prescricao_medicamento())
+                                                 .orElseThrow();
+
+        entity.setDosagem(dto.getDosagem());
+        entity.setFrequencia(dto.getFrequencia());
+        entity.setConcentracao(dto.getConcentracao());
+        entity.setVia(dto.getVia());
+
+        entity.setMedicamento(medicamentoRepo.findById(dto.getId_medicamento()).orElseThrow());
+        entity.setPrescricaoMedica(prescricaoRepo.findById(dto.getId_prescricao()).orElseThrow());
+
         return new PrescricaoMedicamentoDTO(repo.save(entity));
     }
 
-    public void excluir(Long id){
-        repo.delete(repo.findById(id).get());
+    // Excluir medicamento da prescrição
+    public void excluir(Long id) {
+        PrescricaoMedicamentoEntity entity = repo.findById(id).orElseThrow();
+        repo.delete(entity);
     }
 }

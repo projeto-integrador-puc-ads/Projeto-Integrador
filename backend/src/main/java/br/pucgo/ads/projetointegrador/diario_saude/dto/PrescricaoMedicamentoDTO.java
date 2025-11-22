@@ -1,6 +1,5 @@
 package br.pucgo.ads.projetointegrador.diario_saude.dto;
 
-import org.springframework.beans.BeanUtils;
 import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoMedicamentoEntity;
 
 public class PrescricaoMedicamentoDTO {
@@ -19,12 +18,16 @@ public class PrescricaoMedicamentoDTO {
     public PrescricaoMedicamentoDTO() {}
 
     public PrescricaoMedicamentoDTO(PrescricaoMedicamentoEntity entity){
-        BeanUtils.copyProperties(entity, this);
+        this.id_prescricao_medicamento = entity.getId_prescricao_medicamento();
+        this.dosagem = entity.getDosagem();
+        this.frequencia = entity.getFrequencia();
+
+        this.nome_medicamento = entity.getMedicamento() != null ? entity.getMedicamento().getNome() : "-";
+        this.concentracao = entity.getConcentracao() != null ? entity.getConcentracao() : "-";
+        this.via = entity.getVia() != null ? entity.getVia() : "-";
+
         this.id_medicamento = entity.getMedicamento() != null ? entity.getMedicamento().getId_medicamento() : 0;
         this.id_prescricao = entity.getPrescricaoMedica().getId_prescricao();
-        this.nome_medicamento = entity.getNome_medicamento();
-        this.concentracao = entity.getConcentracao();
-        this.via = entity.getVia();
     }
 
     // getters e setters
@@ -52,4 +55,3 @@ public class PrescricaoMedicamentoDTO {
     public long getId_prescricao() { return id_prescricao; }
     public void setId_prescricao(long id_prescricao) { this.id_prescricao = id_prescricao; }
 }
-

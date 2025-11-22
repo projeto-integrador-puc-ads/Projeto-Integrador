@@ -3,8 +3,6 @@ package br.pucgo.ads.projetointegrador.diario_saude.dto;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.BeanUtils;
-
 import br.pucgo.ads.projetointegrador.diario_saude.entity.PrescricaoMedicaEntity;
 
 public class PrescricaoMedicaDTO {
@@ -18,31 +16,31 @@ public class PrescricaoMedicaDTO {
 
     private long id_usuario;
 
-    private List<String> medicamentos;
+    // Lista de medicamentos detalhados
+    private List<PrescricaoMedicamentoDTO> medicamentos;
+
+    // Lista de exames (continua como nomes)
     private List<String> exames;
 
-    public PrescricaoMedicaDTO(PrescricaoMedicaEntity entity){
+    public PrescricaoMedicaDTO(PrescricaoMedicaEntity entity) {
+        this.id_prescricao = entity.getId_prescricao();
+        this.data_prescricao = entity.getData_prescricao();
+        this.observacoes = entity.getObservacoes();
 
-        BeanUtils.copyProperties(entity, this);
-
-        // Nome do médico
+        this.id_medico = entity.getMedico().getId_medico();
         this.nomeMedico = entity.getMedico().getNome();
 
-        // ID do médico
-        this.id_medico = entity.getMedico().getId_medico();
-
-        // ID do usuário
         this.id_usuario = entity.getUsuario().getId_usuario();
 
-        // Lista de medicamentos prescritos
-        this.medicamentos = entity.getPrescricoesMedicamentos() == null ? 
-        List.of() :
-        entity.getPrescricoesMedicamentos()
-            .stream()
-            .map(pm -> pm.getMedicamento().getNome())
-            .collect(Collectors.toList());
+        // Lista detalhada de medicamentos
+        this.medicamentos = entity.getPrescricoesMedicamentos() == null ?
+            List.of() :
+            entity.getPrescricoesMedicamentos()
+                .stream()
+                .map(pm -> new PrescricaoMedicamentoDTO(pm))
+                .collect(Collectors.toList());
 
-        // Lista de exames prescritos
+        // Lista de exames (nome apenas)
         this.exames = entity.getPrescricoesExames() == null ?
             List.of() :
             entity.getPrescricoesExames()
@@ -51,13 +49,14 @@ public class PrescricaoMedicaDTO {
                 .collect(Collectors.toList());
     }
 
-    public PrescricaoMedicaDTO(){}
+    public PrescricaoMedicaDTO() {}
 
+    // --- getters e setters ---
     public long getId_prescricao() { return id_prescricao; }
-    public void setId_prescricao(long id_prescricao) { this.id_prescricao = id_prescricao; }
+    public void setId_prescricao(long id) { this.id_prescricao = id; }
 
     public String getData_prescricao() { return data_prescricao; }
-    public void setData_prescricao(String data_prescricao) { this.data_prescricao = data_prescricao; }
+    public void setData_prescricao(String data) { this.data_prescricao = data; }
 
     public String getObservacoes() { return observacoes; }
     public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
@@ -71,8 +70,8 @@ public class PrescricaoMedicaDTO {
     public long getId_usuario() { return id_usuario; }
     public void setId_usuario(long id_usuario) { this.id_usuario = id_usuario; }
 
-    public List<String> getMedicamentos() { return medicamentos; }
-    public void setMedicamentos(List<String> medicamentos) { this.medicamentos = medicamentos; }
+    public List<PrescricaoMedicamentoDTO> getMedicamentos() { return medicamentos; }
+    public void setMedicamentos(List<PrescricaoMedicamentoDTO> medicamentos) { this.medicamentos = medicamentos; }
 
     public List<String> getExames() { return exames; }
     public void setExames(List<String> exames) { this.exames = exames; }

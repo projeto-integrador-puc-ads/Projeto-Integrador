@@ -43,12 +43,18 @@ export function ModuleGridMedico({ paciente, prescricao }: { paciente: Paciente,
       onClick: () => navigate('/atendimento/doencas', { state: { paciente, prescricao } }),
     },
 
-    // 🔥 Novo módulo de Alergias
     {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="warning" />,
       title: 'Alergias',
       desc: 'Visualizar e editar alergias do paciente.',
       onClick: () => navigate('/atendimento/alergias', { state: { paciente, prescricao } }),
+    },
+    
+    {
+      icon: <DescriptionIcon sx={{ fontSize: 40 }} color="info" />,
+      title: 'Histórico de Consultas',
+      desc: 'Ver todas as consultas do paciente.',
+      onClick: () => navigate('/atendimento/historico-medico', { state: { paciente } }),
     },
   ];
 

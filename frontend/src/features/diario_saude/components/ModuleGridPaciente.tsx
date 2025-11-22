@@ -33,6 +33,12 @@ export function ModuleGridSaude() {
       desc: 'Responda o questionário de avaliação.',
       onClick: () => navigate('/questionario_saude'),
     },
+    {
+      icon: <HistoryIcon sx={{ fontSize: 40 }} color="secondary" />,
+      title: 'Respostas do Questionário',
+      desc: 'Veja suas respostas enviadas no questionário.',
+      onClick: () => navigate('/respostas_questionario'),
+    },
   ];
 
   return (
