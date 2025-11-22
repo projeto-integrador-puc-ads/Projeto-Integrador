@@ -142,7 +142,16 @@ export default function DiagnosticarDoencaPage() {
               getOptionLabel={(option) => option.nome}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               onChange={(e, v) => setDoencaSelecionada(v)}
-              renderInput={(params) => <TextField {...params} label="Pesquise a doença" fullWidth />}
+              
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  {option.nome}
+                </li>
+              )}
+
+              renderInput={(params) => (
+                <TextField {...params} label="Pesquise a doença" fullWidth />
+              )}
             />
           </Stack>
         </DialogContent>

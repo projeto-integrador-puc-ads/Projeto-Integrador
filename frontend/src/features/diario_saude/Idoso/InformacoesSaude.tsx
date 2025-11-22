@@ -249,10 +249,20 @@ export default function InformacoesSaudePage() {
         <DialogContent>
           <Autocomplete
             options={listaDoencasSistema}
-            getOptionLabel={(op: any) => op?.nome ?? ""}
-            isOptionEqualToValue={(option: any, value: any) => option?.id === value?.id}
+            getOptionLabel={(option) => option.nome}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={doencaSelecionada}
             onChange={(e, v) => setDoencaSelecionada(v)}
-            renderInput={(params) => <TextField {...params} label="Selecione a doença" />}
+
+            renderOption={(props, option) => (
+              <li {...props} key={option.id}>
+                {option.nome}
+              </li>
+            )}
+
+            renderInput={(params) => (
+              <TextField {...params} label="Pesquise a doença" fullWidth />
+            )}
           />
         </DialogContent>
         <DialogActions>
