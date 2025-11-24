@@ -1,5 +1,6 @@
 package br.pucgo.ads.projetointegrador.listaCompras.entity;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

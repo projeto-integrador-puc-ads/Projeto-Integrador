@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,8 @@ public class ProdutoService {
 
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarPorNome(String nome) {
-        return produtoRepository.findTop5ByNomeContainingIgnoreCaseAndAtivoTrue(nome).stream()
+        String nomeNormalizado = normalizarNome(nome);
+        return produtoRepository.findTop5ByNomeContainingIgnoreCaseAndAtivoTrue(nomeNormalizado).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -172,6 +174,15 @@ public class ProdutoService {
     }
 
     private String normalizarNome(String nome) {
-        return nome != null ? nome.toLowerCase().trim() : null;
+        if (nome == null) return null;
+
+        // Remove acentos e converte para minúsculo
+        String normalizado;
+        normalizado = Normalizer.normalize(nome, Normalizer.Form.NFD)
+                .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "")
+                .toLowerCase()
+                .trim();
+
+        return normalizado;
     }
 }

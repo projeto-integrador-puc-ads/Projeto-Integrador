@@ -22,6 +22,9 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     // Buscar produtos por nome contendo (busca)
     List<Produto> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
 
+    // Buscar por nome normalizado (sem acentos)
+    List<Produto> findByNomeNormalizadoContainingAndAtivoTrue(String nomeNormalizado);
+
     // Buscar por nome normalizado (case-insensitive por padrão)
     Optional<Produto> findByNomeNormalizado(String nomeNormalizado);
 

@@ -3,6 +3,8 @@ package br.pucgo.ads.projetointegrador.listaCompras.controller;
 
 import br.pucgo.ads.projetointegrador.listaCompras.dto.ProdutoRelacionadoResponseDTO;
 import br.pucgo.ads.projetointegrador.listaCompras.dto.ProdutoResponseDTO;
+import br.pucgo.ads.projetointegrador.listaCompras.dto.ProdutoSubstituivelResponseDTO;
+import br.pucgo.ads.projetointegrador.listaCompras.service.PatologiaItemService;
 import br.pucgo.ads.projetointegrador.listaCompras.service.ProdutoRelacionadoService;
 import br.pucgo.ads.projetointegrador.listaCompras.service.ProdutoService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class ProdutoController {
 
     private final ProdutoService produtoService;
     private final ProdutoRelacionadoService produtoRelacionadoService;
+    private final PatologiaItemService patologiaItemService;
 
     @GetMapping
     public ResponseEntity<List<ProdutoResponseDTO>> listarTodos(){
@@ -36,6 +39,24 @@ public class ProdutoController {
     public ResponseEntity<List<ProdutoRelacionadoResponseDTO>> listarProdutosRelacionados(@PathVariable Long id) {
         List<ProdutoRelacionadoResponseDTO> relacionados = produtoRelacionadoService.listarProdutosRelacionados(id);
         return ResponseEntity.ok(relacionados);
+    }
+
+    /**
+     * GET /api/produtos/{id}/substituiveis?userId=1
+     * Listar produtos que podem substituir o produto alertado
+     * Usar quando TEM alerta de patologia
+     *
+     * @param id ID do produto alertado
+     * @param userId ID do usuário (para verificar suas patologias)
+     * @return Lista de produtos substitutos sugeridos
+     */
+    @GetMapping("/{id}/substituiveis")
+    public ResponseEntity<List<ProdutoSubstituivelResponseDTO>> listarProdutosSubstituiveis(
+            @PathVariable Long id,
+            @RequestParam Long userId) {
+        List<ProdutoSubstituivelResponseDTO> substituiveis =
+                patologiaItemService.listarProdutosSubstituiveis(userId, id);
+        return ResponseEntity.ok(substituiveis);
     }
 
     /**

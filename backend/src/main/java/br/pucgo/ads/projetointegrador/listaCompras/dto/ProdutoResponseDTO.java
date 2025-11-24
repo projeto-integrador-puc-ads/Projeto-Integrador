@@ -1,5 +1,6 @@
 package br.pucgo.ads.projetointegrador.listaCompras.dto;
 
+import br.pucgo.ads.projetointegrador.listaCompras.entity.Categoria;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

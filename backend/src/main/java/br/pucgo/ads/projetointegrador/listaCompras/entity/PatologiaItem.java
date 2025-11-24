@@ -29,6 +29,10 @@ public class PatologiaItem {
     @JoinColumn(name ="produto_id", nullable = false)
     private Produto produto;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produto_sugestao_id")
+    private Produto produtoSugestao; // Produto pra substituir o produto alertado
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
