@@ -24,9 +24,7 @@ public class AuthController {
     // Login/Signin endpoint
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto) {
-        String token = authService.login(loginDto);
-        JwtAuthResponse response = new JwtAuthResponse();
-        response.setAccessToken(token);
+        JwtAuthResponse response = authService.login(loginDto);
         return ResponseEntity.ok(response);
     }
 

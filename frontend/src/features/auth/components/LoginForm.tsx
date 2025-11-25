@@ -3,9 +3,10 @@ import { Box, Button, Card, CardContent, Stack, TextField, Typography, Alert } f
 import { login, TEST_USERS } from '@/lib/auth';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../api/auth';
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -15,52 +16,27 @@ export default function LoginForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // ✅ Login real via API
-      await login({
-        usernameOrEmail: email,
-        password: password
-      });
+      const response = await authApi.login({ usernameOrEmail, password });
       
-      // 🔧 WORKAROUND: Como backend ainda não retorna userId/role,
-      // vamos identificar pelo email e salvar manualmente
-      let userId: number | null = null;
-      let userRole: string | null = null;
+      // Salvar token no interceptor HTTP
+      setAuthToken(response.accessToken);
       
-      if (email === TEST_USERS.admin.email) {
-        userId = 1;
-        userRole = 'ADMIN';
-      } else if (email === TEST_USERS.cliente.email) {
-        userId = TEST_USERS.cliente.id;
-        userRole = TEST_USERS.cliente.role;
-      } else if (email === TEST_USERS.cuidador.email) {
-        userId = TEST_USERS.cuidador.id;
-        userRole = TEST_USERS.cuidador.role;
-      }
+      // Opcional: Salvar dados do usuário no localStorage
+      localStorage.setItem('user', JSON.stringify({
+        userId: response.userId,
+        username: response.username,
+        email: response.email,
+        name: response.name,
+        roleName: response.roleName,
+        roleCode: response.roleCode,
+        permissions: response.permissions,
+      }));
       
-      // Salvar userId e role manualmente (temporário até backend ser atualizado)
-      if (userId && userRole) {
-        localStorage.setItem('userId', userId.toString());
-        localStorage.setItem('userRole', userRole);
-        localStorage.setItem('username', email);
-        console.log(`🔧 WORKAROUND: Manually set userId=${userId}, role=${userRole}`);
-      }
-      
-      enqueueSnackbar(
-        `✅ Bem-vindo! Logado como: ${userRole || 'usuário'}`, 
-        { variant: 'success' }
-      );
-      
-      // Redirecionar baseado no role
-      if (userRole === 'ADMIN') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/carehub', { replace: true });
-      }
+      enqueueSnackbar(`Bem-vindo(a), ${response.name}!`, { variant: 'success' });
+      navigate('/home', { replace: true });
     } catch (err: any) {
-      enqueueSnackbar(
-        err.message || 'Falha ao autenticar. Verifique suas credenciais.', 
-        { variant: 'error' }
-      );
+      const errorMessage = err?.response?.data?.message || 'Credenciais inválidas. Tente novamente.';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -83,10 +59,10 @@ export default function LoginForm() {
             </Alert>
             
             <TextField
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="E-mail ou Usuário"
+              type="text"
+              value={usernameOrEmail}
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
               required
               autoFocus
               fullWidth

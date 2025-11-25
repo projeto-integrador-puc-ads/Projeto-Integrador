@@ -1,8 +1,10 @@
 package br.pucgo.ads.projetointegrador.plataforma.service.impl;
 
 import br.pucgo.ads.projetointegrador.plataforma.dto.UserProfileDto;
+import br.pucgo.ads.projetointegrador.plataforma.entity.Role;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.exception.UserNotFoundException;
+import br.pucgo.ads.projetointegrador.plataforma.repository.RoleRepository;
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import br.pucgo.ads.projetointegrador.plataforma.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     
     @Override
     public User getUserById(Long id) {
@@ -37,12 +40,31 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User updateUser(Long id, UserProfileDto userDto) {
+
         User user = getUserById(id);
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        // Atualizar outros campos conforme necessário
+
+        if (userDto.getName() != null)
+            user.setName(userDto.getName());
+
+        if (userDto.getEmail() != null)
+            user.setEmail(userDto.getEmail());
+
+        if (userDto.getUsername() != null)
+            user.setUsername(userDto.getUsername());
+
+        if (userDto.getRoleId() != null) {
+            Role role = roleRepository.findById(userDto.getRoleId())
+                    .orElseThrow(() -> new UserNotFoundException("Role não encontrada: " + userDto.getRoleId()));
+            user.setRole(role);
+        }
+
+        user.setCrm(userDto.getCrm());
+        user.setCertificacao(userDto.getCertificacao());
+        user.setExperiencia(userDto.getExperiencia());
+
         return userRepository.save(user);
     }
+
     
     @Override
     @Transactional

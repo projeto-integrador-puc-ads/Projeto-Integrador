@@ -10,23 +10,25 @@ import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    
+
     private final User user;
     private final Collection<? extends GrantedAuthority> authorities;
-    
+
     public static CustomUserDetails fromUser(User user) {
-        Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.toString()))
-                .collect(Collectors.toSet());
-                
-        return new CustomUserDetails(user, authorities);
+
+        GrantedAuthority authority =
+                new SimpleGrantedAuthority(user.getRole().getName());
+
+        return new CustomUserDetails(
+                user,
+                Set.of(authority)
+        );
     }
-    
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

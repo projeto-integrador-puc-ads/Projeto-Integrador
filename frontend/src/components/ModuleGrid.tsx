@@ -1,17 +1,19 @@
-import { Box } from '@mui/material';
+import React from 'react';
+import { Box, Grid, Typography } from '@mui/material';
 import { ModuleCard } from './ModuleCard';
+import { useNavigate } from 'react-router-dom';
+
+// Ícones do Material-UI
 import MedicationIcon from '@mui/icons-material/Medication';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // ✅ Novo ícone
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useNavigate } from 'react-router-dom';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 
 export function ModuleGrid() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // para navegação
 
   const items = [
     {
@@ -24,7 +26,7 @@ export function ModuleGrid() {
       icon: <MedicationIcon sx={{ fontSize: 40 }} />,
       title: 'Medicamentos',
       desc: 'Monitore horários e doses.',
-      to: '/grupo1/medicamentos',
+      to: '/medicamentos',
     },
     {
       icon: <SportsEsportsIcon sx={{ fontSize: 40 }} />,
@@ -44,15 +46,12 @@ export function ModuleGrid() {
       desc: 'Acompanhe suas consultas médicas.',
       to: '/grupo4/consultas',
     },
-
-    // ✅ Novo módulo: Atendimento Médico
     {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
       title: 'Atendimento Médico',
       desc: 'Registre informações de consultas e diagnósticos.',
       to: '/atendimento',
     },
-
     {
       icon: <EscalatorWarningIcon sx={{ fontSize: 40 }} />,
       title: 'Ajudador',
@@ -68,27 +67,22 @@ export function ModuleGrid() {
   ];
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: {
-          xs: '1fr',
-          sm: '1fr 1fr',
-          md: '1fr 1fr 1fr',
-        },
-        gap: 2,
-        mt: 2,
-      }}
-    >
-      {items.map((m) => (
-        <ModuleCard
-          key={m.title}
-          icon={m.icon}
-          title={m.title}
-          description={m.desc}
-          onClick={() => navigate(m.to)}
-        />
-      ))}
+    <Box sx={{ flexGrow: 1, mt: 4 }}>
+      <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', color: 'primary.main' }}>
+        Escolha um módulo para começar
+      </Typography>
+      <Grid container spacing={3} justifyContent="center">
+        {items.map((m) => (
+          <Grid item key={m.title} xs={12} sm={6} md={4}>
+            <ModuleCard
+              icon={m.icon}
+              title={m.title}
+              description={m.desc}
+              onClick={() => navigate(m.to)} //Passando a função onClick para o SEU ModuleCard
+            />
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 }
