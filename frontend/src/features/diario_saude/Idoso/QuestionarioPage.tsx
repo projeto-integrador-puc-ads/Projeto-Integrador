@@ -8,6 +8,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { questionarioApi } from "../api/questionarioApi";
 import type { Opcao, Pergunta, RespostaDTO } from "../api/types";
+import BackButton from "../components/BackButton";
 
 export default function QuestionarioPage() {
   const navigate = useNavigate();
@@ -40,6 +41,8 @@ export default function QuestionarioPage() {
   if (isLoading) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
+
         <Typography>Carregando questionário...</Typography>
       </PageContainer>
     );
@@ -48,6 +51,8 @@ export default function QuestionarioPage() {
   if (isError) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
+
         <Typography color="error">Erro ao carregar perguntas.</Typography>
         <Button onClick={() => refetch()}>Tentar novamente</Button>
       </PageContainer>
@@ -57,6 +62,8 @@ export default function QuestionarioPage() {
   if (!perguntas || perguntas.length === 0) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
+
         <Typography>Nenhuma pergunta disponível no questionário.</Typography>
       </PageContainer>
     );
@@ -95,6 +102,7 @@ export default function QuestionarioPage() {
 
   return (
     <PageContainer>
+      <BackButton to="/saude" />
       <PageTitle>Questionário de Saúde</PageTitle>
 
       <SectionTitle>

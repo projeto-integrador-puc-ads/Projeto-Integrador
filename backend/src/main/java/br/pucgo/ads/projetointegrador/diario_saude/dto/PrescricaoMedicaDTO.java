@@ -22,6 +22,8 @@ public class PrescricaoMedicaDTO {
     // Lista de exames (continua como nomes)
     private List<String> exames;
 
+    private List<ExercicioRecomendadoDTO> exerciciosRecomendados;
+
     public PrescricaoMedicaDTO(PrescricaoMedicaEntity entity) {
         this.id_prescricao = entity.getId_prescricao();
         this.data_prescricao = entity.getData_prescricao();
@@ -46,6 +48,14 @@ public class PrescricaoMedicaDTO {
             entity.getPrescricoesExames()
                 .stream()
                 .map(ex -> ex.getExame().getNome_exame())
+                .collect(Collectors.toList());
+                
+        // 🚀 MAPEAR EXERCÍCIOS: Mapeia o Set<Entity> para List<DTO>
+        this.exerciciosRecomendados = entity.getExerciciosRecomendados() == null ?
+            List.of() :
+            entity.getExerciciosRecomendados()
+                .stream()
+                .map(er -> new ExercicioRecomendadoDTO(er)) // O DTO deve receber a Entity no construtor
                 .collect(Collectors.toList());
     }
 
@@ -75,4 +85,7 @@ public class PrescricaoMedicaDTO {
 
     public List<String> getExames() { return exames; }
     public void setExames(List<String> exames) { this.exames = exames; }
+    
+    public List<ExercicioRecomendadoDTO> getExerciciosRecomendados() { return exerciciosRecomendados; }
+    public void setExerciciosRecomendados(List<ExercicioRecomendadoDTO> exerciciosRecomendados) { this.exerciciosRecomendados = exerciciosRecomendados; }
 }

@@ -38,8 +38,9 @@ public class MedicamentoService {
     }
 
     public void importarCSV(MultipartFile file) {
+        // CORREÇÃO: Alterado de "Windows-1252" para "ISO-8859-1"
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), "Windows-1252"))) {
+                new InputStreamReader(file.getInputStream(), "ISO-8859-1"))) { 
 
             br.readLine(); // pula cabeçalho
 
@@ -48,6 +49,7 @@ public class MedicamentoService {
                 String[] col = linha.split(";");
                 if (col.length < 11) continue;
 
+                // ... restante do código de processamento
                 String nome = col[1];
                 String principio_ativo = col[10];
                 String empresa = col[8];

@@ -182,7 +182,7 @@ export default function InformacoesSaudePage() {
   // -----------------------------
   return (
     <PageContainer>
-      <BackButton to="/home" />
+      <BackButton to="/saude" />
       <PageTitle>Informações de Saúde</PageTitle>
 
       {/* DADOS DO PACIENTE */}

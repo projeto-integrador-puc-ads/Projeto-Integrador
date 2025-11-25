@@ -5,7 +5,7 @@ BASE_URL = "http://localhost:8080/api/diario_saude"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 headers_auth = {
-    "Authorization": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjM1ODE4NDQsImV4cCI6MTc2NDE4NjY0NH0.U7eQbSFF78CReda8vMjS0tFX1BbghgvnmHraP3auU6pgfo_4Ve3wCjo4-n_xNHv3"
+    "Authorization": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtYXJpYUBlbWFpbC5jb20iLCJpYXQiOjE3NjQwOTY3MDAsImV4cCI6MTc2NDcwMTUwMH0.vSrQxqG_KUX5R7Kc7glyYBwolpw7gXuM59qKyO6sFLWvyz0c_y2Ktfq_NF0mC1qg"
 }
 
 # --- Importar Doenças (CSV) ---

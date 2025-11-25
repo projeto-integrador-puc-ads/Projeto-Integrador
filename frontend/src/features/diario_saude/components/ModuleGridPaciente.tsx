@@ -16,12 +16,6 @@ export function ModuleGridSaude() {
       onClick: () => navigate('/historico_consultas'),
     },
     {
-      icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
-      title: 'Atendimento Médico',
-      desc: 'Registrar avaliação médica.',
-      onClick: () => navigate('/atendimento'),
-    },
-    {
       icon: <CoronavirusIcon sx={{ fontSize: 40 }} color="info" />,
       title: 'Informações de Saúde',
       desc: 'Doenças cadastradas do paciente.',

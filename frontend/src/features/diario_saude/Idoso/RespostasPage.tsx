@@ -6,6 +6,7 @@ import SectionTitle from "../components/SectionTitle";
 
 import { questionarioApi } from "../api/questionarioApi";
 import type { RespostaDTO } from "../api/types";
+import BackButton from "../components/BackButton";
 
 export default function RespostasPage() {
   const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
@@ -25,6 +26,7 @@ export default function RespostasPage() {
   if (isLoading) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
         <Typography>Carregando respostas...</Typography>
       </PageContainer>
     );
@@ -33,6 +35,7 @@ export default function RespostasPage() {
   if (isError) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
         <Typography color="error">Erro ao carregar respostas.</Typography>
         <Box mt={2}>
           <Typography
@@ -49,6 +52,7 @@ export default function RespostasPage() {
   if (respostas.length === 0) {
     return (
       <PageContainer>
+        <BackButton to="/saude" />
         <Typography>Nenhuma resposta registrada.</Typography>
       </PageContainer>
     );
@@ -70,6 +74,7 @@ export default function RespostasPage() {
 
   return (
     <PageContainer>
+      <BackButton to="/saude" />
       <PageTitle>Respostas do Questionário</PageTitle>
 
       <Box mb={3} p={2} border="1px solid #ccc" borderRadius={2}>

@@ -44,6 +44,11 @@ public class PrescricaoMedicaEntity {
     @JsonIgnore
     private Set<PrescricaoExameEntity> prescricoesExames;
 
+    // Relação 1:N com exercícios recomendados
+    @OneToMany(mappedBy = "prescricaoMedica", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<ExercicioRecomendadoEntity> exerciciosRecomendados;
+
     public PrescricaoMedicaEntity(PrescricaoMedicaDTO dto){
         BeanUtils.copyProperties(dto, this);
     }
@@ -70,4 +75,12 @@ public class PrescricaoMedicaEntity {
 
     public Set<PrescricaoExameEntity> getPrescricoesExames() { return prescricoesExames; }
     public void setPrescricoesExames(Set<PrescricaoExameEntity> prescricoesExames) { this.prescricoesExames = prescricoesExames; }
+
+    public Set<ExercicioRecomendadoEntity> getExerciciosRecomendados() {
+        return exerciciosRecomendados;
+    }
+
+    public void setExerciciosRecomendados(Set<ExercicioRecomendadoEntity> exerciciosRecomendados) {
+        this.exerciciosRecomendados = exerciciosRecomendados;
+    }
 }
