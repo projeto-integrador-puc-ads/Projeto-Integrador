@@ -4,6 +4,7 @@ import { ModuleGrid } from '@/components/ModuleGrid';
 import UsuariosPage from '@/features/grupo1/pages/UsuariosPage';
 import ListaComprasPage from "@/features/lista-compras/pages/ListaComprasPage.tsx";
 import CreateListaPage from "@/features/lista-compras/pages/CreateListaPage.tsx";
+import ViewListaPage from "@/features/lista-compras/pages/ViewListaPage.tsx";
 import LoginPage from '@/features/auth/pages/LoginPage';
 import AdminPage from '@/features/admin/pages/AdminPage';
 import EditUsuarioPage from '@/features/admin/pages/EditUsuarioPage';
@@ -50,6 +51,7 @@ export function AppRoutes() {
         <Route path="usuarios" element={<UsuariosPage />} />
         <Route path="lista-compras" element={<ListaComprasPage />} /> {/* ✅ nova rota */}
         <Route path="lista-compras/nova" element={<CreateListaPage />} /> {/* ✅ nova rota */}
+        <Route path="lista-compras/listas" element={<ViewListaPage />} /> {/* ✅ nova rota */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
         {/* Nova rota: Atendimento Médico */}

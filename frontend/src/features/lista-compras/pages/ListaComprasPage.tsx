@@ -20,14 +20,14 @@ export default function ListaComprasPage() {
             icon: <ListAltIcon sx={{ fontSize: 40 }} />,
             title: 'Minhas listas',
             desc: 'Veja, edite e compartilhe suas listas.',
-            to: '/lista-compras/minhas',
+            to: '/lista-compras/listas',
         },
 
         {
             icon: <HistoryIcon sx={{ fontSize: 40 }} />,
-            title: 'Histórico',
-            desc: 'Consulte listas anteriores.',
-            to: '/lista-compras/historico',
+            title: 'Templates',
+            desc: 'Crie Templates de listas.',
+            to: '/lista-compras/templates',
         },
     ];
 

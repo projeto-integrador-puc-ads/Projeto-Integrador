@@ -4,15 +4,15 @@ import type {
     Template,
     Patologia,
     PatologiaItem,
-} from '../types';
+} from '../../types.ts';
 // Quando for usar API real, é só descomentar:
 // import { listaComprasApi } from './http';
 
-import { mockProdutos } from './mocks/produtos.mock';
-import { mockTemplates } from './mocks/templates.mock';
-import { mockPatologiaItens } from './mocks/patologia-itens.mock';
-import { mockFetchUserPatologias } from './mocks/patologias.mock';
-import { mockRelacionados, mockPopulares } from './mocks/relacionados.mock';
+import { mockProdutos } from '../mocks/produtos.mock.ts';
+import { mockTemplates } from '../mocks/templates.mock.ts';
+import { mockPatologiaItens } from '../mocks/patologia-itens.mock.ts';
+import { mockFetchUserPatologias } from '../mocks/patologias.mock.ts';
+import { mockRelacionados, mockPopulares } from '../mocks/relacionados.mock.ts';
 import {listaComprasApi} from "@/features/lista-compras/api/http.ts";
 import type {ListaDeComprasDTO, ListaDeComprasSalva} from "@/features/lista-compras/api/dtos.ts";
 

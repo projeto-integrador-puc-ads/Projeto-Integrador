@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -45,4 +46,46 @@ public class ListaController {
                     .body(Map.of("erro", "Erro interno ao criar a lista"));
         }
     }
+
+    /**
+     * GET /lista-compras/listas/usuario/{userId}
+     * Lista somente listas normais do usuário (template = false)
+     */
+    @GetMapping("/usuario/{userId}")
+    public ResponseEntity<?> listarListasDoUsuario(@PathVariable Long userId) {
+        try {
+            List<ListaResponseDTO> listas = listaService.listarListasNormais(userId);
+            return ResponseEntity.ok(listas);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("erro", e.getMessage()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao listar listas do usuário"));
+        }
+    }
+
+    /**
+     * GET /lista-compras/listas/templates
+     * Lista todos os templates disponíveis (template = true)
+     */
+    @GetMapping("/templates")
+    public ResponseEntity<?> listarTemplates() {
+        try {
+            List<ListaResponseDTO> templates = listaService.listarTemplates();
+            return ResponseEntity.ok(templates);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao listar templates"));
+        }
+    }
+
 }

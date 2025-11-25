@@ -89,17 +89,6 @@ public class ListaService {
         return toResponseDTO(lista);
     }
 
-    @Transactional(readOnly = true)
-    public List<ListaResponseDTO> listarPorUsuario(Long userId) {
-        // Validação: verificar se usuário existe
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException(
-                    "Usuário não encontrado com ID: " + userId);
-        }
-        return listaRepository.findByUsuario_IdOrderByCreatedAtDesc(userId).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
 
     @Transactional(readOnly = true)
     public List<ListaResponseDTO> listarListasNormais(Long userId) {

@@ -36,7 +36,7 @@ import type {
     Patologia,
     PatologiaItem,
 } from '../types';
-import { listaComprasService } from '../api/listaComprasService';
+import { listaComprasService } from '../api/service/listaComprasService.ts';
 
 /** normalização simples */
 const normalize = (s: string) => s.trim().toLowerCase();
@@ -225,7 +225,6 @@ export default function CreateListaPage() {
         setInputValue('');
         setOpcoesAutocomplete([]);
     }
-
 
     const handleFinalizarLista = async () => {
         if (saving) return;
