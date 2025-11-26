@@ -23,7 +23,6 @@ import BackButton from "../components/BackButton";
 
 import { prescricaoApi } from "../api/prescricaoApi";
 import type { Prescricao, PrescricaoMedicamento, PrescricaoExame } from "../api/types";
-// 🚀 NOVOS IMPORTS NECESSÁRIOS:
 import { type ExercicioRecomendado, exercicioRecomendadoApi } from "../api/exercicioRecomendadoApi"; 
 
 // Função para formatar a frequência em horas
@@ -33,7 +32,7 @@ function formatFrequencia(f: string | number | undefined) {
     return isNaN(num) ? f : `${num}h`;
 }
 
-// 🚀 COMPONENTE DE DETALHES DE EXERCÍCIOS (Copiado da página do médico)
+// COMPONENTE DE DETALHES DE EXERCÍCIOS
 function ExercicioRecomendadoDetalhes({ prescricaoId }: { prescricaoId: number }) {
     const [exercicios, setExercicios] = useState<ExercicioRecomendado[]>([]);
     const [loading, setLoading] = useState(true);
@@ -111,7 +110,6 @@ export default function HistoricoConsultasPacientePage() {
                     (c) =>
                         (c.medicamentos?.length ?? 0) > 0 || 
                         (c.exames?.length ?? 0) > 0 ||
-                        // 🚀 NOVO FILTRO: Incluindo consultas com exercícios recomendados
                         (c.exerciciosRecomendados?.length ?? 0) > 0 
                 )
                 .sort(
@@ -210,21 +208,20 @@ export default function HistoricoConsultasPacientePage() {
                         {consultaSelecionada?.exames?.map((e: PrescricaoExame, i) => (
                             <ListItemText
                                 key={i}
-                                primary={e.exame?.nome || "Exame desconhecido"}
+                                // 🟢 CORREÇÃO: Acessa 'nome_exame' diretamente do objeto 'e'
+                                primary={e.nome_exame || "Exame desconhecido"}
                                 secondary={e.observacao || ""}
                             />
                         )) ?? <Typography>-</Typography>}
                     </List>
                     
-                    {/* 🚀 EXERCÍCIOS RECOMENDADOS INTEGRADOS AQUI */}
+                    {/* EXERCÍCIOS RECOMENDADOS */}
                     {consultaSelecionada?.id_prescricao && (
                         <>
                             <Divider sx={{ my: 2 }} />
                             <ExercicioRecomendadoDetalhes prescricaoId={consultaSelecionada.id_prescricao} />
                         </>
                     )}
-                    {/* FIM: EXERCÍCIOS RECOMENDADOS */}
-
 
                     {/* Observações */}
                     {consultaSelecionada?.observacoes && (

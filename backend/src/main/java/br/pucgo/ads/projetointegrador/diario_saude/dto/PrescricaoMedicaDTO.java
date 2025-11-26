@@ -20,7 +20,7 @@ public class PrescricaoMedicaDTO {
     private List<PrescricaoMedicamentoDTO> medicamentos;
 
     // Lista de exames (continua como nomes)
-    private List<String> exames;
+    private List<PrescricaoExameDTO> exames;
 
     private List<ExercicioRecomendadoDTO> exerciciosRecomendados;
 
@@ -47,10 +47,10 @@ public class PrescricaoMedicaDTO {
             List.of() :
             entity.getPrescricoesExames()
                 .stream()
-                .map(ex -> ex.getExame().getNome_exame())
+                .map(PrescricaoExameDTO::new)
                 .collect(Collectors.toList());
                 
-        // 🚀 MAPEAR EXERCÍCIOS: Mapeia o Set<Entity> para List<DTO>
+        // MAPEAR EXERCÍCIOS: Mapeia o Set<Entity> para List<DTO>
         this.exerciciosRecomendados = entity.getExerciciosRecomendados() == null ?
             List.of() :
             entity.getExerciciosRecomendados()
@@ -82,10 +82,10 @@ public class PrescricaoMedicaDTO {
 
     public List<PrescricaoMedicamentoDTO> getMedicamentos() { return medicamentos; }
     public void setMedicamentos(List<PrescricaoMedicamentoDTO> medicamentos) { this.medicamentos = medicamentos; }
-
-    public List<String> getExames() { return exames; }
-    public void setExames(List<String> exames) { this.exames = exames; }
     
     public List<ExercicioRecomendadoDTO> getExerciciosRecomendados() { return exerciciosRecomendados; }
     public void setExerciciosRecomendados(List<ExercicioRecomendadoDTO> exerciciosRecomendados) { this.exerciciosRecomendados = exerciciosRecomendados; }
+
+    public List<PrescricaoExameDTO> getExames() { return exames; }
+    public void setExames(List<PrescricaoExameDTO> exames) { this.exames = exames; }
 }

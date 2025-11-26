@@ -14,7 +14,7 @@ public class PrescricaoExameEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_prescricao_exame;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_exame", nullable = false)
     private ExameEntity exame;
 

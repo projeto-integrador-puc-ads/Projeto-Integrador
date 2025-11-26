@@ -21,7 +21,7 @@ import { prescricaoApi } from "../api/prescricaoApi";
 import { type ExercicioRecomendado, exercicioRecomendadoApi } from "../api/exercicioRecomendadoApi"; 
 
 
-// Componentes de Layout (Mantidos)
+// Componentes de Layout
 function PageContainer({ children }: { children: React.ReactNode }) {
     return <Container maxWidth="xl" sx={{ py: 5 }}>{children}</Container>;
 }
@@ -34,7 +34,7 @@ function PageTitle({ children }: { children: React.ReactNode }) {
     );
 }
 
-// Função para formatar a frequência em horas (Mantida)
+// Função para formatar a frequência em horas
 function formatFrequencia(f: string | number | undefined) {
     if (!f) return "-";
     const num = typeof f === "string" ? parseInt(f) : f;
@@ -217,7 +217,7 @@ export default function HistoricoConsultasMedicoPage() {
                         {consultaSelecionada?.exames?.map((e: PrescricaoExame, i) => (
                             <ListItemText
                                 key={i}
-                                primary={e.exame?.nome || "Exame desconhecido"}
+                                primary={e.nome_exame || "Exame desconhecido"}
                                 secondary={e.observacao || ""}
                             />
                         )) ?? <Typography>-</Typography>}

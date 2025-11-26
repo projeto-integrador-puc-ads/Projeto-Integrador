@@ -40,8 +40,7 @@ public class PrescricaoMedicaEntity {
     private Set<PrescricaoMedicamentoEntity> prescricoesMedicamentos;
 
     // Relação 1:N com exames
-    @OneToMany(mappedBy = "prescricaoMedica", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
+    @OneToMany(mappedBy = "prescricaoMedica", fetch = FetchType.EAGER) // Adicione EAGER
     private Set<PrescricaoExameEntity> prescricoesExames;
 
     // Relação 1:N com exercícios recomendados

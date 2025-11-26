@@ -1,0 +1,128 @@
+[
+  {
+    "nome_exame": "Hemograma completo"
+  },
+  {
+    "nome_exame": "Glicemia em jejum"
+  },
+  {
+    "nome_exame": "Perfil lipídico"
+  },
+  {
+    "nome_exame": "Urina tipo I"
+  },
+  {
+    "nome_exame": "Ureia e Creatinina"
+  },
+  {
+    "nome_exame": "AST e ALT"
+  },
+  {
+    "nome_exame": "Sódio e Potássio"
+  },
+  {
+    "nome_exame": "Hemoglobina glicada (HbA1c)"
+  },
+  {
+    "nome_exame": "Proteína C-reativa (PCR)"
+  },
+  {
+    "nome_exame": "Fósforo"
+  },
+  {
+    "nome_exame": "Cálcio"
+  },
+  {
+    "nome_exame": "Magnésio"
+  },
+  {
+    "nome_exame": "Amilase e Lipase"
+  },
+  {
+    "nome_exame": "Gasometria arterial"
+  },
+  {
+    "nome_exame": "Colesterol VLDL"
+  },
+  {
+    "nome_exame": "Teste de tolerância à glicose (TTG)"
+  },
+  {
+    "nome_exame": "Bilirrubinas"
+  },
+  {
+    "nome_exame": "Albumina"
+  },
+  {
+    "nome_exame": "Tempo de protrombina (TP)"
+  },
+  {
+    "nome_exame": "Tempo de tromboplastina parcial ativada (TTPA)"
+  },
+  {
+    "nome_exame": "Exame de fezes para sangue oculto"
+  },
+  {
+    "nome_exame": "TSH e T4 livre"
+  },
+  {
+    "nome_exame": "Vitamina D"
+  },
+  {
+    "nome_exame": "FSH e LH"
+  },
+  {
+    "nome_exame": "Prolactina"
+  },
+  {
+    "nome_exame": "Testosterona"
+  },
+  {
+    "nome_exame": "Estradiol"
+  },
+  {
+    "nome_exame": "Troponinas"
+  },
+  {
+    "nome_exame": "CK-MB"
+  },
+  {
+    "nome_exame": "PSA"
+  },
+  {
+    "nome_exame": "Perfil reumático"
+  },
+  {
+    "nome_exame": "Antiestreptolisina O (ASLO)"
+  },
+  {
+    "nome_exame": "Anticorpos antinucleares (FAN)"
+  },
+  {
+    "nome_exame": "Teste rápido de gravidez (beta-HCG)"
+  },
+  {
+    "nome_exame": "BHCG quantitativo"
+  },
+  {
+    "nome_exame": "VDRL"
+  },
+  {
+    "nome_exame": "Anticorpos anti-HIV"
+  },
+  {
+    "nome_exame": "Anticorpos para hepatite B e C"
+  },
+  {
+    "nome_exame": "Toxoplasmose (IgM e IgG)"
+  },
+  {
+    "nome_exame": "Cultura de escarro"
+  },
+  {
+    "nome_exame": "Eletroforese de hemoglobina"
+  },
+  {
+    "nome_exame": "Dímero D"
+  }
+]

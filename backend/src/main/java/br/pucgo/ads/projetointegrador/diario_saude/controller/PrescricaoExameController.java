@@ -31,8 +31,8 @@ public class PrescricaoExameController {
     public ResponseEntity<?> save(@RequestBody PrescricaoExameDTO dto){
         PrescricaoExameEntity entity = new PrescricaoExameEntity(dto);
 
-        ExameEntity exame = exameRepository.findById(dto.id_exame()).orElse(null);
-        PrescricaoMedicaEntity prescricaoMedica = prescricaoMedicaRepository.findById(dto.id_prescricao_medica()).orElse(null);
+        ExameEntity exame = exameRepository.findById(dto.getId_exame()).orElse(null);
+        PrescricaoMedicaEntity prescricaoMedica = prescricaoMedicaRepository.findById(dto.getId_prescricao_medica()).orElse(null);
 
         if(exame == null || prescricaoMedica == null){
             return ResponseEntity.badRequest().body("Exame ou Prescrição Médica não encontrado.");
