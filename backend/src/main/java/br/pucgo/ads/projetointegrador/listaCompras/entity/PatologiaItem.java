@@ -30,7 +30,7 @@ public class PatologiaItem {
     private Produto produto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produto_sugestao_id")
+    @JoinColumn(name = "produto_sugestao_id", nullable = false)
     private Produto produtoSugestao; // Produto pra substituir o produto alertado
 
     @CreationTimestamp
