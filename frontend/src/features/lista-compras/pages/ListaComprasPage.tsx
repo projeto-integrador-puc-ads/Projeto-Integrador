@@ -5,6 +5,8 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import HistoryIcon from '@mui/icons-material/History';
 import { useNavigate } from 'react-router-dom';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+
 
 export default function ListaComprasPage() {
     const navigate = useNavigate();
@@ -24,7 +26,7 @@ export default function ListaComprasPage() {
         },
 
         {
-            icon: <HistoryIcon sx={{ fontSize: 40 }} />,
+            icon: <FileCopyIcon sx={{ fontSize: 40 }} />,
             title: 'Templates',
             desc: 'Crie Templates de listas.',
             to: '/lista-compras/templates',

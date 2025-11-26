@@ -312,54 +312,8 @@ export default function ViewListaPage() {
                         </Box>
                     )}
                 </Stack>
+                
 
-                <Divider sx={{ my: 3 }} />
-
-                {/* LISTAS FINALIZADAS */}
-                <Stack spacing={1}>
-                    <Typography variant="subtitle2" fontWeight={800} color="text.secondary">
-                        Listas finalizadas
-                    </Typography>
-
-                    {loading ? (
-                        <Box
-                            sx={{
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <Skeleton key={i} height={90} sx={{ borderRadius: 3 }} />
-                            ))}
-                        </Box>
-                    ) : listasFinalizadas.length === 0 ? (
-                        <Typography color="text.secondary" sx={{ py: 1 }}>
-                            Nenhuma lista finalizada ainda.
-                        </Typography>
-                    ) : (
-                        <Box
-                            sx={{
-                                mt: 1,
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {listasFinalizadas.map((l) => (
-                                <ListaCard key={l.id} lista={l} variant="user" />
-                            ))}
-                        </Box>
-                    )}
-                </Stack>
             </Paper>
 
             {/* SNACKBAR ERRO GENÉRICO */}
