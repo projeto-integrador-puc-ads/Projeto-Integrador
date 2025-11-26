@@ -35,8 +35,8 @@ import {
   Refresh,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import http from '@/lib/http';
-import { getUserId, getUserRole } from '@/lib/auth';
+import http from '../libHttp';
+import { getUserId, getUserRole } from '../components/auth';
 
 interface RegistroAcompanhamento {
   id: number;

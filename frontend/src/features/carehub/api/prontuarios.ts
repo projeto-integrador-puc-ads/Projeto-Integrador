@@ -1,4 +1,4 @@
-import http from '@/lib/http';
+import http from '../libHttp';
 
 export interface ProntuarioResponse {
   id: number;

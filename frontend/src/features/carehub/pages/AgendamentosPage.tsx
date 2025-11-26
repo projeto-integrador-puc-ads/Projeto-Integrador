@@ -3,12 +3,14 @@ import { agendamentosApi, cuidadoresApi, clientesApi } from '../api';
 import type { AgendamentoRequestDTO } from '../types';
 import { Box, Button, Card, CardContent, Chip, CircularProgress, MenuItem, Stack, TextField, Typography, Paper, Divider } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useSnackbar } from '../libSnackbar';
 import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import { CalendarMonth, Schedule, CheckCircle, Cancel, AccessTime, Person, LocationOn } from '@mui/icons-material';
 
 export default function AgendamentosPage() {
+  // feature-level accessibility styles
+  import('../components/carehub-accessibility.css');
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const params = new URLSearchParams(window.location.search);

@@ -14,7 +14,7 @@ import {
   Zoom,
 } from '@mui/material';
 import { Star, Close, SentimentVeryDissatisfied, SentimentDissatisfied, SentimentNeutral, SentimentSatisfied, SentimentVerySatisfied } from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
+import { useSnackbarSync as useSnackbar } from '../libSnackbar';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { criarAvaliacao, type AvaliacaoRequest } from '../api/avaliacoes';
 
@@ -70,7 +70,7 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
   const mutation = useMutation({
     mutationFn: (avaliacao: AvaliacaoRequest) => criarAvaliacao(clienteId, avaliacao),
     onSuccess: () => {
-      enqueueSnackbar('✨ Avaliação enviada com sucesso! Obrigado pelo seu feedback.', { variant: 'success' });
+  enqueueSnackbar('✨ Avaliação enviada com sucesso! Obrigado pelo seu feedback.');
       queryClient.invalidateQueries({ queryKey: ['avaliacoes', cuidadorId] });
       queryClient.invalidateQueries({ queryKey: ['cuidadores'] });
       handleClose();
@@ -80,21 +80,18 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
       
       // Mensagens específicas para erros comuns
       if (message.includes('já avaliou')) {
-        enqueueSnackbar('⚠️ Você já avaliou este cuidador anteriormente!', { 
-          variant: 'warning',
-          autoHideDuration: 5000
-        });
+  enqueueSnackbar('⚠️ Você já avaliou este cuidador anteriormente!');
       } else if (message.includes('não encontrado')) {
-        enqueueSnackbar('❌ Cuidador não encontrado', { variant: 'error' });
+  enqueueSnackbar('❌ Cuidador não encontrado');
       } else {
-        enqueueSnackbar(`❌ ${message}`, { variant: 'error' });
+  enqueueSnackbar(`❌ ${message}`);
       }
     },
   });
 
   const handleSubmit = () => {
     if (nota < 1 || nota > 5) {
-      enqueueSnackbar('Selecione uma nota de 1 a 5 estrelas', { variant: 'warning' });
+  enqueueSnackbar('Selecione uma nota de 1 a 5 estrelas');
       return;
     }
 
@@ -120,6 +117,8 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
       onClose={handleClose} 
       maxWidth="sm" 
       fullWidth
+      aria-labelledby="avaliacao-title"
+      aria-describedby="avaliacao-desc"
       PaperProps={{
         sx: {
           borderRadius: 3,
@@ -138,6 +137,7 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
       >
         <IconButton
           onClick={handleClose}
+          aria-label="Fechar diálogo"
           sx={{
             position: 'absolute',
             right: 8,
@@ -149,13 +149,13 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
           <Close />
         </IconButton>
         
-        <Typography variant="h5" fontWeight="bold" mb={1}>
+        <Typography id="avaliacao-title" variant="h5" fontWeight="bold" mb={1}>
           Avaliar Atendimento
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.95 }}>
           {cuidadorNome}
         </Typography>
-        <Typography variant="caption" sx={{ opacity: 0.85, mt: 0.5, display: 'block' }}>
+  <Typography id="avaliacao-desc" variant="caption" sx={{ opacity: 0.85, mt: 0.5, display: 'block' }}>
           💡 Sua avaliação ajuda outros clientes
         </Typography>
       </Box>
@@ -178,28 +178,42 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
 
           {/* Sistema de Estrelas Estilo Uber/99 */}
           <Box>
-            <Stack direction="row" spacing={1} justifyContent="center" mb={2}>
+            <Stack direction="row" spacing={1} justifyContent="center" mb={2} role="radiogroup" aria-label="Nota da avaliação">
               {[1, 2, 3, 4, 5].map((value) => (
                 <IconButton
                   key={value}
                   onClick={() => setNota(value)}
                   onMouseEnter={() => setHoveredRating(value)}
                   onMouseLeave={() => setHoveredRating(-1)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setNota(value);
+                    }
+                    if (e.key === 'ArrowLeft' && value > 1) {
+                      setNota(value - 1);
+                    }
+                    if (e.key === 'ArrowRight' && value < 5) {
+                      setNota(value + 1);
+                    }
+                  }}
+                  aria-checked={nota === value}
+                  role="radio"
                   sx={{
-                    p: 0,
-                    transition: 'all 0.2s',
-                    transform: displayRating >= value ? 'scale(1.2)' : 'scale(1)',
+                    p: 0.5,
+                    transition: 'all 0.16s',
+                    transform: displayRating >= value ? 'scale(1.08)' : 'scale(1)',
                     '&:hover': {
-                      transform: 'scale(1.3)'
+                      transform: 'scale(1.12)'
                     }
                   }}
                 >
                   <Star
                     sx={{
-                      fontSize: 48,
+                      fontSize: 44,
                       color: displayRating >= value ? '#FFD700' : '#e0e0e0',
-                      transition: 'all 0.2s',
-                      filter: displayRating >= value ? 'drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4))' : 'none'
+                      transition: 'all 0.16s',
+                      filter: displayRating >= value ? 'drop-shadow(0 2px 4px rgba(255, 215, 0, 0.35))' : 'none'
                     }}
                   />
                 </IconButton>

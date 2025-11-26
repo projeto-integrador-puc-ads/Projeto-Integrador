@@ -18,9 +18,9 @@ import {
 import type { SelectChangeEvent } from '@mui/material';
 import { Save, CheckCircle } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import http from '@/lib/http';
+import http from '../libHttp';
 import { useSnackbar } from 'notistack';
-import { getUserId } from '@/lib/auth';
+import { getUserId } from '../components/auth';
 
 interface Agendamento {
   id: number;

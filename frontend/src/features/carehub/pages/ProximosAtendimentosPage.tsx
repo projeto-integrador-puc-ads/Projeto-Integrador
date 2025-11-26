@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import http from '@/lib/http';
 import {
   Box,
   Typography,
@@ -18,7 +17,8 @@ import {
   CheckCircle,
   Schedule,
 } from '@mui/icons-material';
-import { getUserId } from '@/lib/auth';
+import http from '../libHttp';
+import { getUserId } from '../components/auth';
 
 interface Agendamento {
   id: number;

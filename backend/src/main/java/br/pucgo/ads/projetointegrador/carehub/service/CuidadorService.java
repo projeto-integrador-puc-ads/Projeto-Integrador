@@ -33,7 +33,7 @@ public class CuidadorService {
     private PasswordEncoder passwordEncoder;
 
     public List<CuidadorResponseDTO> listarTodos() {
-        return cuidadorRepository.findByAtivoTrue().stream()
+    return cuidadorRepository.findByDeletedAtIsNull().stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

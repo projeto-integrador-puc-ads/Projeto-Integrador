@@ -14,14 +14,15 @@ import java.util.List;
 @Repository
 public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     
-    List<Cuidador> findByAtivoTrue();
+    // Platform model uses deletedAt to indicate soft-delete; active users have deletedAt = null
+    List<Cuidador> findByDeletedAtIsNull();
     
-    @Query(value = "SELECT u.id, u.name, u.email, u.password, u.username, u.telefone, u.ativo, u.created_at, u.updated_at, " +
+    @Query(value = "SELECT u.id, u.name, u.email, u.password, u.username, u.telefone, u.created_at, u.updated_at, " +
            "c.experiencia, c.disponibilidade, c.taxa_hora, c.biografia, c.foto_perfil, " +
            "c.cidade, c.estado, c.avaliacao_media, c.total_avaliacoes " +
            "FROM ch_cuidador c " +
            "JOIN users u ON c.id = u.id " +
-           "WHERE u.ativo = true " +
+           "WHERE u.deleted_at IS NULL " +
            "AND (:localizacao IS NULL OR " +
            "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +
            "LOWER(c.estado::text) = LOWER(:localizacao)) " +
@@ -29,7 +30,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
            "ORDER BY c.avaliacao_media DESC NULLS LAST",
            countQuery = "SELECT COUNT(*) FROM ch_cuidador c " +
            "JOIN users u ON c.id = u.id " +
-           "WHERE u.ativo = true " +
+           "WHERE u.deleted_at IS NULL " +
            "AND (:localizacao IS NULL OR " +
            "LOWER(c.cidade::text) LIKE LOWER(CONCAT('%', :localizacao, '%')) OR " +
            "LOWER(c.estado::text) = LOWER(:localizacao)) " +

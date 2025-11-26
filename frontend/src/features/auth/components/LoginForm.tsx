@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Button, Card, CardContent, Stack, TextField, Typography, Alert } from '@mui/material';
-import { login, TEST_USERS } from '@/lib/auth';
+import { Box, Button, Card, CardContent, Stack, TextField, Typography } from '@mui/material';
+import { setAuthToken } from '@/lib/http';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth';
@@ -48,16 +48,8 @@ export default function LoginForm() {
         <CardContent>
           <Stack spacing={2}>
             <Typography variant="h3" component="h1" gutterBottom>
-              🏥 CareHub Login
+              Entrar
             </Typography>
-            
-            <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
-              <strong>Usuários de Teste:</strong><br/>
-              👤 Cliente: maria@example.com / 123456<br/>
-              👨‍⚕️ Cuidador: joao@example.com / 123456<br/>
-              🔧 Admin: admin@carehub.test / admin123
-            </Alert>
-            
             <TextField
               label="E-mail ou Usuário"
               type="text"
@@ -80,7 +72,6 @@ export default function LoginForm() {
               variant="contained"
               size="large"
               disabled={submitting}
-              fullWidth
             >
               {submitting ? 'Entrando…' : 'Entrar'}
             </Button>
@@ -90,4 +81,3 @@ export default function LoginForm() {
     </Box>
   );
 }
-

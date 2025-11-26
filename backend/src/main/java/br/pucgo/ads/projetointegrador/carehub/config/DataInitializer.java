@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.carehub.config;
 
-import br.pucgo.ads.projetointegrador.carehub.entity.Administrador;
+// ...existing imports... (Administrador not needed for carehub seeding)
 import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.Avaliacao;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
@@ -9,7 +9,6 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
 import br.pucgo.ads.projetointegrador.carehub.entity.Prontuario;
 import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.TipoAtendimento;
-import br.pucgo.ads.projetointegrador.carehub.repository.AdministradorRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
@@ -18,7 +17,9 @@ import br.pucgo.ads.projetointegrador.carehub.repository.MensagemRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ProntuarioRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.RegistroAcompanhamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.UsuarioRepository;
-import br.pucgo.ads.projetointegrador.plataforma.entity.RoleType;
+import br.pucgo.ads.projetointegrador.plataforma.repository.RoleRepository;
+import br.pucgo.ads.projetointegrador.plataforma.entity.Role;
+// no local RoleType enum used; prefer platform Role names
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,38 +30,36 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Configuration
+@Configuration("carehubConfig")
 public class DataInitializer {
 
-	@Bean
+	@Bean(name = "carehubDataInitializer")
 	CommandLineRunner seedCarehubData(UsuarioRepository usuarioRepo,
 									  ClienteRepository clienteRepo,
 									  CuidadorRepository cuidadorRepo,
-									  AdministradorRepository adminRepo,
+									  // AdministradorRepository removed: carehub should not seed admin users
 									  ProntuarioRepository prontuarioRepo,
 									  AgendamentoRepository agendamentoRepo,
 									  AvaliacaoRepository avaliacaoRepo,
 									  MensagemRepository mensagemRepo,
 									  RegistroAcompanhamentoRepository registroRepo,
+									  RoleRepository roleRepo,
 									  PasswordEncoder encoder) {
 		return args -> {
-			if (usuarioRepo.count() > 0) {
+			if (clienteRepo.count() > 0) {
 				return;
 			}
 
-			// Admin - agora usando campos da tabela users
-			Administrador admin = new Administrador();
-			admin.setName("Admin CareHub");
-			admin.setUsername("admin");
-			admin.setEmail("admin@carehub.test");
-			admin.setPassword(encoder.encode("admin123"));
-			admin.setRoles(Set.of(RoleType.ROLE_ADMIN));
-			admin.setTelefone("62999990001");
-			admin.setAtivo(true);
-			admin.setDepartamento("Operacoes");
-			admin.setNivelAcesso("TOTAL");
-			admin.setSuperAdmin(true);
-			adminRepo.save(admin);
+			// Ensure a default role exists in plataforma
+			Role defaultRole = roleRepo.findByName("ROLE_USER").orElseGet(() -> {
+				Role r = new Role();
+				r.setName("ROLE_USER");
+				return roleRepo.save(r);
+			});
+
+			// Use platform roles for carehub users. Prefer explicit CareHub roles if present.
+			Role cuidadorRole = roleRepo.findByName("CAREHUB_CUIDADOR").orElse(defaultRole);
+			Role clienteRole = roleRepo.findByName("CAREHUB_CLIENTE").orElse(defaultRole);
 
 			// Cliente - usando campos da tabela users
 			Cliente cliente = new Cliente();
@@ -68,7 +67,9 @@ public class DataInitializer {
 			cliente.setUsername("maria");
 			cliente.setEmail("maria@example.com");
 			cliente.setPassword(encoder.encode("123456"));
-			cliente.setRoles(Set.of(RoleType.ROLE_USER, RoleType.CAREHUB_CLIENTE));
+			// assign legacy role names as strings and platform Role entity for DB
+			cliente.setRoles(Set.of("CAREHUB_CLIENTE"));
+			cliente.setRole(clienteRole);
 			cliente.setTelefone("62999990000");
 			cliente.setAtivo(true);
 			cliente.setEndereco("Rua A, 123, Goiania-GO");
@@ -93,7 +94,8 @@ public class DataInitializer {
 			cuidador.setUsername("joao");
 			cuidador.setEmail("joao@example.com");
 			cuidador.setPassword(encoder.encode("123456"));
-			cuidador.setRoles(Set.of(RoleType.ROLE_USER, RoleType.CAREHUB_CUIDADOR));
+			cuidador.setRoles(Set.of("CAREHUB_CUIDADOR"));
+			cuidador.setRole(cuidadorRole);
 			cuidador.setTelefone("62911112222");
 			cuidador.setAtivo(true);
 			cuidador.setExperiencia("5 anos com idosos acamados");

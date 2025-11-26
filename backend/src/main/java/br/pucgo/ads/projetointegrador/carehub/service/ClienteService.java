@@ -24,7 +24,7 @@ public class ClienteService {
     private PasswordEncoder passwordEncoder;
 
     public List<ClienteResponseDTO> listarTodos() {
-        return clienteRepository.findByAtivoTrue().stream()
+    return clienteRepository.findByDeletedAtIsNull().stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

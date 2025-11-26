@@ -28,13 +28,15 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
 import { Chat, Send, Person, Search, FilterList, Close } from '@mui/icons-material';
-import { getUserId } from '@/lib/auth';
+import { getUserId } from '../components/auth';
 
 // Configurar dayjs para mostrar tempo relativo em português
 dayjs.extend(relativeTime);
 dayjs.locale('pt-br');
 
 export default function ChatPage() {
+  // feature-level accessibility styles
+  import('../components/carehub-accessibility.css');
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   

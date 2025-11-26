@@ -1,0 +1,39 @@
+/* Accessibility helpers for CareHub - large fonts, high contrast and focus outlines */
+:root {
+  --ch-font-size-large: 1.125rem; /* 18px */
+  --ch-font-size-xl: 1.25rem; /* 20px */
+  --ch-focus-color: #ffeb3b;
+}
+
+/* Make primary interactive elements bigger for touch targets */
+.ch-accessible-button, .ch-accessible-link, .MuiIconButton-root {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Strong focus outline for keyboard users */
+.Mui-focusVisible, .ch-focus-visible {
+  outline: 4px solid var(--ch-focus-color) !important;
+  outline-offset: 4px !important;
+}
+
+/* Larger readable text */
+.ch-large-text {
+  font-size: var(--ch-font-size-large) !important;
+}
+
+.ch-xl-text {
+  font-size: var(--ch-font-size-xl) !important;
+}
+
+/* Buttons and clickable cards: increase hit area and spacing */
+.ch-clickable {
+  padding: 12px !important;
+  border-radius: 8px !important;
+}
+
+/* Increase contrast for captions */
+.ch-high-contrast {
+  color: #000 !important;
+  background: #fff !important;
+}

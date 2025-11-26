@@ -22,8 +22,8 @@ import {
   Phone,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import http from '@/lib/http';
-import { getUserId } from '@/lib/auth';
+import http from '../libHttp';
+import { getUserId } from '../components/auth';
 
 interface Prontuario {
   id: number;
@@ -90,7 +90,7 @@ export function ProntuariosClientesPage() {
       });
 
       const prontuariosData = await Promise.all(prontuariosPromises);
-      const prontuariosValidos = prontuariosData.filter((p): p is Prontuario => p !== null);
+  const prontuariosValidos = prontuariosData.filter((p: Prontuario | null): p is Prontuario => p !== null);
       
       setProntuarios(prontuariosValidos);
       setError(null);

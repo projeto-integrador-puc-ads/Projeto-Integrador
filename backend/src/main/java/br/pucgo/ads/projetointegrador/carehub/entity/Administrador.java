@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.carehub.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.User;
+import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Administrador extends User {
+public class Administrador extends Usuario {
 
     @Column(length = 128)
     private String departamento;

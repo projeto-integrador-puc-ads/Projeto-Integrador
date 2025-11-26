@@ -10,11 +10,8 @@ export function setAuthToken(t: string | null) { token = t; }
 
 http.interceptors.request.use((config) => {
   if (token) {
-    console.log('📤 Adding Authorization header with token:', token.substring(0, 20) + '...');
     config.headers = config.headers || {};
     (config.headers as any)['Authorization'] = `Bearer ${token}`;
-  } else {
-    console.warn('⚠️ No token available for request:', config.url);
   }
   return config;
 });

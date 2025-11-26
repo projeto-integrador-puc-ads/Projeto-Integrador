@@ -32,15 +32,21 @@ public class AdminService {
         Objects.requireNonNull(ativo, "ativo não pode ser nulo");
         User usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-    usuario.setAtivo(ativo);
-    return usuarioRepository.save(Objects.requireNonNull(usuario));
+        // Use plataforma.User fields: setStatus / setDeletedAt
+        usuario.setStatus(ativo ? "ACTIVE" : "INACTIVE");
+        if (!ativo) {
+            usuario.setDeletedAt(java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC));
+        } else {
+            usuario.setDeletedAt(null);
+        }
+        return usuarioRepository.save(Objects.requireNonNull(usuario));
     }
 
     @Transactional
     public void deletarUsuario(Long id) {
         Objects.requireNonNull(id, "id não pode ser nulo");
-        User usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    User usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     usuarioRepository.delete(Objects.requireNonNull(usuario));
     }
 }

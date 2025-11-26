@@ -23,8 +23,8 @@ import {
   HourglassEmpty,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import http from '@/lib/http';
-import { getUserId } from '@/lib/auth';
+import http from '../libHttp';
+import { getUserId } from '../components/auth';
 
 interface Agendamento {
   id: number;

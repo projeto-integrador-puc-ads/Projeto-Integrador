@@ -1,6 +1,6 @@
 package br.pucgo.ads.projetointegrador.carehub.entity;
 
-import br.pucgo.ads.projetointegrador.plataforma.entity.User;
+import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cuidador extends User {
+public class Cuidador extends Usuario {
 
     @Column(columnDefinition = "TEXT")
     private String experiencia;

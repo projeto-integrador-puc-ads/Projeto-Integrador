@@ -1,4 +1,5 @@
 import { Box, IconButton, Typography, Stack } from '@mui/material';
+import './carehub-accessibility.css';
 import { ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,6 +24,13 @@ export function PageHeader({ title, subtitle, backTo }: PageHeaderProps) {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleBack();
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -38,6 +46,7 @@ export function PageHeader({ title, subtitle, backTo }: PageHeaderProps) {
         {/* Botão VOLTAR - Grande e visível */}
         <IconButton
           onClick={handleBack}
+          onKeyDown={handleKeyDown}
           sx={{
             bgcolor: 'rgba(255, 255, 255, 0.2)',
             color: 'white',

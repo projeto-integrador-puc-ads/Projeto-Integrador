@@ -19,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { PageHeader } from '../components/PageHeader';
 import { Save, Lock } from '@mui/icons-material';
-import { getUserId, getUserRole } from '@/lib/auth';
+import { getUserId, getUserRole } from '../components/auth';
 
 export default function ProntuarioPage() {
   const navigate = useNavigate();

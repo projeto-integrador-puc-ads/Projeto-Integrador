@@ -54,7 +54,7 @@ public class CuidadorController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('CUIDADOR') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('CUIDADOR')")
     public ResponseEntity<CuidadorResponseDTO> atualizar(
             @PathVariable Long id,
             @RequestBody CuidadorRequestDTO dto
@@ -64,7 +64,7 @@ public class CuidadorController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('CUIDADOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         cuidadorService.deletar(id);
         return ResponseEntity.noContent().build();

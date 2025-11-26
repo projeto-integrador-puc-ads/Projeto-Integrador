@@ -13,14 +13,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/carehub/clientes")
-@PreAuthorize("hasRole('IDOSO') or hasRole('FAMILIAR') or hasRole('ROLE_ADMIN')")
+// administration is handled by plataforma; allow clients/family and caregivers appropriate access
+@PreAuthorize("hasRole('IDOSO') or hasRole('FAMILIAR') or hasRole('CUIDADOR')")
 public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // listing all clients should be restricted to caregivers (or platform admins managed outside)
+    @PreAuthorize("hasRole('CUIDADOR')")
     public ResponseEntity<List<ClienteResponseDTO>> listarTodos() {
         List<ClienteResponseDTO> clientes = clienteService.listarTodos();
         return ResponseEntity.ok(clientes);
@@ -42,7 +44,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('CUIDADOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         clienteService.deletar(id);
         return ResponseEntity.noContent().build();

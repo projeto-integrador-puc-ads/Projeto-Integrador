@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { agendamentosApi, cuidadoresApi } from '../api';
-import type { AgendamentoRequestDTO, AgendamentoResponseDTO } from '../types';
+import type { AgendamentoRequestDTO } from '../types';
 import { 
   Box, Button, Card, CardContent, Chip, CircularProgress, MenuItem, Stack, 
   TextField, Typography, Paper, Divider, Alert, Dialog, DialogTitle, 
   DialogContent, DialogActions
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import { useSnackbar } from '../libSnackbar';
 import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import { 

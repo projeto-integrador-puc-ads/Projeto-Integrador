@@ -1,5 +1,5 @@
-import { Box, Badge } from '@mui/material';
-import { ModuleCard } from '@/components/ModuleCard';
+import { Box, Badge, Typography } from '@mui/material';
+import { AccessibleModuleCard } from './AccessibleModuleCard';
 import {
   Search,
   Chat,
@@ -13,7 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useMensagensNaoLidas } from '../hooks/useMensagensNaoLidas';
-import { getUserId, getUserRole } from '@/lib/auth';
+import { getUserId, getUserRole } from './auth';
 
 export function CareHubModuleGrid() {
   const navigate = useNavigate();
@@ -24,11 +24,12 @@ export function CareHubModuleGrid() {
   useEffect(() => {
     const id = getUserId();
     const role = getUserRole();
+    console.log('CareHub Debug - User ID:', id);
+    console.log('CareHub Debug - User Role:', role);
+    console.log('CareHub Debug - Raw localStorage user:', localStorage.getItem('user'));
     setUserId(id);
     setUserRole(role);
-    
-    console.log(`🎭 CareHub: User ID=${id}, Role=${role}`);
-  }, []);
+    }, []);
 
   // Módulos do Cliente (Dona Maria - ID 2)
   const clienteModules = [
@@ -92,7 +93,7 @@ export function CareHubModuleGrid() {
       icon: <Assignment sx={{ fontSize: 40 }} />,
       title: 'Registrar Atendimento',
       desc: 'Preencha relatórios de acompanhamento',
-      to: '/carehub/cuidador/registros',
+      to: '/carehub/cuidador/registro',
     },
     {
       icon: <History sx={{ fontSize: 40 }} />,
@@ -112,8 +113,29 @@ export function CareHubModuleGrid() {
     },
   ];
 
-  // Seleciona módulos baseado no ROLE (aceita CUIDADOR ou ROLE_CUIDADOR)
-  const modules = userRole?.includes('CUIDADOR') ? cuidadorModules : clienteModules;
+  // Seleciona módulos baseado no ROLE (aceita CUIDADOR, CAREHUB_CUIDADOR, etc.)
+  const isCuidador = userRole?.includes('CUIDADOR') || userRole?.includes('CAREHUB_CUIDADOR');
+  const modules = isCuidador ? cuidadorModules : clienteModules;
+
+  // Debug info
+  if (!userId || !userRole) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h6" color="error">
+          Erro: Usuário não autenticado
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          User ID: {userId || 'null'}
+        </Typography>
+        <Typography variant="body2">
+          User Role: {userRole || 'null'}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 2, fontSize: '0.8rem', color: 'text.secondary' }}>
+          Verifique se você está logado e se os dados estão no localStorage.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -129,7 +151,7 @@ export function CareHubModuleGrid() {
         }}
       >
         {modules.map((m) => (
-          <ModuleCard
+          <AccessibleModuleCard
             key={m.title}
             icon={m.icon}
             title={m.title}

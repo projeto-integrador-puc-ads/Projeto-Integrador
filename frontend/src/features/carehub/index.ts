@@ -13,5 +13,9 @@ export { MeusAgendamentosPage } from './pages/MeusAgendamentosPage';
 export { ProntuariosClientesPage } from './pages/ProntuariosClientesPage';
 export { RegistroAcompanhamentoPage } from './pages/RegistroAcompanhamentoPage';
 export { ProximosAtendimentosPage } from './pages/ProximosAtendimentosPage';
+export { HistoricoAtendimentosPage } from './pages/HistoricoAtendimentosPage';
+
+// Utilitários de autenticação
+export { initializeAuthToken, saveAuthToken, setTokenManually, debugAuthStorage } from './components/auth';
 
 export {};

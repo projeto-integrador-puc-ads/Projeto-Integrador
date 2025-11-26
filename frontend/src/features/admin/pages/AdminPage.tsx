@@ -17,7 +17,7 @@ export default function AdminPage() {
       </Box>
 
       <Grid container spacing={2}>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <AdminModuleCard
             title="Usuários"
             description="Gerenciar usuários do sistema"
@@ -25,7 +25,7 @@ export default function AdminPage() {
             icon={<GroupIcon color="primary" fontSize="large" />}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <AdminModuleCard
             title="Médicos"
             description="Gerenciar profissionais de saúde"
@@ -33,7 +33,7 @@ export default function AdminPage() {
             icon={<LocalHospitalIcon color="primary" fontSize="large" />}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <AdminModuleCard
             title="Cuidadores"
             description="Gerenciar cuidadores"

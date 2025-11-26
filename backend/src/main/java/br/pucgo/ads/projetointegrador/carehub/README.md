@@ -87,8 +87,7 @@ carehub/
 │   ├── CareHubCorsConfig.java       (CORS para frontend)
 │   ├── SecurityBeans.java           (PasswordEncoder)
 │   └── DataInitializer.java         (Dados iniciais + 2 agendamentos teste)
-├── controller/                → 9 controllers REST (40+ endpoints)
-│   ├── AdminController.java
+├── controller/                → 8 controllers REST (40+ endpoints)
 │   ├── AvaliacaoController.java
 │   ├── ClienteController.java
 │   ├── CuidadorController.java
@@ -130,8 +129,7 @@ carehub/
 │   ├── ProntuarioRepository.java
 │   ├── AgendamentoRepository.java
 │   └── RegistroAcompanhamentoRepository.java (✨ queries por cliente/cuidador)
-└── service/                   → 8 services com lógica de negócio
-    ├── AdminService.java
+└── service/                   → 7 services com lógica de negócio
     ├── AvaliacaoService.java
     ├── ClienteService.java
     ├── CuidadorService.java
@@ -178,11 +176,10 @@ frontend/src/features/carehub/
 
 ## 📡 Endpoints REST (40+)
 
-### 👥 Administração (`/api/carehub/admin`)
-- `GET /usuarios` - Listar todos os usuários
-- `GET /usuarios/{id}` - Buscar usuário por ID
-- `PUT /usuarios/{id}/status` - Ativar/desativar usuário
-- `DELETE /usuarios/{id}` - Remover usuário
+### 👥 Administração
+> Observação importante: a responsabilidade por administração (usuários, permissões e painéis administrativos) foi centralizada e é gerida pela PLATAFORMA externa a este módulo. Este módulo `carehub` não expõe endpoints administrativos nem seeds de administrador. As rotas e telas administrativas mencionadas em versões anteriores foram removidas ou ficam apenas como referência histórica.
+
+Se você precisar gerenciar usuários ou permissões, use o módulo central da PLATAFORMA (JWT/OAuth) — o CareHub delega autenticação/autorização e usa roles providas pela plataforma.
 
 ### 👨‍⚕️ Cuidadores (`/api/carehub/cuidadores`)
 - `GET /` - Listar todos os cuidadores
@@ -505,7 +502,7 @@ X-User-Id: 5
 - ✅ **10 Entidades JPA** com tabelas criadas
 - ✅ **10 Repositories** com queries personalizadas
 - ✅ **7 Services** com toda lógica de negócio
-- ✅ **9 Controllers** com 35+ endpoints REST
+- ✅ **8 Controllers** com 40+ endpoints REST
 - ✅ **14 DTOs** para request/response (7 pares)
 - ✅ **1 Exception Handler** global
 - ✅ **4 Configurações** (JPA, CORS, Security, Data)
@@ -574,14 +571,16 @@ X-User-Id: 5
 
 ## 🔗 Isolamento do Módulo
 
-✅ **100% isolado** dos outros módulos da plataforma:
+✅ **Isolado para domínio funcional**, mas integrado com a PLATAFORMA para autenticação e administração:
 
 - **Pacote:** `br.pucgo.ads.projetointegrador.carehub`
 - **Rotas Backend:** `/api/carehub/*`
 - **Rotas Frontend:** `/carehub/*`
 - **Tabelas:** `ch_*`
 - **Configuração:** Independente (CORS próprio, JPA próprio)
-- **Não interfere:** com outros módulos do projeto
+- **Administração:** delegada à PLATAFORMA central (não implementada aqui)
+
+Esta separação evita duplicação de lógica de administração e centraliza permissões na PLATAFORMA.
 
 ---
 
@@ -621,28 +620,22 @@ _Em breve: capturas de tela das páginas do sistema_
 
 ## 🎓 Dados de Teste
 
-O sistema já vem com dados iniciais para teste (via `DataInitializer.java`):
+O CareHub fornece seeds mínimos para desenvolvimento local via `DataInitializer.java`. Observações importantes:
 
-### Usuários
+- Não há seed de administrador neste módulo: qualquer função administrativa é responsabilidade da PLATAFORMA central.
+- Roles usadas pelo CareHub (strings legadas geradas a partir das entidades da plataforma): `CAREHUB_CLIENTE` e `CAREHUB_CUIDADOR`.
 
-**Cliente (Idoso/Familiar):**
-- ID: 2
-- Nome: Dona Maria
-- Email: maria@email.com
-- Telefone: (62) 99999-0002
+Exemplo de usuários seedados para desenvolvimento (IDs e campos podem variar conforme o banco local):
 
-**Cuidador:**
-- ID: 3
-- Nome: João Cuidador
-- Email: joao@email.com
-- Especialidade: Alzheimer
-- Cidade: Goiânia, GO
-- Avaliação: 4.8/5.0
+- Cliente (Idoso/Familiar):
+  - Nome: Dona Maria (exemplo)
+  - Email: maria@example.com
 
-**Administrador:**
-- ID: 1
-- Nome: Admin Sistema
-- Email: admin@carehub.com
+- Cuidador:
+  - Nome: João Cuidador (exemplo)
+  - Especialidade: Alzheimer (exemplo)
+
+Se precisar de uma conta administrativa para testes integrados, crie-a a partir do módulo PLATAFORMA — este repositório evita criar administradores locais para não duplicar responsabilidades.
 
 ---
 

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import '../components/carehub-accessibility.css';
 import { Box, Button, Card, CardContent, Chip, FormControlLabel, Pagination, Stack, Switch, TextField, Typography, CircularProgress, Rating, Avatar, Divider, Paper } from '@mui/material';
 import { cuidadoresApi } from '../api';
 import type { CuidadorResponseDTO, Page } from '../types';

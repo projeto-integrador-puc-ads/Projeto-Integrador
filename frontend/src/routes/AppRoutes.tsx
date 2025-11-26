@@ -19,6 +19,8 @@ import CadastroMedicamento from '@/features/Medicamentos/components/CadastroMedi
 import ListaMedicamentos from '@/features/Medicamentos/components/ListaMedicamentos';
 import HistoricoMedicamentos from '@/features/Medicamentos/components/HistoricoMedicamentos';
 import type { Medicamento } from '@/features/Medicamentos/types/medicamento';
+// módulo CareHub
+import { CareHubRoutes } from '@/features/carehub/routes/CareHubRoutes';
 
 
 function Home() {
@@ -79,6 +81,9 @@ export function AppRoutes() {
 
         {/* ---------------- NOVA ROTA: ATENDIMENTO MÉDICO ---------------- */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
+
+        {/* ---------------- NOVA ROTA: CAREHUB ---------------- */}
+        <Route path="carehub/*" element={<CareHubRoutes />} />
 
         <Route path="medicamentos">
           {/* página inicial do módulo de medicamentos */}

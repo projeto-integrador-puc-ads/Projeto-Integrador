@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    List<Cliente> findByAtivoTrue();
+    // Platform model uses deletedAt to indicate soft-delete; active users have deletedAt = null
+    List<Cliente> findByDeletedAtIsNull();
 }

@@ -7,12 +7,6 @@ import {
   TextField,
   Typography,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  List,
-  ListItemButton,
-  ListItemText,
   Menu,
   MenuItem,
 } from '@mui/material';
@@ -58,16 +52,16 @@ export default function AtendimentoMedico() {
   });
 
   // controle do modal de busca de médicos (o seu de antes)
-  const [search, setSearch] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
+  // const [search, setSearch] = useState('');
+  // const [openDialog, setOpenDialog] = useState(false);
 
   // ✅ NOVO: controle do menu de SINTOMAS (estilo do print)
   const [sintomaAnchor, setSintomaAnchor] = useState<null | HTMLElement>(null);
 
-  const handleSelectMedico = (nome: string) => {
-    setForm({ ...form, medico: nome });
-    setOpenDialog(false);
-  };
+  // const handleSelectMedico = (nome: string) => {
+  //   setForm({ ...form, medico: nome });
+  //   setOpenDialog(false);
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,9 +84,9 @@ export default function AtendimentoMedico() {
   };
 
   // médicos filtrados (usado no modal)
-  const filteredMedicos = MEDICOS_MOCK.filter((m) =>
-    m.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filteredMedicos = MEDICOS_MOCK.filter((m) =>
+  //   m.nome.toLowerCase().includes(search.toLowerCase())
+  // );
 
   // 👇 abre o menu de sintomas (estilo do print)
   const abrirMenuSintomas = (event: React.MouseEvent<HTMLElement>) => {
@@ -154,7 +148,7 @@ export default function AtendimentoMedico() {
         <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             {/* Paciente */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 required
@@ -168,7 +162,7 @@ export default function AtendimentoMedico() {
             </Grid>
 
             {/* Data */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 required
@@ -182,7 +176,7 @@ export default function AtendimentoMedico() {
             </Grid>
 
             {/* Sintomas */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Sintomas"
@@ -236,8 +230,7 @@ export default function AtendimentoMedico() {
 
             {/* Botão salvar */}
             <Grid
-              item
-              xs={12}
+              size={{ xs: 12 }}
               sx={{ display: 'flex', justifyContent: 'flex-end' }}
             >
               <Button

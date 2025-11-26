@@ -7,18 +7,12 @@ import { AppRoutes } from './routes/AppRoutes';
 
 const queryClient = new QueryClient();
 
-// 🔐 Restaura sessão anterior se existir (SEM auto-login)
-// Agora o usuário DEVE fazer login manualmente
-restoreAuthToken();
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppThemeProvider>
-          <SnackbarProvider maxSnack={3} autoHideDuration={2500} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-            <AppRoutes />
-          </SnackbarProvider>
+          <AppRoutes />
         </AppThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
