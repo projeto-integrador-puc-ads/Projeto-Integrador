@@ -34,10 +34,10 @@ public class DiarioResponseDTO {
         this.dataCriacao = diario.getDataCriacao();
         this.dataAtualizacao = diario.getDataAtualizacao();
 
-        if (diario.getMidias() != null) {
-            this.midias = diario.getMidias().stream()
-                    .map(MidiaResponseDTO::new)
-                    .collect(Collectors.toList());
-        }
+//        if (diario.getMidias() != null) {
+//            this.midias = diario.getMidias().stream()
+//                    .map(MidiaResponseDTO::new)
+//                    .collect(Collectors.toList());
+//        }
     }
 }

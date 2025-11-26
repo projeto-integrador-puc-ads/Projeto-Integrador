@@ -20,6 +20,20 @@ export interface Lembranca {
   data: string;
 }
 
+
+/**
+ * Representa a definição estática de uma conquista.
+ */
+export interface ConquistaDTO {
+  nome: string;
+  descricao: string;
+  iconeUrl: string;
+  pontos: number;
+  meta: number;
+  tipo: number;
+  imagem: string;
+}
+
 export interface PerguntaCognitiva {
   id: number;
   pergunta: string;

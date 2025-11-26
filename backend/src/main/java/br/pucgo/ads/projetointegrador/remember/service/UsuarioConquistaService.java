@@ -3,7 +3,7 @@ package br.pucgo.ads.projetointegrador.remember.service;
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.UsuarioConquistaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Conquista;
 import br.pucgo.ads.projetointegrador.remember.entity.UsuarioConquista;
 import br.pucgo.ads.projetointegrador.remember.key.UsuarioConquistaKey;

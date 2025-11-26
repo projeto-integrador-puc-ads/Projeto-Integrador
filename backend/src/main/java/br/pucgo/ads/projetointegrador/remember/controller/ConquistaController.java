@@ -1,12 +1,13 @@
 package br.pucgo.ads.projetointegrador.remember.controller;
 
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.ConquistaRequestDTO;
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.ConquistaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.service.ConquistaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class ConquistaController {
      * Endpoint tipicamente restrito a administradores.
      */
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ConquistaResponseDTO> salvarConquista(@Valid @RequestBody ConquistaRequestDTO requestDTO) {
         ConquistaResponseDTO novaConquista = conquistaService.salvarConquista(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaConquista);

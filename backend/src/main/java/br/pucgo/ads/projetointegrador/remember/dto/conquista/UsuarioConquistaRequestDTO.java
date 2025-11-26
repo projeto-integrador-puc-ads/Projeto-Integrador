@@ -1,4 +1,4 @@
-package br.pucgo.ads.projetointegrador.remember.dto.Conquista;
+package br.pucgo.ads.projetointegrador.remember.dto.conquista;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

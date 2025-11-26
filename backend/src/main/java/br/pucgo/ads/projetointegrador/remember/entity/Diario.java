@@ -44,9 +44,6 @@ public class Diario {
     @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
     private User usuario;
 
-    @OneToMany(mappedBy = "diario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Midia> midias = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();

@@ -3,6 +3,7 @@ import AppLayout from "@/layouts/AppLayout";
 import { ModuleGrid } from "@/components/ModuleGrid";
 import UsuariosPage from "@/features/grupo1/pages/UsuariosPage";
 import DiariosPage from "@/features/remember/pages/DiariosPage";
+import ConquistasPage from "@/features/remember/pages/ConquistasPage";
 import LembrancasPage from "@/features/remember/pages/LembrancasPage";
 
 function Home() {
@@ -29,6 +30,7 @@ export function AppRoutes() {
         <Route path="usuarios" element={<UsuariosPage />} />
         <Route path="remember/diario" element={<DiariosPage />} />
         <Route path="remember/lembrancas" element={<LembrancasPage />} />
+        <Route path="remember/Conquistas" element={<ConquistasPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

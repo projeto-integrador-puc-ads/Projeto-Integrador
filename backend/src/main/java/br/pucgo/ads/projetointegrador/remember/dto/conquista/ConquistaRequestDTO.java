@@ -1,5 +1,8 @@
-package br.pucgo.ads.projetointegrador.remember.dto.Conquista;
+package br.pucgo.ads.projetointegrador.remember.dto.conquista;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -17,12 +20,16 @@ public class ConquistaRequestDTO {
     @NotBlank(message = "A descrição não pode estar em branco.")
     private String descricao;
 
-    @NotBlank(message = "A URL do ícone não pode estar em branco.")
-    @URL(message = "A URL do ícone deve ser válida.")
-    @Size(max = 512)
-    private String iconeUrl;
+    @NotNull(message = "A meta é obrigatória.")
+    @Positive(message = "A meta deve ser um número positivo.")
+    private Integer meta;
 
     @NotNull(message = "A pontuação é obrigatória.")
     @Positive(message = "A pontuação deve ser um número positivo.")
     private Integer pontos;
+
+    @NotNull(message = "O tipo da conquista é obrigatória.")
+    @Positive(message = "O tipo da conquista deve ser um número positivo.")
+    @Enumerated(EnumType.STRING)
+    private Integer tipo;
 }

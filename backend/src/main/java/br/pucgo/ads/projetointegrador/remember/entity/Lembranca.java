@@ -46,9 +46,6 @@ public class Lembranca {
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
 
-    @OneToMany(mappedBy = "lembranca", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Midia> midias = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false,  insertable = false, updatable = false)
     private User usuario;

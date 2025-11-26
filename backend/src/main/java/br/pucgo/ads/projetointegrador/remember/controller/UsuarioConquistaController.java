@@ -1,7 +1,7 @@
 package br.pucgo.ads.projetointegrador.remember.controller;
 
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.UsuarioConquistaRequestDTO;
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.UsuarioConquistaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.service.UsuarioConquistaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

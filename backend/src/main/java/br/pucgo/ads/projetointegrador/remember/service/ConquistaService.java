@@ -1,13 +1,14 @@
 package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.ConquistaRequestDTO;
-import br.pucgo.ads.projetointegrador.remember.dto.Conquista.ConquistaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Conquista;
 import br.pucgo.ads.projetointegrador.remember.repository.ConquistaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,9 @@ import java.util.stream.Collectors;
 public class ConquistaService {
 
     private final ConquistaRepository conquistaRepository;
+    private static final String SEPARADOR = FileSystems.getDefault().getSeparator();
+    private static final String CAMINHO_CONQUISTAS = SEPARADOR + "arquivos" + SEPARADOR + "remember" + SEPARADOR +
+            "imagens" + SEPARADOR + "conquistas" + SEPARADOR;
 
     @Autowired
     public ConquistaService(ConquistaRepository conquistaRepository) {
@@ -31,8 +35,9 @@ public class ConquistaService {
 
         novaConquista.setNome(requestDTO.getNome());
         novaConquista.setDescricao(requestDTO.getDescricao());
+        novaConquista.setMeta(requestDTO.getMeta());
         novaConquista.setPontos(requestDTO.getPontos());
-        novaConquista.setIconeUrl(requestDTO.getIconeUrl());
+        novaConquista.setTipo(requestDTO.getTipo());
 
         Conquista conquistaSalva = conquistaRepository.save(novaConquista);
         return new ConquistaResponseDTO(conquistaSalva);
@@ -71,8 +76,9 @@ public class ConquistaService {
 
         conquistaExistente.setNome(requestDTO.getNome());
         conquistaExistente.setDescricao(requestDTO.getDescricao());
+        conquistaExistente.setMeta(requestDTO.getMeta());
         conquistaExistente.setPontos(requestDTO.getPontos());
-        conquistaExistente.setIconeUrl(requestDTO.getIconeUrl());
+        conquistaExistente.setTipo(requestDTO.getTipo());
 
         Conquista conquistaAtualizada = conquistaRepository.save(conquistaExistente);
         return new ConquistaResponseDTO(conquistaAtualizada);

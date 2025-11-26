@@ -38,10 +38,10 @@ public class LembrancaResponseDTO {
         this.dataCriacao = lembranca.getDataCriacao();
         this.dataAtualizacao = lembranca.getDataAtualizacao();
 
-        if (lembranca.getMidias() != null) {
-            this.midias = lembranca.getMidias().stream()
-                    .map(MidiaResponseDTO::new)
-                    .collect(Collectors.toList());
-        }
+//        if (lembranca.getMidias() != null) {
+//            this.midias = lembranca.getMidias().stream()
+//                    .map(MidiaResponseDTO::new)
+//                    .collect(Collectors.toList());
+//        }
     }
 }

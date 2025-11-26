@@ -25,11 +25,14 @@ public class Conquista {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    @Column(name = "icone_url", nullable = false, length = 512)
-    private String iconeUrl;
+    @Column(nullable = false)
+    private Integer meta;
 
     @Column(nullable = false)
     private Integer pontos;
+
+    @Column(nullable = false)
+    private Integer tipo;
 
     @OneToMany(mappedBy = "conquista", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UsuarioConquista> conquistasAtribuidas  = new ArrayList<>();

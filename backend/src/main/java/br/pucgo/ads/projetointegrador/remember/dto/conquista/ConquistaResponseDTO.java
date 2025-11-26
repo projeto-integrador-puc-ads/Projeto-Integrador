@@ -1,4 +1,4 @@
-package br.pucgo.ads.projetointegrador.remember.dto.Conquista;
+package br.pucgo.ads.projetointegrador.remember.dto.conquista;
 
 import br.pucgo.ads.projetointegrador.remember.entity.Conquista;
 import lombok.AllArgsConstructor;
@@ -13,8 +13,8 @@ public class ConquistaResponseDTO {
     private Long identificadorConquista;
     private String nome;
     private String descricao;
-    private String iconeUrl;
     private Integer pontos;
+    private String icone;
 
     /**
      * Construtor que converte uma entidade Conquista em um ConquistaResponseDTO.
@@ -24,7 +24,6 @@ public class ConquistaResponseDTO {
         this.identificadorConquista = conquista.getIdentificadorConquista();
         this.nome = conquista.getNome();
         this.descricao = conquista.getDescricao();
-        this.iconeUrl = conquista.getIconeUrl();
         this.pontos = conquista.getPontos();
     }
 }

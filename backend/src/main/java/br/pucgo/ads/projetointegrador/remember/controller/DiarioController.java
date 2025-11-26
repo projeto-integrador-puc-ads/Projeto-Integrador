@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,24 +24,28 @@ public class DiarioController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DiarioResponseDTO> salvarDiario(@Valid @RequestBody DiarioRequestDTO requestDTO) {
         DiarioResponseDTO novoDiario = diarioService.salvarDiario(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoDiario);
     }
 
     @GetMapping("/{identificador}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DiarioResponseDTO> buscarDiarioPorId(@PathVariable Long identificador) {
         DiarioResponseDTO diario = diarioService.buscarDiarioPorId(identificador);
         return ResponseEntity.ok(diario);
     }
 
     @GetMapping("/usuario/{identificadorUsuario}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<DiarioResponseDTO>> listarDiariosPorUsuario(@PathVariable Long identificadorUsuario) {
         List<DiarioResponseDTO> diarios = diarioService.listarDiariosPorUsuario(identificadorUsuario);
         return ResponseEntity.ok(diarios);
     }
 
     @PutMapping("/{identificador}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DiarioResponseDTO> atualizarDiario(
             @PathVariable Long identificador,
             @Valid @RequestBody DiarioRequestDTO requestDTO
@@ -50,6 +55,7 @@ public class DiarioController {
     }
 
     @DeleteMapping("/{identificador}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deletarDiario(@PathVariable Long identificador) {
         diarioService.deletarDiario(identificador);
         return ResponseEntity.noContent().build();
