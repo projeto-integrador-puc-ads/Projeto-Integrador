@@ -30,24 +30,28 @@ public class PatologiaItemService {
 
     @Transactional
     public PatologiaItemResponseDTO vincular(PatologiaItemRequestDTO dto) {
-        // Validação: verificar se patologia existe
+        // 1. Busca Patologia e Produto Obrigatórios
         Patologia patologia = patologiaRepository.findById(dto.getPatologiaId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Patologia não encontrada com ID: " + dto.getPatologiaId()));
+                .orElseThrow(() -> new IllegalArgumentException("Patologia não encontrada"));
 
-        // Validação: verificar se produto existe
         Produto produto = produtoRepository.findById(dto.getProdutoId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Produto não encontrado com ID: " + dto.getProdutoId()));
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
 
-        // Validação: verificar se já existe o vínculo
-        if (patologiaItemRepository.existsByPatologiaIdAndProdutoId(
-                dto.getPatologiaId(), dto.getProdutoId())) {
-            throw new IllegalArgumentException(
-                    "Este produto já está vinculado a esta patologia");
+        // 2. LÓGICA NOVA: Busca o Produto Sugestão (se o ID veio no DTO)
+        Produto produtoSugestao = null;
+        if (dto.getProdutoSugestaoId() != null) {
+            produtoSugestao = produtoRepository.findById(dto.getProdutoSugestaoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Produto sugestão não encontrado"));
         }
 
-        PatologiaItem patologiaItem = toEntity(dto, patologia, produto);
+        // 3. Validação de duplicidade
+        if (patologiaItemRepository.existsByPatologiaIdAndProdutoId(dto.getPatologiaId(), dto.getProdutoId())) {
+            throw new IllegalArgumentException("Este produto já está vinculado a esta patologia");
+        }
+
+        // 4. Cria a entidade passando a sugestão (mesmo que seja null)
+        PatologiaItem patologiaItem = toEntity(dto, patologia, produto, produtoSugestao);
+
         PatologiaItem vinculoSalvo = patologiaItemRepository.save(patologiaItem);
         return toResponseDTO(vinculoSalvo);
     }
@@ -108,10 +112,12 @@ public class PatologiaItemService {
         patologiaItemRepository.deleteById(id);
     }
 
-    private PatologiaItem toEntity(PatologiaItemRequestDTO dto, Patologia patologia, Produto produto){
+    // Método atualizado para receber a sugestão
+    private PatologiaItem toEntity(PatologiaItemRequestDTO dto, Patologia patologia, Produto produto, Produto produtoSugestao){
         PatologiaItem patologiaItem = new PatologiaItem();
         patologiaItem.setPatologia(patologia);
         patologiaItem.setProduto(produto);
+        patologiaItem.setProdutoSugestao(produtoSugestao); // <--- O PULO DO GATO ESTÁ AQUI
         return patologiaItem;
     }
 
