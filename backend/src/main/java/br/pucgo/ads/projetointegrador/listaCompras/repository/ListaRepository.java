@@ -4,6 +4,8 @@ package br.pucgo.ads.projetointegrador.listaCompras.repository;
 import br.pucgo.ads.projetointegrador.listaCompras.entity.Lista;
 import br.pucgo.ads.projetointegrador.listaCompras.entity.Lista.StatusLista;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,5 +36,18 @@ public interface ListaRepository extends JpaRepository<Lista,Long> {
 
     // Verificar se existe lista com mesmo título para o usuário
     boolean existsByUsuario_IdAndTituloIgnoreCase(Long usuarioId, String titulo);
+
+    List<Lista> findByTemplateTrueAndPatologiaIsNullOrderByTituloAsc();
+
+    @Query("""
+        select l
+        from Lista l
+        where l.template = true
+          and (l.patologia is null or l.patologia.id in :patologiaIds)
+        order by l.titulo asc
+    """)
+    List<Lista> buscarTemplatesPorPatologiasOuGenericos(@Param("patologiaIds") List<Long> patologiaIds);
+
+
 }
 

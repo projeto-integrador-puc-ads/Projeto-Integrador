@@ -8,6 +8,7 @@ import br.pucgo.ads.projetointegrador.listaCompras.entity.Produto;
 import br.pucgo.ads.projetointegrador.listaCompras.repository.ItemListaRepository;
 import br.pucgo.ads.projetointegrador.listaCompras.repository.ListaRepository;
 import br.pucgo.ads.projetointegrador.listaCompras.repository.ProdutoRepository;
+import br.pucgo.ads.projetointegrador.listaCompras.repository.UsuarioPatologiaRepository;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ListaService {
     private final ItemListaRepository itemListaRepository;
     private final ItemListaService itemListaService;
     private final ProdutoRepository produtoRepository;
+    private final UsuarioPatologiaRepository usuarioPatologiaRepository;
 
     /**
      * Cria uma lista já com seus itens (usada pelo front da lista de compras).
@@ -125,11 +127,28 @@ public class ListaService {
     }
 
     @Transactional(readOnly = true)
-    public List<ListaResponseDTO> listarTemplates() {
-        // Lista todos os templates disponíveis
-        return listaRepository.findByTemplateTrueOrderByTituloAsc().stream()
+    public List<ListaResponseDTO> listarTemplates(Long userId) {
+
+        List<Long> patologiaIds = usuarioPatologiaRepository
+                .findPatologiaIdsByUsuarioId(userId);
+
+        List<Lista> listas;
+
+        if (patologiaIds == null || patologiaIds.isEmpty()) {
+
+            listas = listaRepository
+                    .findByTemplateTrueAndPatologiaIsNullOrderByTituloAsc();
+
+        } else {
+            listas = listaRepository
+                    .buscarTemplatesPorPatologiasOuGenericos(patologiaIds);
+        }
+
+        // 3) Converte para DTO
+        return listas.stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+
     }
 
     @Transactional
@@ -263,20 +282,26 @@ public class ListaService {
     private ListaResponseDTO toResponseDTO(Lista lista) {
 
         List<ItemListaResponseDTO> itens = itemListaRepository
-                .findById_ListaId(lista.getId()).stream()
-                .map(itemListaService::toResponseDTO) // ← Usa o service público
+                .findById_ListaId(lista.getId())
+                .stream()
+                .map(itemListaService::toResponseDTO) // usa o service que você já tem ✅
                 .collect(Collectors.toList());
+
+        Long patologiaId = lista.getPatologia() != null
+                ? lista.getPatologia().getId()
+                : null;
 
         return new ListaResponseDTO(
                 lista.getId(),
                 lista.getTitulo(),
                 lista.getUsuario().getId(),
                 lista.getUsuario().getName(),
+                patologiaId,
                 lista.getTemplate(),
                 lista.getCreatedAt(),
-                null, // descricao (transient)
-                lista.getStatus() != null ? lista.getStatus().name() : null, // status
-                new ArrayList<>() // itens (será preenchido depois)
+                lista.getDescricao(),
+                lista.getStatus() != null ? lista.getStatus().name() : null,
+                itens // ✅ AGORA OS ITENS VÃO CORRETOS
         );
     }
 }

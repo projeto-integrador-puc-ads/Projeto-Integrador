@@ -12,10 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatologiaResponseDTO {
-
     private Long id;
     private String nome;
     private String descricao;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
