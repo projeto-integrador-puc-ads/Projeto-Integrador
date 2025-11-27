@@ -124,19 +124,24 @@ public class PatologiaItemService {
     private PatologiaItemResponseDTO toResponseDTO(PatologiaItem patologiaItem){
         return new PatologiaItemResponseDTO(
                 patologiaItem.getId(),
-                patologiaService.findById(patologiaItem.getPatologia().getId()),
+                patologiaService.buscarPorId(patologiaItem.getPatologia().getId()),
                 produtoService.buscarPorId(patologiaItem.getProduto().getId()),
-                patologiaItem.getProdutoSugestao(),
+                patologiaItem.getProdutoSugestao() != null
+                        ? produtoService.buscarPorId(patologiaItem.getProdutoSugestao().getId())
+                        : null,  // ← Converte para DTO ou retorna null
                 patologiaItem.getCreatedAt(),
                 patologiaItem.getUpdatedAt()
         );
     }
 
-    private ProdutoSubstituivelResponseDTO toSubstituivelResponseDTO(PatologiaItem produtoSubstituivel){
+    private ProdutoSubstituivelResponseDTO toSubstituivelResponseDTO(PatologiaItem patologiaItem){
         return new ProdutoSubstituivelResponseDTO(
-                produtoSubstituivel.getProdutoSugestao(),
-                produtoSubstituivel.getPatologia(),
-                produtoSubstituivel.getId()
+                patologiaItem.getProduto().getId(),              // produtoAlertadoId
+                patologiaItem.getProduto().getNome(),         // produtoAlertadoNome
+                patologiaService.buscarPorId(patologiaItem.getPatologia().getId()), // PatologiaResponseDTO
+                patologiaItem.getProdutoSugestao() != null
+                        ? produtoService.buscarPorId(patologiaItem.getProdutoSugestao().getId())
+                        : null  // ProdutoResponseDTO ou null
         );
     }
 }

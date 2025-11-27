@@ -20,7 +20,7 @@ public class PatologiaService {
     private final UsuarioPatologiaRepository usuarioPatologiaRepository;
 
     @Transactional(readOnly = true)
-    public PatologiaResponseDTO findById(Long patologiaId) {
+    public PatologiaResponseDTO buscarPorId(Long patologiaId) {
         Patologia patologia = patologiaRepository.findById(patologiaId).orElseThrow(() -> new IllegalArgumentException( "Patologia não encontrada com ID"));
         return toResponseDTO(patologia);
     }
