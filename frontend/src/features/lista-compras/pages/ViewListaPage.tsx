@@ -20,6 +20,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 
 import { listaViewService, type ListaDTO } from "../api/service/listaViewService.ts";
 
@@ -27,7 +29,7 @@ export default function ViewListaPage() {
     const navigate = useNavigate();
 
     // mock: trocar depois por auth real
-    const userId = 16;
+    const userId = 3;
 
     const [listasUsuario, setListasUsuario] = useState<ListaDTO[]>([]);
     const [templates, setTemplates] = useState<ListaDTO[]>([]);
@@ -42,7 +44,7 @@ export default function ViewListaPage() {
         try {
             const [userLists, tplLists] = await Promise.all([
                 listaViewService.listarDoUsuario(userId),
-                listaViewService.listarTemplates(),
+                listaViewService.listarTemplates(userId),
             ]);
 
             setListasUsuario(userLists);
@@ -189,6 +191,17 @@ export default function ViewListaPage() {
 
     return (
         <Box sx={{ maxWidth: 1000, mx: "auto", px: 2, py: 3 }}>
+            <Stack direction="row" alignItems="center" sx={{ mb: 2 }}>
+                <Button
+                    variant="outlined"
+                    size={'small'}
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate(-1)}
+                    sx={{ textTransform: 'none', height: 40 }}
+                >
+                    Voltar
+                </Button>
+            </Stack>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Box>
                     <Typography variant="h4" fontWeight={800}>
@@ -203,7 +216,7 @@ export default function ViewListaPage() {
                     variant="contained"
                     startIcon={<AddIcon />}
                     sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2 }}
-                    onClick={() => navigate("/lista-compras/criar")}
+                    onClick={() => navigate("/lista-compras/nova")}
                 >
                     Nova lista
                 </Button>
