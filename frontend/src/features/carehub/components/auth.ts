@@ -53,11 +53,11 @@ export function initializeAuthToken() {
       // Importar dinamicamente para evitar dependências circulares
       import('../libHttp').then(({ setAuthToken }) => {
         setAuthToken(token);
-        console.log('CareHub: Token JWT inicializado no interceptor:', token.substring(0, 20) + '...');
+        console.debug('CareHub: Token JWT inicializado no interceptor');
       });
     } else {
-      console.log('CareHub: Nenhum token encontrado no localStorage');
-      console.log('CareHub: Chaves verificadas:', ['token', 'accessToken', 'jwtToken', 'authToken']);
+      console.debug('CareHub: Nenhum token encontrado no localStorage');
+      console.debug('CareHub: Chaves verificadas:', ['token', 'accessToken', 'jwtToken', 'authToken']);
     }
   } catch (error) {
     console.error('CareHub: Erro ao inicializar token:', error);
@@ -71,7 +71,7 @@ export function saveAuthToken(token: string) {
     // Também inicializar no interceptor imediatamente
     import('../libHttp').then(({ setAuthToken: setToken }) => {
       setToken(token);
-      console.log('CareHub: Token salvo e inicializado');
+      console.debug('CareHub: Token salvo e inicializado');
     });
   } catch (error) {
     console.error('CareHub: Erro ao salvar token:', error);
@@ -83,7 +83,7 @@ export function setTokenManually(token: string) {
   try {
     import('../libHttp').then(({ setAuthToken }) => {
       setAuthToken(token);
-      console.log('CareHub: Token configurado manualmente no interceptor');
+      console.debug('CareHub: Token configurado manualmente no interceptor');
     });
   } catch (error) {
     console.error('CareHub: Erro ao configurar token manualmente:', error);

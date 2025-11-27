@@ -46,9 +46,17 @@ public class Agendamento {
     @Column(name = "data_solicitacao")
     private LocalDateTime dataSolicitacao;
 
+    // Campos para contraproposta feita pelo cuidador
+    @Column(name = "proposed_data_hora_inicio")
+    private LocalDateTime proposedDataHoraInicio;
+
+    @Column(name = "proposed_data_hora_fim")
+    private LocalDateTime proposedDataHoraFim;
+
     public enum StatusAgendamento {
     PENDENTE,
         CONFIRMADO,
+        REAGENDADO,
         EM_ANDAMENTO,
         CONCLUIDO,
         CANCELADO

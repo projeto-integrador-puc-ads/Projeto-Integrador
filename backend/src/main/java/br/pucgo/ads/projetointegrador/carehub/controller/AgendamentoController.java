@@ -42,14 +42,26 @@ public class AgendamentoController {
     @PutMapping("/{id}/status")
     public ResponseEntity<AgendamentoResponseDTO> atualizarStatus(
             @PathVariable Long id,
-            @RequestParam String status
+            @RequestParam String status,
+            Principal principal
     ) {
-        log.info("Atualizando status do agendamento: id={}, novoStatus={}", id, status);
-        
-        AgendamentoResponseDTO agendamento = agendamentoService.atualizarStatus(id, status);
-        
+        log.info("Atualizando status do agendamento: id={}, novoStatus={} (actor={})", id, status, principal == null ? "anonymous" : principal.getName());
+
+        AgendamentoResponseDTO agendamento = agendamentoService.atualizarStatus(id, status, principal);
+
         log.info("Status atualizado com sucesso: id={}, status={}", id, agendamento.getStatus());
-        
+
+        return ResponseEntity.ok(agendamento);
+    }
+
+    @PostMapping("/{id}/contraproposta")
+    public ResponseEntity<AgendamentoResponseDTO> proporContraproposta(
+            @PathVariable Long id,
+            @RequestBody br.pucgo.ads.projetointegrador.carehub.dto.agendamento.ContrapropostaRequestDTO dto,
+            Principal principal
+    ) {
+        log.info("Cuidador propondo contraproposta: agendamentoId={}, actor={} - inicio={}, fim={}", id, principal == null ? "anonymous" : principal.getName(), dto.getDataHoraInicio(), dto.getDataHoraFim());
+        AgendamentoResponseDTO agendamento = agendamentoService.proporContraproposta(id, dto, principal);
         return ResponseEntity.ok(agendamento);
     }
 

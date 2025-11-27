@@ -77,8 +77,9 @@ export function RegistroAcompanhamentoPage() {
       );
       setAgendamentos(agendamentosAtivos);
     } catch (error) {
-      console.error('Erro ao carregar agendamentos:', error);
-      enqueueSnackbar('Erro ao carregar agendamentos', { variant: 'error' });
+        console.error('Erro ao carregar agendamentos:', error);
+        const msg = (error as any)?.message || 'Erro ao carregar agendamentos';
+        enqueueSnackbar(msg, { variant: 'error' });
     }
   };
 
@@ -148,7 +149,8 @@ export function RegistroAcompanhamentoPage() {
       carregarAgendamentos();
     } catch (error) {
       console.error('Erro ao salvar registro:', error);
-      enqueueSnackbar('Erro ao salvar registro', { variant: 'error' });
+      const msg = (error as any)?.message || 'Erro ao salvar registro';
+      enqueueSnackbar(msg, { variant: 'error' });
     } finally {
       setLoading(false);
     }

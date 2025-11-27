@@ -1,11 +1,11 @@
 package br.pucgo.ads.projetointegrador.carehub.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.ContatoDTO;
+import java.util.Map;
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.service.MensagemService;
@@ -22,8 +22,12 @@ public class MensagemController {
     @PostMapping
     public ResponseEntity<MensagemResponseDTO> enviarMensagem(
             @RequestHeader("X-User-Id") Long remetenteId,
-            @Valid @RequestBody MensagemRequestDTO dto
+            @RequestBody Map<String, Object> dtoMap
     ) {
+        // Construir DTO manualmente para evitar carregar a classe durante a introspecção
+        Long destinatarioId = dtoMap.get("destinatarioId") == null ? null : Long.valueOf(dtoMap.get("destinatarioId").toString());
+        String conteudo = dtoMap.get("conteudo") == null ? null : dtoMap.get("conteudo").toString();
+        MensagemRequestDTO dto = new MensagemRequestDTO(destinatarioId, conteudo);
         MensagemResponseDTO mensagem = mensagemService.enviarMensagem(remetenteId, dto);
         return ResponseEntity.ok(mensagem);
     }

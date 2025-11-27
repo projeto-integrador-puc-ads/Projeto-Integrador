@@ -27,13 +27,17 @@ import {
  * 4. Quando confirmado por ambos, status vira: CONFIRMADO
  */
 
+import { getUserId, getUserRole } from '../components/auth';
+
 export default function AgendamentosNegociacaoPage() {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const userRole = getUserRole();
+  const isCuidador = userRole?.includes('CUIDADOR') || false;
   const params = new URLSearchParams(window.location.search);
   const initialCuidador = Number(params.get('cuidadorId') || '') || undefined;
   
-  const [clienteId, setClienteId] = useState<number>(2); // Maria (Cliente)
+  const [clienteId, setClienteId] = useState<number | undefined>(getUserId() || undefined);
   const [cuidadorId, setCuidadorId] = useState<number | undefined>(initialCuidador);
   const [inicio, setInicio] = useState<string>(
     dayjs().add(1, 'day').hour(9).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm')
@@ -47,12 +51,10 @@ export default function AgendamentosNegociacaoPage() {
   // Estado para modal de contraproposta (funcionalidade futura)
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Recuperar clienteId do localStorage
+  // Garantir clienteId vindo do usuário autenticado se disponível
   useEffect(() => {
-    const userId = Number(localStorage.getItem('userId'));
-    if (userId) {
-      setClienteId(userId);
-    }
+    const uid = getUserId();
+    if (uid) setClienteId(uid);
   }, []);
 
   // Fetch cuidadores list
@@ -86,7 +88,8 @@ export default function AgendamentosNegociacaoPage() {
       setObservacoes('');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Erro ao criar proposta de agendamento';
+      // Nosso http client normaliza erros como { status, message, data, original }
+      const message = error?.message || error?.data?.message || 'Erro ao criar proposta de agendamento';
       enqueueSnackbar(message, { variant: 'error' });
     },
   });
@@ -127,6 +130,11 @@ export default function AgendamentosNegociacaoPage() {
     
     if (dataFim.isBefore(dataInicio)) {
       enqueueSnackbar('A data/hora de fim deve ser posterior à de início', { variant: 'warning' });
+      return;
+    }
+    // Não permitir agendamentos no passado
+    if (dataInicio.isBefore(dayjs())) {
+      enqueueSnackbar('A data/hora de início não pode ser no passado', { variant: 'warning' });
       return;
     }
     
@@ -212,105 +220,111 @@ export default function AgendamentosNegociacaoPage() {
         </Typography>
       </Alert>
 
-      {/* Formulário de Nova Proposta */}
-      <Card 
-        variant="outlined" 
-        sx={{ 
-          bgcolor: 'background.default',
-          border: '2px solid',
-          borderColor: 'primary.main'
-        }}
-      >
-        <CardContent>
-          <Stack direction="row" alignItems="center" gap={1} mb={2}>
-            <CalendarMonth color="primary" />
-            <Typography variant="h6" fontWeight="bold">
-              Nova Proposta de Agendamento
-            </Typography>
-          </Stack>
-          
-          <Stack direction={{ xs: 'column', md: 'row' }} gap={2} flexWrap="wrap">
-            <TextField 
-              select 
-              label="Cuidador" 
-              value={cuidadorId ?? ''} 
-              onChange={(e) => setCuidadorId(Number(e.target.value) || undefined)} 
-              size="small" 
-              sx={{ minWidth: 220 }}
-              required
-            >
-              <MenuItem value="">Selecione um cuidador</MenuItem>
-              {cuidadores.map(c => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.nome}
-                </MenuItem>
-              ))}
-            </TextField>
+      {/* Formulário de Nova Proposta - somente clientes podem propor */}
+      {!isCuidador ? (
+        <Card 
+          variant="outlined" 
+          sx={{ 
+            bgcolor: 'background.default',
+            border: '2px solid',
+            borderColor: 'primary.main'
+          }}
+        >
+          <CardContent>
+            <Stack direction="row" alignItems="center" gap={1} mb={2}>
+              <CalendarMonth color="primary" />
+              <Typography variant="h6" fontWeight="bold">
+                Nova Proposta de Agendamento
+              </Typography>
+            </Stack>
             
-            <TextField 
-              label="Data/Hora Início" 
-              type="datetime-local" 
-              size="small" 
-              value={inicio} 
-              onChange={(e) => setInicio(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 200 }}
-              required
-            />
-            
-            <TextField 
-              label="Data/Hora Fim" 
-              type="datetime-local" 
-              size="small" 
-              value={fim} 
-              onChange={(e) => setFim(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 200 }}
-              required
-            />
-            
-            <TextField 
-              select
-              label="Tipo Atendimento" 
-              size="small" 
-              value={tipo} 
-              onChange={(e) => setTipo(e.target.value)}
-              sx={{ minWidth: 180 }}
-            >
-              <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
-              <MenuItem value="PRESENCIAL">Presencial</MenuItem>
-              <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
-            </TextField>
-          </Stack>
+            <Stack direction={{ xs: 'column', md: 'row' }} gap={2} flexWrap="wrap">
+              <TextField 
+                select 
+                label="Cuidador" 
+                value={cuidadorId ?? ''} 
+                onChange={(e) => setCuidadorId(Number(e.target.value) || undefined)} 
+                size="small" 
+                sx={{ minWidth: 220 }}
+                required
+              >
+                <MenuItem value="">Selecione um cuidador</MenuItem>
+                {cuidadores.map(c => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </MenuItem>
+                ))}
+              </TextField>
+              
+              <TextField 
+                label="Data/Hora Início" 
+                type="datetime-local" 
+                size="small" 
+                value={inicio} 
+                onChange={(e) => setInicio(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 200 }}
+                required
+              />
+              
+              <TextField 
+                label="Data/Hora Fim" 
+                type="datetime-local" 
+                size="small" 
+                value={fim} 
+                onChange={(e) => setFim(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 200 }}
+                required
+              />
+              
+              <TextField 
+                select
+                label="Tipo Atendimento" 
+                size="small" 
+                value={tipo} 
+                onChange={(e) => setTipo(e.target.value)}
+                sx={{ minWidth: 180 }}
+              >
+                <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
+                <MenuItem value="PRESENCIAL">Presencial</MenuItem>
+                <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
+              </TextField>
+            </Stack>
 
-          <TextField 
-            label="Observações (opcional)" 
-            multiline
-            rows={2}
-            fullWidth
-            value={observacoes}
-            onChange={(e) => setObservacoes(e.target.value)}
-            placeholder="Ex: Preferência de horário matutino, necessidades especiais..."
-            sx={{ mt: 2 }}
-          />
-          
-          <Button 
-            variant="contained" 
-            onClick={handleCriarProposta} 
-            disabled={criarMutation.isPending || !clienteId || !cuidadorId}
-            sx={{ 
-              mt: 2, 
-              minWidth: 200,
-              py: 1.5,
-              fontSize: '1rem',
-              fontWeight: 'bold'
-            }}
-            size="large"
-          >
-            {criarMutation.isPending ? 'Enviando...' : '📤 Enviar Proposta'}
-          </Button>
-        </CardContent>
-      </Card>
+            <TextField 
+              label="Observações (opcional)" 
+              multiline
+              rows={2}
+              fullWidth
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+              placeholder="Ex: Preferência de horário matutino, necessidades especiais..."
+              sx={{ mt: 2 }}
+            />
+            
+            <Button 
+              variant="contained" 
+              onClick={handleCriarProposta} 
+              disabled={criarMutation.isPending || !clienteId || !cuidadorId}
+              sx={{ 
+                mt: 2, 
+                minWidth: 200,
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 'bold'
+              }}
+              size="large"
+            >
+              {criarMutation.isPending ? 'Enviando...' : '📤 Enviar Proposta'}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Alert severity="info" sx={{ borderRadius: 2 }}>
+          Acesse sua área de cuidador para conferir propostas recebidas e confirmar disponibilidade para os dias propostos pelos clientes.
+        </Alert>
+      )}
 
       {/* Lista de Agendamentos */}
       <Typography variant="h6" fontWeight="bold" mt={2}>

@@ -10,6 +10,7 @@ import { AvaliacaoModal } from '../components/AvaliacaoModal';
 
 export default function CuidadoresPage() {
   const [q, setQ] = useState('');
+  const [especialidade, setEspecialidade] = useState('');
   const [disp, setDisp] = useState<boolean | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [clienteId, setClienteId] = useState<number | undefined>(undefined);
@@ -27,12 +28,13 @@ export default function CuidadoresPage() {
 
   const params = useMemo(() => ({
     localizacao: q || undefined,
+    especialidade: especialidade || undefined,
     disponibilidade: disp,
     page: page - 1,
     size: 6,
     sortBy: 'avaliacaoMedia',
     direction: 'DESC' as const,
-  }), [q, disp, page]);
+  }), [q, especialidade, disp, page]);
 
   const { data, isFetching, isError } = useQuery<Page<CuidadorResponseDTO>>({
     queryKey: ['cuidadores', params],
@@ -76,6 +78,14 @@ export default function CuidadoresPage() {
               size="small"
               placeholder="Ex: Goiânia-GO"
               sx={{ minWidth: 250 }}
+            />
+            <TextField
+              label="Especialidade"
+              value={especialidade}
+              onChange={(e) => setEspecialidade(e.target.value)}
+              size="small"
+              placeholder="Ex: Enfermagem"
+              sx={{ minWidth: 200 }}
             />
             <FormControlLabel 
               control={

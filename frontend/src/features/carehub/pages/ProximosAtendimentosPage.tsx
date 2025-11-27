@@ -39,9 +39,10 @@ export function ProximosAtendimentosPage() {
   const { data: agendamentos = [], isLoading, error } = useQuery<Agendamento[]>({
     queryKey: ['proximos-atendimentos', userId],
     queryFn: async () => {
+      // Este endpoint usa Principal no backend (autenticação JWT).
+      // Não enviar 'X-User-Id' aqui para manter comportamento de produção.
       const response = await http.get<Agendamento[]>('/api/carehub/agendamentos/proximos', {
         params: { dias: 7 },
-        headers: { 'X-User-Id': userId },
       });
       return response.data;
     },
@@ -49,7 +50,7 @@ export function ProximosAtendimentosPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'AGENDADO':
+      case 'PENDENTE':
         return 'default';
       case 'CONFIRMADO':
         return 'info';

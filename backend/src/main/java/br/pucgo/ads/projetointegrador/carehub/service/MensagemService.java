@@ -49,7 +49,7 @@ public class MensagemService {
     public List<MensagemResponseDTO> listarMensagens(Long usuarioId) {
         Objects.requireNonNull(usuarioId, "Usuario ID cannot be null");
         
-        return mensagemRepository.findByRemetenteIdOrDestinatarioIdOrderByDataEnvioDesc(usuarioId, usuarioId)
+        return mensagemRepository.findByRemetenteIdOrDestinatarioIdOrderByDataEnvioDesc(usuarioId)
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());

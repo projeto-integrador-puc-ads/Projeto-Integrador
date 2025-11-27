@@ -95,8 +95,9 @@ export default function ChatPage() {
       queryClient.invalidateQueries({ queryKey: ['contatos', userId] });
       setTexto('');
     },
-    onError: () => {
-      enqueueSnackbar('Erro ao enviar mensagem', { variant: 'error' });
+    onError: (error: any) => {
+      const msg = error?.message || 'Erro ao enviar mensagem';
+      enqueueSnackbar(msg, { variant: 'error' });
     },
   });
 

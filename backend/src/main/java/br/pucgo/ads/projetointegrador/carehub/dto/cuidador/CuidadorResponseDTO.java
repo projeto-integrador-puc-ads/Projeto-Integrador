@@ -22,6 +22,7 @@ public class CuidadorResponseDTO {
     private String estado;
     private Boolean disponibilidade;
     private BigDecimal avaliacaoMedia;
+    private BigDecimal taxaHora;
     private Integer totalAvaliacoes;
     private String biografia;
     private String fotoPerfil;

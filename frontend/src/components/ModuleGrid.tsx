@@ -11,6 +11,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 export function ModuleGrid() {
   const navigate = useNavigate(); // para navegação

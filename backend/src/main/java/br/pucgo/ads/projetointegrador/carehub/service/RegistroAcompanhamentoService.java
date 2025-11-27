@@ -29,10 +29,10 @@ public class RegistroAcompanhamentoService {
         Long agendamentoId = Objects.requireNonNull(dto.getAgendamentoId(), "Agendamento ID cannot be null");
         
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
-                .orElseThrow(() -> new RuntimeException("Agendamento nao encontrado"));
+            .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
         if (!agendamento.getCuidador().getId().equals(cuidadorId)) {
-            throw new RuntimeException("Cuidador nao autorizado para este agendamento");
+            throw new RuntimeException("Cuidador não autorizado para este agendamento");
         }
 
         RegistroAcompanhamento registro = new RegistroAcompanhamento();
@@ -85,7 +85,7 @@ public class RegistroAcompanhamentoService {
         Objects.requireNonNull(id, "Registro ID cannot be null");
         
         RegistroAcompanhamento registro = registroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Registro nao encontrado"));
+            .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
         return toResponseDTO(registro);
     }
 

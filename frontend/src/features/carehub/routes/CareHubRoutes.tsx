@@ -34,7 +34,7 @@ export function CareHubRoutes() {
       <Route path="cuidadores" element={<CuidadoresPage />} />
       <Route path="agendamentos" element={<AgendamentosPage />} />
       <Route path="prontuario" element={<ProntuarioPage />} />
-      <Route path="avaliacoes" element={<AvaliacoesPage />} />
+      <Route path="avaliacoes/:id" element={<AvaliacoesPage />} />
 
       {/* Rotas do Cuidador */}
       <Route path="cuidador/agendamentos" element={<MeusAgendamentosPage />} />

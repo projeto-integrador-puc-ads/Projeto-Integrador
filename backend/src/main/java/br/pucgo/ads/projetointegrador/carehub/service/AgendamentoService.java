@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.AgendamentoRequestDTO;
+import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.ContrapropostaRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.agendamento.AgendamentoResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
@@ -88,25 +89,114 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public AgendamentoResponseDTO atualizarStatus(Long id, String status) {
+    public AgendamentoResponseDTO atualizarStatus(Long id, String status, java.security.Principal principal) {
         Objects.requireNonNull(id, "Agendamento ID cannot be null");
         
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
-        Agendamento.StatusAgendamento novoStatus = Agendamento.StatusAgendamento.valueOf(status);
-        
-        // ✅ VALIDAÇÃO: Só pode iniciar atendimento se estiver no horário correto
-        if (novoStatus == Agendamento.StatusAgendamento.EM_ANDAMENTO) {
-            validarInicioAtendimento(agendamento);
-            
-            // ✅ Criar registro de acompanhamento automático
-            criarRegistroAutomatico(agendamento);
+        if (principal == null) {
+            throw new OperacaoNaoPermitidaException("Operação não autorizada: usuário não autenticado");
         }
-        
-        agendamento.setStatus(novoStatus);
-        agendamento = agendamentoRepository.save(agendamento);
 
+        Long callerId = getUserIdByUsernameOrEmail(principal.getName());
+        Agendamento.StatusAgendamento novoStatus = Agendamento.StatusAgendamento.valueOf(status);
+
+        // Handle transitions with authorization rules
+        switch (novoStatus) {
+            case EM_ANDAMENTO:
+                // Somente o cuidador pode iniciar
+                if (!callerId.equals(agendamento.getCuidador().getId())) {
+                    throw new OperacaoNaoPermitidaException("Apenas o cuidador pode iniciar o atendimento");
+                }
+                validarInicioAtendimento(agendamento);
+                criarRegistroAutomatico(agendamento);
+                agendamento.setStatus(novoStatus);
+                break;
+
+            case CONFIRMADO:
+                // Se estava REAGENDADO, o cliente pode aceitar a contraproposta
+                if (agendamento.getStatus() == Agendamento.StatusAgendamento.REAGENDADO) {
+                    if (!callerId.equals(agendamento.getCliente().getId())) {
+                        throw new OperacaoNaoPermitidaException("Apenas o cliente pode aceitar a contraproposta");
+                    }
+                    // Aplica as datas propostas
+                    if (agendamento.getProposedDataHoraInicio() == null || agendamento.getProposedDataHoraFim() == null) {
+                        throw new RuntimeException("Não existe contraproposta pendente para este agendamento");
+                    }
+                    agendamento.setDataHoraInicio(agendamento.getProposedDataHoraInicio());
+                    agendamento.setDataHoraFim(agendamento.getProposedDataHoraFim());
+                    agendamento.setProposedDataHoraInicio(null);
+                    agendamento.setProposedDataHoraFim(null);
+                    agendamento.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
+                } else {
+                    // Se estava PENDENTE, somente o cuidador pode confirmar
+                    if (!callerId.equals(agendamento.getCuidador().getId())) {
+                        throw new OperacaoNaoPermitidaException("Apenas o cuidador pode confirmar a proposta inicial");
+                    }
+                    agendamento.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
+                }
+                break;
+
+            case REAGENDADO:
+                // REAGENDADO deve ser criado via endpoint de contraproposta (proporContraproposta)
+                throw new OperacaoNaoPermitidaException("Use o endpoint de contraproposta para propor nova data");
+
+            case CANCELADO:
+                // Cliente ou cuidador podem cancelar
+                if (!callerId.equals(agendamento.getCliente().getId()) && !callerId.equals(agendamento.getCuidador().getId())) {
+                    throw new OperacaoNaoPermitidaException("Somente o cliente ou o cuidador podem cancelar este agendamento");
+                }
+                agendamento.setStatus(Agendamento.StatusAgendamento.CANCELADO);
+                break;
+
+            case CONCLUIDO:
+                // Apenas cuidador pode marcar concluído
+                if (!callerId.equals(agendamento.getCuidador().getId())) {
+                    throw new OperacaoNaoPermitidaException("Apenas o cuidador pode marcar como concluído");
+                }
+                agendamento.setStatus(Agendamento.StatusAgendamento.CONCLUIDO);
+                break;
+
+            case PENDENTE:
+            default:
+                throw new OperacaoNaoPermitidaException("Transição de status não permitida");
+        }
+
+        agendamento = agendamentoRepository.save(agendamento);
+        return toResponseDTO(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponseDTO proporContraproposta(Long id, ContrapropostaRequestDTO dto, java.security.Principal principal) {
+        Objects.requireNonNull(id, "Agendamento ID cannot be null");
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+
+        if (principal == null) {
+            throw new OperacaoNaoPermitidaException("Operação não autorizada: usuário não autenticado");
+        }
+
+        Long callerId = getUserIdByUsernameOrEmail(principal.getName());
+
+        // Somente o cuidador pode propor contraproposta
+        if (!callerId.equals(agendamento.getCuidador().getId())) {
+            throw new OperacaoNaoPermitidaException("Apenas o cuidador pode propor uma contraproposta");
+        }
+
+        if (dto.getDataHoraFim().isBefore(dto.getDataHoraInicio())) {
+            throw new RuntimeException("Data/hora de fim da contraproposta deve ser posterior ao início");
+        }
+
+        if (dto.getDataHoraInicio().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("A contraproposta não pode ter início no passado");
+        }
+
+        agendamento.setProposedDataHoraInicio(dto.getDataHoraInicio());
+        agendamento.setProposedDataHoraFim(dto.getDataHoraFim());
+        agendamento.setStatus(Agendamento.StatusAgendamento.REAGENDADO);
+
+        agendamento = agendamentoRepository.save(agendamento);
         return toResponseDTO(agendamento);
     }
     
@@ -288,6 +378,8 @@ public class AgendamentoService {
         }
         
         dto.setDataSolicitacao(agendamento.getDataSolicitacao());
+        dto.setProposedDataHoraInicio(agendamento.getProposedDataHoraInicio());
+        dto.setProposedDataHoraFim(agendamento.getProposedDataHoraFim());
         return dto;
     }
 }

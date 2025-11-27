@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react';
 import { agendamentosApi, cuidadoresApi, clientesApi } from '../api';
 import type { AgendamentoRequestDTO } from '../types';
-import { Box, Button, Card, CardContent, Chip, CircularProgress, MenuItem, Stack, TextField, Typography, Paper, Divider } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, CircularProgress, MenuItem, Stack, TextField, Typography, Paper, Divider, Alert } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from '../libSnackbar';
 import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import { CalendarMonth, Schedule, CheckCircle, Cancel, AccessTime, Person, LocationOn } from '@mui/icons-material';
 
+import { getUserId, getUserRole } from '../components/auth';
+
 export default function AgendamentosPage() {
   // feature-level accessibility styles
   import('../components/carehub-accessibility.css');
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const userRole = getUserRole();
+  const isCuidador = userRole?.includes('CUIDADOR') || false;
   const params = new URLSearchParams(window.location.search);
   const initialCuidador = Number(params.get('cuidadorId') || '') || undefined;
   
@@ -22,8 +26,14 @@ export default function AgendamentosPage() {
   const [fim, setFim] = useState<string>(dayjs().add(1, 'day').hour(11).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
   const [tipo, setTipo] = useState<string>('DOMICILIO'); // ✅ Corrigido de DOMICILIAR para DOMICILIO
 
-  // Fetch cliente ID
+  // Fetch cliente ID - preferir ID do usuário autenticado
   useEffect(() => {
+    const uid = getUserId();
+    if (uid) {
+      setClienteId(uid);
+      return;
+    }
+
     clientesApi.listarTodos().then((arr) => setClienteId(arr[0]?.id));
   }, []);
 
@@ -57,8 +67,9 @@ export default function AgendamentosPage() {
       setInicio(dayjs().add(1, 'day').hour(9).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
       setFim(dayjs().add(1, 'day').hour(11).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
     },
-    onError: () => {
-      enqueueSnackbar('Erro ao criar agendamento', { variant: 'error' });
+    onError: (error: any) => {
+      const msg = error?.message || 'Erro ao criar agendamento';
+      enqueueSnackbar(msg, { variant: 'error' });
     },
   });
 
@@ -70,8 +81,9 @@ export default function AgendamentosPage() {
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       enqueueSnackbar('Status atualizado!', { variant: 'success' });
     },
-    onError: () => {
-      enqueueSnackbar('Erro ao atualizar status', { variant: 'error' });
+    onError: (error: any) => {
+      const msg = error?.message || 'Erro ao atualizar status';
+      enqueueSnackbar(msg, { variant: 'error' });
     },
   });
 
@@ -81,10 +93,24 @@ export default function AgendamentosPage() {
       return;
     }
     
+    const dInicio = dayjs(inicio);
+    const dFim = dayjs(fim);
+
+    // Validações simples no cliente
+    if (dFim.isBefore(dInicio)) {
+      enqueueSnackbar('A data/hora de fim deve ser posterior à de início', { variant: 'warning' });
+      return;
+    }
+
+    if (dInicio.isBefore(dayjs())) {
+      enqueueSnackbar('A data/hora de início não pode ser no passado', { variant: 'warning' });
+      return;
+    }
+
     // ✅ Usar formato local sem conversão para UTC
-    const dataInicio = dayjs(inicio).format('YYYY-MM-DDTHH:mm:ss');
-    const dataFim = dayjs(fim).format('YYYY-MM-DDTHH:mm:ss');
-    
+    const dataInicio = dInicio.format('YYYY-MM-DDTHH:mm:ss');
+    const dataFim = dFim.format('YYYY-MM-DDTHH:mm:ss');
+
     criarMutation.mutate({ 
       clienteId, 
       cuidadorId, 
@@ -111,68 +137,74 @@ export default function AgendamentosPage() {
         subtitle="Gerencie seus atendimentos e horários"
       />
 
-      {/* Formulário de Criação */}
-      <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>Novo Agendamento</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} gap={2} flexWrap="wrap">
-            <TextField 
-              select 
-              label="Cuidador" 
-              value={cuidadorId ?? ''} 
-              onChange={(e) => setCuidadorId(Number(e.target.value) || undefined)} 
-              size="small" 
-              sx={{ minWidth: 220 }}
-              required
-            >
-              <MenuItem value="">Selecione um cuidador</MenuItem>
-              {cuidadores.map(c => <MenuItem key={c.id} value={c.id}>{c.nome}</MenuItem>)}
-            </TextField>
-            
-            <TextField 
-              label="Data/Hora Início" 
-              type="datetime-local" 
-              size="small" 
-              value={inicio} 
-              onChange={(e) => setInicio(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 200 }}
-            />
-            
-            <TextField 
-              label="Data/Hora Fim" 
-              type="datetime-local" 
-              size="small" 
-              value={fim} 
-              onChange={(e) => setFim(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 200 }}
-            />
-            
-            <TextField 
-              select
-              label="Tipo Atendimento" 
-              size="small" 
-              value={tipo} 
-              onChange={(e) => setTipo(e.target.value)}
-              sx={{ minWidth: 180 }}
-            >
-              <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
-              <MenuItem value="PRESENCIAL">Presencial</MenuItem>
-              <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
-            </TextField>
-            
-            <Button 
-              variant="contained" 
-              onClick={criar} 
-              disabled={criarMutation.isPending || !clienteId}
-              sx={{ minWidth: 120 }}
-            >
-              {criarMutation.isPending ? 'Criando...' : 'Criar'}
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
+      {/* Formulário de Criação - somente para clientes (idosos/familiares) */}
+      {!isCuidador ? (
+        <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>Novo Agendamento</Typography>
+            <Stack direction={{ xs: 'column', md: 'row' }} gap={2} flexWrap="wrap">
+              <TextField 
+                select 
+                label="Cuidador" 
+                value={cuidadorId ?? ''} 
+                onChange={(e) => setCuidadorId(Number(e.target.value) || undefined)} 
+                size="small" 
+                sx={{ minWidth: 220 }}
+                required
+              >
+                <MenuItem value="">Selecione um cuidador</MenuItem>
+                {cuidadores.map(c => <MenuItem key={c.id} value={c.id}>{c.nome}</MenuItem>)}
+              </TextField>
+              
+              <TextField 
+                label="Data/Hora Início" 
+                type="datetime-local" 
+                size="small" 
+                value={inicio} 
+                onChange={(e) => setInicio(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 200 }}
+              />
+              
+              <TextField 
+                label="Data/Hora Fim" 
+                type="datetime-local" 
+                size="small" 
+                value={fim} 
+                onChange={(e) => setFim(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 200 }}
+              />
+              
+              <TextField 
+                select
+                label="Tipo Atendimento" 
+                size="small" 
+                value={tipo} 
+                onChange={(e) => setTipo(e.target.value)}
+                sx={{ minWidth: 180 }}
+              >
+                <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
+                <MenuItem value="PRESENCIAL">Presencial</MenuItem>
+                <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
+              </TextField>
+              
+              <Button 
+                variant="contained" 
+                onClick={criar} 
+                disabled={criarMutation.isPending || !clienteId || !cuidadorId}
+                sx={{ minWidth: 120 }}
+              >
+                {criarMutation.isPending ? 'Criando...' : 'Criar'}
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      ) : (
+        <Alert severity="info" sx={{ borderRadius: 2 }}>
+          Você está logado como cuidador. Agendamentos devem ser propostos por clientes (idosos/familiares). Acompanhe e confirme propostas em <strong>Meus Agendamentos</strong>.
+        </Alert>
+      )}
 
       {/* Lista de Agendamentos */}
       {isLoading && (

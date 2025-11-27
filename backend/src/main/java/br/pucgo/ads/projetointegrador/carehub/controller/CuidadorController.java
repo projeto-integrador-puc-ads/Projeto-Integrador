@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,23 @@ public class CuidadorController {
             @RequestParam(defaultValue = "avaliacaoMedia") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction
     ) {
-        // Usa Pageable.unpaged() para query nativa com ORDER BY fixo
-        Pageable pageable = PageRequest.of(page, size);
-        
+        // Monta Sort seguro a partir de whitelist para evitar injeção de propriedade
+        // Mapa de chaves permitidas -> propriedades de entidade
+        java.util.Map<String, String> allowed = java.util.Map.of(
+            "avaliacaoMedia", "avaliacaoMedia",
+            "taxaHora", "taxaHora",
+            "nome", "name",
+            "name", "name",
+            "cidade", "cidade",
+            "estado", "estado",
+            "createdAt", "createdAt",
+            "criadoEm", "createdAt"
+        );
+
+        String property = allowed.getOrDefault(sortBy, "avaliacaoMedia");
+        Sort.Direction dir = "DESC".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(dir, property));
+
         Page<CuidadorResponseDTO> cuidadores = cuidadorService.buscarComFiltros(
             localizacao, especialidade, disponibilidade, pageable);
         

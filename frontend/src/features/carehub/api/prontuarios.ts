@@ -15,7 +15,7 @@ export interface ProntuarioResponse {
 export async function verificarPodeEditar(clienteId: number, cuidadorId: number): Promise<boolean> {
   try {
     const response = await http.get<boolean>(`/api/carehub/prontuarios/pode-editar/${clienteId}`, {
-      headers: { 'X-User-Id': cuidadorId },
+      headers: { 'X-User-Id': String(cuidadorId) },
     });
     return response.data;
   } catch (error) {

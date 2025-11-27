@@ -22,4 +22,6 @@ public class AgendamentoResponseDTO {
     private String observacoes;
     private String tipoAtendimento;
     private LocalDateTime dataSolicitacao;
+    private LocalDateTime proposedDataHoraInicio;
+    private LocalDateTime proposedDataHoraFim;
 }
