@@ -27,6 +27,10 @@ public class Lista {
     @Column(nullable = false)
     private String titulo;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "patologia_id")
+    private Patologia patologia;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

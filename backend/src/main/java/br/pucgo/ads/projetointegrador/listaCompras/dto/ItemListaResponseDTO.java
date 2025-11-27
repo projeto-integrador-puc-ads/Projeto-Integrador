@@ -18,7 +18,4 @@ public class ItemListaResponseDTO {
     private BigDecimal quantidade;
     private Boolean comprado;
     private LocalDateTime createdAt;
-
-    public ItemListaResponseDTO(Long id, Long ListaId, ProdutoResponseDTO produto, BigDecimal quantidade,LocalDateTime createdAt, Boolean comprado) {
-    }
 }

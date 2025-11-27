@@ -75,9 +75,9 @@ public class ListaController {
      * Lista todos os templates disponíveis (template = true)
      */
     @GetMapping("/templates")
-    public ResponseEntity<?> listarTemplates() {
+    public ResponseEntity<?> listarTemplates(@RequestParam("userId") Long userId) {
         try {
-            List<ListaResponseDTO> templates = listaService.listarTemplates();
+            List<ListaResponseDTO> templates = listaService.listarTemplates(userId);
             return ResponseEntity.ok(templates);
 
         } catch (Exception e) {

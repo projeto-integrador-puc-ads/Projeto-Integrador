@@ -26,10 +26,13 @@ export const listaViewService = {
         return data;
     },
 
-    async listarTemplates(): Promise<ListaDTO[]> {
+    async listarTemplates(userId: number): Promise<ListaDTO[]> {
         const { data } = await listaComprasApi.get<ListaDTO[]>(
-            `/listas/templates`
+            '/listas/templates',
+            {
+                params: { userId }
+            }
         );
         return data;
-    },
+    }
 };

@@ -60,27 +60,7 @@ export const listaComprasService = {
     },
 
 
-    // ===== TEMPLATES =====================================================
 
-    /** Modelos rápidos de lista (templates) */
-    async getTemplates(): Promise<Template[]> {
-        await delay(200);
-        return mockTemplates;
-    },
-
-    // ===== PATOLOGIAS ====================================================
-
-    /** Patologias do usuário logado (mock da integração externa) */
-    async getPatologiasDoUsuario(): Promise<Patologia[]> {
-        // já é uma função async mockada
-        return mockFetchUserPatologias();
-    },
-
-    /** Mapeamento produto_id -> patologias que disparam alerta */
-    async getPatologiaItens(): Promise<PatologiaItem[]> {
-        await delay(150);
-        return mockPatologiaItens;
-    },
 
     // ===== RELACIONADOS / POPULARES =====================================
 
@@ -122,26 +102,6 @@ export const listaComprasService = {
         return data;
     },
 
-    /** Lista todas as listas salvas (no mock em memória) */
-    async listarListas(): Promise<ListaDeComprasSalva[]> {
-        await delay(200);
-        return listasStore;
 
-        // API real:
-        // const { data } = await listaComprasApi.get<ListaDeComprasSalva[]>('/listas');
-        // return data;
-    },
 
-    /** Busca uma lista específica pelo id */
-    async obterListaPorId(
-        id: number
-    ): Promise<ListaDeComprasSalva | null> {
-        await delay(200);
-        const lista = listasStore.find((l) => l.id === id);
-        return lista ?? null;
-
-        // API real:
-        // const { data } = await listaComprasApi.get<ListaDeComprasSalva>(`/listas/${id}`);
-        // return data;
-    },
 };

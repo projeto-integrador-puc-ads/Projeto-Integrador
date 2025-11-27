@@ -16,6 +16,7 @@ public class ListaResponseDTO {
     private String titulo;
     private Long userId;
     private String userNome;
+    private Long patologiaId;
     private Boolean template;
     private LocalDateTime createdAt;
 

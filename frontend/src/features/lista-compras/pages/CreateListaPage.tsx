@@ -37,6 +37,8 @@ import type {
     PatologiaItem,
 } from '../types';
 import { listaComprasService } from '../api/service/listaComprasService.ts';
+import {listaViewService} from "@/features/lista-compras/api/service/listaViewService.ts";
+import {patologiasService} from "@/features/lista-compras/api/service/patologiaService.ts";
 
 /** normalização simples */
 const normalize = (s: string) => s.trim().toLowerCase();
@@ -68,7 +70,6 @@ export default function CreateListaPage() {
     const [patologias, setPatologias] = useState<Patologia[]>([]);
     const [loadingPats, setLoadingPats] = useState(false);
 
-    // mapeamento patologia_itens
     const [patologiaItens, setPatologiaItens] = useState<PatologiaItem[]>([]);
 
     // snackbar de alerta por patologia
@@ -121,19 +122,19 @@ export default function CreateListaPage() {
     useEffect(() => {
         const loadInicial = async () => {
             try {
-                const produtos = await listaComprasService.getProdutos();
-                setCatalogo(produtos);
-
-                const tpls = await listaComprasService.getTemplates();
-                setTemplates(tpls);
 
                 setLoadingPats(true);
-                const pats = await listaComprasService.getPatologiasDoUsuario();
+                const pats = await patologiasService.getPatologiasDoUsuario(3);
                 setPatologias(pats);
                 setLoadingPats(false);
 
-                const patItems = await listaComprasService.getPatologiaItens();
-                setPatologiaItens(patItems);
+                const produtos = await listaComprasService.getProdutos();
+                setCatalogo(produtos);
+
+                const tpls = await listaViewService.listarTemplates(3);
+                setTemplates(tpls);
+
+
             } catch (e) {
                 showError('Erro ao carregar dados iniciais da lista de compras');
                 console.error('Erro ao carregar dados iniciais da lista de compras', e);
@@ -231,12 +232,12 @@ export default function CreateListaPage() {
         const titulo = tituloLista.trim();
 
         if (!titulo) {
-            alert('Informe um título para a lista.');
+            showError('Informe um título para a lista.');
             return;
         }
 
         if (listaItens.length === 0) {
-            alert('Adicione ao menos um item na lista.');
+            showError('Adicione ao menos um item na lista.');
             return;
         }
 
@@ -244,7 +245,7 @@ export default function CreateListaPage() {
         const itensValidos = listaItens.filter(li => li.produto.id > 0);
 
         if (itensValidos.length === 0) {
-            alert('Não há itens válidos para salvar (apenas personalizados locais).');
+            showError('Não há itens válidos para salvar (apenas personalizados locais).');
             return;
         }
 
@@ -258,7 +259,7 @@ export default function CreateListaPage() {
 
         try {
             setSaving(true);
-            const userId = 16;            // TODO: substituir 1 pelo userId real quando estiver integrado
+            const userId = 3;            // TODO: substituir 1 pelo userId real quando estiver integrado
 
             const listaCriada = await listaComprasService.criarLista(payload, userId);
             resetState()
@@ -302,19 +303,62 @@ export default function CreateListaPage() {
     };
 
     const copiarTemplate = (tpl: Template) => {
-        const novos = tpl.itens
-            .map(it => produtosPorId.get(it.produto_id))
-            .filter((p): p is Produto => !!p)
-            .map(p => ({ produto: p, qtd: tpl.itens.find(i => i.produto_id === p.id)?.qtd ?? 1 }));
+        if (!tpl.itens || tpl.itens.length === 0) {
+            showError('Este modelo não possui itens cadastrados.');
+            return;
+        }
 
         setListaItens(prev => {
-            const map = new Map<number, number>();
-            prev.forEach(li => map.set(li.produto.id, (map.get(li.produto.id) || 0) + li.qtd));
-            novos.forEach(li => map.set(li.produto.id, (map.get(li.produto.id) || 0) + li.qtd));
-            return Array.from(map.entries()).map(([id, qtd]) => ({
-                produto: produtosPorId.get(id)!,
-                qtd,
-            }));
+
+            const map = new Map<number, { produto: Produto; qtd: number }>();
+
+            prev.forEach(li => {
+                map.set(li.produto.id, { produto: li.produto, qtd: li.qtd });
+            });
+
+            // 2) Adiciona (ou soma) os itens do template
+            tpl.itens.forEach(it => {
+                const pApi = it.produto;
+
+                // Converte o produto do backend para o tipo Produto usado no front
+                const produto: Produto = {
+                    id: pApi.id,
+                    nome: pApi.nome,
+                    nome_normalizado:
+                        pApi.nomeNormalizado?.toLowerCase().trim()
+                        ?? pApi.nome.toLowerCase().trim(),
+                    ativo: pApi.ativo ?? true,
+                    is_personalizado: pApi.isPersonalizado ?? false,
+                };
+
+                const qtdTemplate = Number(it.quantidade ?? 1);
+                const existente = map.get(produto.id);
+
+                if (existente) {
+                    // Se já existe na lista, soma as quantidades
+                    map.set(produto.id, {
+                        produto: existente.produto,
+                        qtd: existente.qtd + qtdTemplate,
+                    });
+                } else {
+                    map.set(produto.id, { produto, qtd: qtdTemplate });
+                }
+            });
+
+            // 3) Atualiza também o catálogo pra garantir que todos produtos do template estão lá
+            setCatalogo(old => {
+                const ids = new Set(old.map(p => p.id));
+                const extras: Produto[] = [];
+                map.forEach(({ produto }) => {
+                    if (!ids.has(produto.id)) {
+                        extras.push(produto);
+                    }
+                });
+                return [...old, ...extras];
+            });
+
+            // 4) Retorna a nova lista de itens (ListaItemVM[])
+            return Array.from(map.values());
         });
     };
 
