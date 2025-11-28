@@ -1,0 +1,33 @@
+import { listaComprasApi } from '../http';
+import type { ProdutoSubstituivel, Produto } from '../../types';
+
+const baseUrl: String = '/produtos'
+
+export const produtoService = {
+    async listarSubstituiveis(produtoId: number, userId: number): Promise<ProdutoSubstituivel[]> {
+        const { data } = await listaComprasApi.get(
+            `${baseUrl}/${produtoId}/substituiveis`,
+            { params: { userId } }
+        );
+
+        // Se quiser já adaptar o ProdutoSuggestion para o seu tipo Produto:
+        return data.map((dto: any) => ({
+            produtoAlertadoId: dto.produtoAlertadoId,
+            produtoAlertadoNome: dto.produtoAlertadoNome,
+            patologia: {
+                id: dto.patologia.id,
+                nome: dto.patologia.nome,
+                descricao: dto.patologia.descricao,
+            },
+            produtoSugestao: {
+                id: dto.produtoSugestao.id,
+                nome: dto.produtoSugestao.nome,
+                nomeNormalizado: dto.produtoSugestao.nomeNormalizado,
+                preco: dto.produtoSugestao.preco,
+                ativo: dto.produtoSugestao.ativo,
+                isPersonalizado: dto.produtoSugestao.isPersonalizado,
+                tags: dto.produtoSugestao.tags,
+            },
+        }));
+    },
+};

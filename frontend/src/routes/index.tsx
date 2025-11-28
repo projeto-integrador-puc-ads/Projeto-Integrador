@@ -49,9 +49,9 @@ export function AppRoutes() {
 
         {/* Rotas gerais */}
         <Route path="usuarios" element={<UsuariosPage />} />
-        <Route path="lista-compras" element={<ListaComprasPage />} /> {/* ✅ nova rota */}
-        <Route path="lista-compras/nova" element={<CreateListaPage />} /> {/* ✅ nova rota */}
-        <Route path="lista-compras/listas" element={<ViewListaPage />} /> {/* ✅ nova rota */}
+        <Route path="lista-compras" element={<ListaComprasPage />} />
+        <Route path="lista-compras/nova" element={<CreateListaPage />} />
+        <Route path="lista-compras/listas" element={<ViewListaPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
 
         {/* Nova rota: Atendimento Médico */}

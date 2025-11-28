@@ -34,43 +34,36 @@ import type {
     ListaItemVM,
     Template,
     Patologia,
-    PatologiaItem,
+    PatologiaItem, ProdutoSubstituivel,
 } from '../types';
 import { listaComprasService } from '../api/service/listaComprasService.ts';
 import {listaViewService} from "@/features/lista-compras/api/service/listaViewService.ts";
 import {patologiasService} from "@/features/lista-compras/api/service/patologiaService.ts";
+import {produtoService} from "@/features/lista-compras/api/service/produtoService.ts";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-/** normalização simples */
 const normalize = (s: string) => s.trim().toLowerCase();
+const userIdTemp = 1 //TODO remover todas referencias de userIdTemp para a que irá retornar do usuário logado
 
-/** ======================= Página ======================= */
 export default function CreateListaPage() {
     const navigate = useNavigate();
 
-    // catálogo / lista
     const [catalogo, setCatalogo] = useState<Produto[]>([]);
     const [listaItens, setListaItens] = useState<ListaItemVM[]>([]);
 
-    // templates
     const [templates, setTemplates] = useState<Template[]>([]);
 
-    // autocomplete
     const [inputValue, setInputValue] = useState('');
     const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
     const [opcoesAutocomplete, setOpcoesAutocomplete] = useState<
         { label: string; value: number }[]
     >([]);
 
-    // snack recomendação
-    const [snackOpen, setSnackOpen] = useState(false);
-    const [snackMsg, setSnackMsg] = useState('');
-    const snackProdutoSugeridoRef = useRef<Produto | null>(null);
+    const [riscosPorProduto, setRiscosPorProduto] = useState<Record<number, ProdutoSubstituivel[]>>({});
 
-    // patologias do usuário (mock da integração)
+
     const [patologias, setPatologias] = useState<Patologia[]>([]);
     const [loadingPats, setLoadingPats] = useState(false);
-
-    const [patologiaItens, setPatologiaItens] = useState<PatologiaItem[]>([]);
 
     // snackbar de alerta por patologia
     const [warnOpen, setWarnOpen] = useState(false);
@@ -85,53 +78,53 @@ export default function CreateListaPage() {
 
     const [successOpen, setSuccessOpen] = useState(false);
 
-    // índices úteis
-    const produtosPorId = useMemo(() => {
-        const map = new Map<number, Produto>();
-        catalogo.forEach(p => map.set(p.id, p));
-        return map;
-    }, [catalogo]);
-
-    const itensIdsNaLista = useMemo(
-        () => new Set(listaItens.map(li => li.produto.id)),
-        [listaItens]
-    );
-
     const showError = (msg: string) => {
         setErrorMsg(msg);
         setErrorOpen(true);
     };
 
-    // índice produto_id -> [patologias que disparam]
-    const patPorProduto = useMemo(() => {
-        const byProd = new Map<number, { patologia: Patologia; nivel: 'baixa' | 'media' | 'alta' }[]>();
+    const templatesForDisplay = useMemo(() => {
+        // 🔹 mocks só pra teste visual de scroll
+        const mocks: Template[] = [
+            { id: -101, titulo: 'Lista - Festa de Aniversário' } as Template,
+            { id: -102, titulo: 'Lista - Churrasco de Fim de Semana' } as Template,
+            { id: -103, titulo: 'Lista - Almoço de Domingo' } as Template,
+            { id: -104, titulo: 'Lista - Semana Saudável' } as Template,
+            { id: -105, titulo: 'Lista - Café da Manhã Reforçado' } as Template,
+            { id: -106, titulo: 'Lista - Compras do Mês' } as Template,
+            { id: -107, titulo: 'Lista - Jantar Romântico' } as Template,
+            { id: -108, titulo: 'Lista - Lanche das Crianças' } as Template,
+        ];
 
-        for (const pi of patologiaItens) {
-            const pat = patologias.find(p => p.id === pi.patologia_id);
-            if (!pat) continue; // só consideramos patologias do usuário
-
-            const arr = byProd.get(pi.produto_id) || [];
-            arr.push({ patologia: pat, nivel: (pi.nivel as any) || 'media' });
-            byProd.set(pi.produto_id, arr);
+        // se vier vazio do backend, usa só mocks
+        if (templates.length === 0) {
+            return mocks;
         }
 
-        return byProd;
-    }, [patologias, patologiaItens]);
+        // se vier poucos, completa com alguns mocks para testar visual
+        if (templates.length < 8) {
+            const faltam = 8 - templates.length;
+            return [...templates, ...mocks.slice(0, faltam)];
+        }
 
-    // carregar dados iniciais "da API"
+        // se já tiver bastante template real, usa só os reais
+        return templates;
+    }, [templates]);
+
+    const carregouRef = useRef(false);
+
     useEffect(() => {
+        if (carregouRef.current) return;
+        carregouRef.current = true;
         const loadInicial = async () => {
             try {
 
                 setLoadingPats(true);
-                const pats = await patologiasService.getPatologiasDoUsuario(3);
+                const pats = await patologiasService.getPatologiasDoUsuario(userIdTemp);
                 setPatologias(pats);
                 setLoadingPats(false);
 
-                const produtos = await listaComprasService.getProdutos();
-                setCatalogo(produtos);
-
-                const tpls = await listaViewService.listarTemplates(3);
+                const tpls = await listaViewService.listarTemplates(userIdTemp);
                 setTemplates(tpls);
 
 
@@ -144,13 +137,11 @@ export default function CreateListaPage() {
         loadInicial();
     }, []);
 
-    // autocomplete batendo na “API” a partir de 3 letras (com debounce)
     useEffect(() => {
         if (inputValue.trim().length < 3) {
             setOpcoesAutocomplete([]);
             return;
         }
-
         let ativo = true;
         const handler = setTimeout(async () => {
             try {
@@ -201,31 +192,9 @@ export default function CreateListaPage() {
             return [...prev, { produto, qtd }];
         });
 
-        // alerta por patologia (não bloqueia)
-        const pats = patPorProduto.get(produto.id);
-        if (pats && pats.length) {
-            const nomes = pats.map(p => p.patologia.nome).join(', ');
-            setWarnMsg(`Atenção: "${produto.nome}" pode ser inadequado para: ${nomes}.`);
-            setWarnOpen(true);
-        }
-
-        // recomendação
-        simulateFetchRecomendacao(produto);
     };
 
-    const handleLimparLista = () => {
-        setListaItens([]);
-        setProdutoSelecionado(null);
-        setInputValue('');
-    };
 
-    const resetState = () => {
-        setTituloLista('');
-        setListaItens([]);
-        setProdutoSelecionado(null);
-        setInputValue('');
-        setOpcoesAutocomplete([]);
-    }
 
     const handleFinalizarLista = async () => {
         if (saving) return;
@@ -259,9 +228,8 @@ export default function CreateListaPage() {
 
         try {
             setSaving(true);
-            const userId = 3;            // TODO: substituir 1 pelo userId real quando estiver integrado
 
-            const listaCriada = await listaComprasService.criarLista(payload, userId);
+            const listaCriada = await listaComprasService.criarLista(payload, userIdTemp);
             resetState()
             setSuccessOpen(true);
 
@@ -272,27 +240,8 @@ export default function CreateListaPage() {
         }
     };
 
-    const simulateFetchRecomendacao = (base: Produto) => {
-        setTimeout(async () => {
-            try {
-                const candidatos = await listaComprasService.getRelacionadosOuPopulares(base.id);
 
-                const candidato = candidatos.find(
-                    p => !itensIdsNaLista.has(p.id) && p.id !== base.id
-                );
-
-                if (candidato) {
-                    snackProdutoSugeridoRef.current = candidato;
-                    setSnackMsg(`Recomendação: adicionar também "${candidato.nome}"?`);
-                    setSnackOpen(true);
-                }
-            } catch (e) {
-                console.error('Erro ao buscar recomendação', e);
-            }
-        }, 400);
-    };
-
-    const handleAdicionar = () => {
+    const handleAdicionar = async () => {
         const texto = (produtoSelecionado?.nome || inputValue).trim();
         if (!texto) return;
 
@@ -300,6 +249,56 @@ export default function CreateListaPage() {
         addProdutoNaLista(p, 1);
         setProdutoSelecionado(null);
         setInputValue('');
+
+        if (p.id > 0) {
+            try {
+                const substituiveis = await produtoService.listarSubstituiveis(p.id, userIdTemp);
+
+                if (substituiveis.length > 0) {
+                    // Guarda no estado de riscos
+                    setRiscosPorProduto(prev => ({
+                        ...prev,
+                        [p.id]: substituiveis,
+                    }));
+
+                    // Monta a mensagem global de alerta
+                    const nomesPats = Array.from(new Set(substituiveis.map(s => s.patologia.nome))).join(', ');
+                    setWarnMsg(
+                        `Atenção: "${p.nome}" pode não ser adequado para: ${nomesPats}. ` +
+                        `Veja as sugestões na lista.`
+                    );
+                    setWarnOpen(true);
+                }
+            } catch (e) {
+                console.error('Erro ao buscar substituíveis para produto', p, e);
+                // pode ou não mostrar erro pro usuário, fica a seu critério
+            }
+        }
+
+    };
+
+    const substituirProdutoNaLista = (produtoId: number, sugestao: Produto) => {
+        setListaItens(prev =>
+            prev.map(li =>
+                li.produto.id === produtoId
+                    ? { ...li, produto: sugestao }
+                    : li
+            )
+        );
+
+        setCatalogo(prev => {
+            const exists = prev.some(p => p.id === sugestao.id);
+            return exists ? prev : [sugestao, ...prev];
+        });
+
+        setRiscosPorProduto(prev => {
+            const clone = { ...prev };
+            delete clone[produtoId];
+            return clone;
+        });
+
+        // opcional: checar riscos do produto sugerido
+        // checarRiscos(sugestao);
     };
 
     const copiarTemplate = (tpl: Template) => {
@@ -307,7 +306,6 @@ export default function CreateListaPage() {
             showError('Este modelo não possui itens cadastrados.');
             return;
         }
-
         setListaItens(prev => {
 
             const map = new Map<number, { produto: Produto; qtd: number }>();
@@ -362,6 +360,20 @@ export default function CreateListaPage() {
         });
     };
 
+    const handleLimparLista = () => {
+        setListaItens([]);
+        setProdutoSelecionado(null);
+        setInputValue('');
+    };
+
+    const resetState = () => {
+        setTituloLista('');
+        setListaItens([]);
+        setProdutoSelecionado(null);
+        setInputValue('');
+        setOpcoesAutocomplete([]);
+    }
+
     const incQtd = (id: number) =>
         setListaItens(prev => prev.map(li => (li.produto.id === id ? { ...li, qtd: li.qtd + 1 } : li)));
 
@@ -376,10 +388,15 @@ export default function CreateListaPage() {
     return (
         <Box sx={{ maxWidth: 900, mx: 'auto' }}>
             {/* Header */}
-            <Stack direction="row" alignItems="center" sx={{ mb: 2 }}>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 2 }}
+            >
                 <Button
                     variant="outlined"
-                    size={'small'}
+                    size="small"
                     startIcon={<ArrowBackIcon />}
                     onClick={() => navigate(-1)}
                     sx={{ textTransform: 'none', height: 40 }}
@@ -388,12 +405,38 @@ export default function CreateListaPage() {
                 </Button>
             </Stack>
 
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Criar Nova Lista de Compras
-            </Typography>
-            <Typography color="text.secondary">
-                Monte sua lista adicionando itens ou use um modelo pronto.
-            </Typography>
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems="flex-start" // <-- garante alinhamento pelo topo
+                sx={{ mb: 2 }}
+            >
+                <Box sx={{ flex: 1 }}>
+                    <Typography variant="h4" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                        Criar Nova Lista de Compras
+                    </Typography>
+
+                    <Typography color="text.secondary" sx={{ mt: 1 }}>
+                        Monte sua lista adicionando itens ou use um modelo pronto.
+                    </Typography>
+                </Box>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate('/lista-compras/listas')}
+                    sx={{
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        borderRadius: 2,
+                        px: 3,
+                        height: 42,
+                        mt: { xs: 2, sm: 0 }, // em mobile desce, em desktop alinha pelo topo
+                    }}
+                >
+                    Minhas listas
+                </Button>
+            </Stack>
 
             <TextField
                 sx={{ mt: 3 }}
@@ -473,79 +516,118 @@ export default function CreateListaPage() {
                                 Clique para preencher a lista com um modelo pronto
                             </Typography>
                         </Stack>
+
                         <Stack
                             direction="row"
-                            alignItems="center"
+                            alignItems="flex-start"
                             justifyContent="space-between"
+                            spacing={2}
                         >
+
                             <Box
-                                sx={{
+                                sx={(theme) => ({
+                                    flex: 1,
+                                    maxWidth: '70%',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    height: 50,
-                                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                                    gap: 1.5,
-                                }}
+                                    flexDirection: 'row',
+                                    alignItems: 'center', // 🔥 nada de stretch aqui
+                                    overflowX: 'auto',
+                                    gap: 1.25,
+                                    py: 1.25,
+                                    px: 1.25,
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: theme.palette.divider,
+                                    backgroundColor: theme.palette.background.paper,
+                                    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.08)',
+                                    '&::-webkit-scrollbar': {
+                                        height: 6,
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        borderRadius: 999,
+                                        backgroundColor: 'rgba(0,0,0,0.20)',
+                                    },
+                                })}
                             >
                                 {templates.map((t) => (
                                     <Card
                                         key={t.id}
                                         elevation={0}
                                         sx={{
+                                            flex: '0 0 210px',   // 🔹 um pouco mais estreito e uniforme
+                                            maxWidth: 210,
                                             borderRadius: 2,
                                             border: '1px solid',
                                             borderColor: 'divider',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            backgroundColor: 'background.paper',
                                             transition:
                                                 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s',
                                             '&:hover': {
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: 3,
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: 2,
                                                 borderColor: 'primary.light',
                                             },
                                         }}
                                     >
-                                        <CardActionArea onClick={() => copiarTemplate(t)} sx={{ py: 1, px: 1.5 }}>
-                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                        <CardActionArea
+                                            onClick={() => copiarTemplate(t)}
+                                            sx={{
+                                                px: 1.25,
+                                                py: 0.75,              // 🔹 mais compacto
+                                            }}
+                                        >
+                                            <Stack direction="row" spacing={1.25} alignItems="center">
                                                 <Box
                                                     sx={{
-                                                        width: 30,
-                                                        height: 30,
+                                                        width: 26,
+                                                        height: 26,
                                                         borderRadius: '50%',
                                                         bgcolor: 'primary.light',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
+                                                        flexShrink: 0,        // 🔥 nunca deforma
                                                     }}
                                                 >
-                                                    <ContentCopyIcon sx={{ color: 'white', fontSize: '1rem' }} />
+                                                    <ContentCopyIcon
+                                                        sx={{ color: 'white', fontSize: 16 }}
+                                                    />
                                                 </Box>
-                                                <Box>
-                                                    <Typography
-                                                        fontWeight={600}
-                                                        variant="body2"
-                                                        sx={{ fontSize: '0.9rem' }}
-                                                    >
-                                                        {t.titulo}
-                                                    </Typography>
-                                                </Box>
+
+                                                <Typography
+                                                    fontWeight={600}
+                                                    variant="body2"
+                                                    sx={{
+                                                        fontSize: '0.8rem',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                    }}
+                                                >
+                                                    {t.titulo}
+                                                </Typography>
                                             </Stack>
                                         </CardActionArea>
                                     </Card>
                                 ))}
                             </Box>
 
+                            {/* Botão limpar lista */}
                             <Button
                                 variant="outlined"
                                 color="error"
                                 sx={{
                                     height: 40,
+                                    whiteSpace: 'nowrap',
+                                    flexShrink: 0,
                                 }}
                                 onClick={handleLimparLista}
                                 disabled={saving}
                             >
                                 Limpar lista
                             </Button>
-
                         </Stack>
                     </Box>
 
@@ -558,11 +640,6 @@ export default function CreateListaPage() {
                             <Autocomplete
                                 fullWidth
                                 options={opcoesAutocomplete}
-                                value={
-                                    produtoSelecionado
-                                        ? { label: produtoSelecionado.nome, value: produtoSelecionado.id }
-                                        : null
-                                }
                                 inputValue={inputValue}
                                 onInputChange={(_, v) => setInputValue(v)}
                                 onChange={(_, opt) => {
@@ -585,7 +662,6 @@ export default function CreateListaPage() {
                                     }
 
                                     setProdutoSelecionado(p);
-                                    setInputValue('');
                                 }}
                                 freeSolo
                                 renderInput={(params) => (
@@ -637,8 +713,9 @@ export default function CreateListaPage() {
                             )}
 
                             {listaItens.map((li, idx) => {
-                                const riscos = patPorProduto.get(li.produto.id) || [];
+                                const riscos = riscosPorProduto[li.produto.id] ?? [];
                                 const hasRisk = riscos.length > 0;
+                                const primeiraSugestao = riscos[0]?.produtoSugestao;
 
                                 return (
                                     <ListItem
@@ -658,6 +735,31 @@ export default function CreateListaPage() {
                                         })}
                                         secondaryAction={
                                             <Stack direction="row" spacing={0.5} alignItems="center">
+                                                {/* 🔸 NOVO: botão de trocar pelo sugerido, se tiver risco */}
+                                                {hasRisk && primeiraSugestao && (
+                                                    <Tooltip title={`Trocar por ${primeiraSugestao.nome}`}>
+                                                        <IconButton
+                                                            size="small"
+                                                            color="warning"
+                                                            onClick={() =>
+                                                                substituirProdutoNaLista(li.produto.id, {
+                                                                    id: primeiraSugestao.id,
+                                                                    nome: primeiraSugestao.nome,
+                                                                    nome_normalizado:
+                                                                        primeiraSugestao.nomeNormalizado?.toLowerCase().trim() ??
+                                                                        primeiraSugestao.nome.toLowerCase().trim(),
+                                                                    ativo: primeiraSugestao.ativo ?? true,
+                                                                    is_personalizado:
+                                                                        primeiraSugestao.isPersonalizado ?? false,
+                                                                })
+                                                            }
+                                                        >
+                                                            <RecommendIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+
+                                                {/* 🔹 TUDO ABAIXO JÁ EXISTIA IGUALZINHO */}
                                                 <IconButton
                                                     size="small"
                                                     onClick={() => decQtd(li.produto.id)}
@@ -699,8 +801,7 @@ export default function CreateListaPage() {
                                                             </Typography>
                                                             {riscos.map((r) => (
                                                                 <Box key={r.patologia.id}>
-                                                                    • {r.patologia.nome}{' '}
-                                                                    {r.nivel ? `(${r.nivel})` : ''}
+                                                                    • {r.patologia.nome} — sugerido: <b>{r.produtoSugestao.nome}</b>
                                                                 </Box>
                                                             ))}
                                                         </Box>
@@ -750,13 +851,19 @@ export default function CreateListaPage() {
             </Paper>
 
             <Stack direction="row" justifyContent={'end'} spacing={1} sx={{ mt: 3 }}>
-                {/*<Button variant="outlined" onClick={() => navigate(-1)}>*/}
-                {/*    Salvar como rascunho*/}
-                {/*</Button>*/}
+                <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => navigate('/lista-compras')}
+                    disabled={saving}
+                    sx={{ textTransform: 'none' }}
+                >
+                    Cancelar
+                </Button>
                 <Button
                     variant="contained"
                     onClick={handleFinalizarLista}
-                    startIcon={<RecommendIcon />}
+                    startIcon={<CheckCircleIcon />}
                     disabled={saving || listaItens.length === 0}
                 >
                     {saving ? 'Salvando...' : 'Finalizar lista'}

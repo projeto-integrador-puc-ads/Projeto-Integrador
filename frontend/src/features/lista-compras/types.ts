@@ -33,3 +33,26 @@ export type PatologiaItem = {
     produto_id: number;
     nivel?: NivelRisco;
 };
+
+export interface PatologiaDTO {
+    id: number;
+    nome: string;
+    descricao?: string;
+}
+
+export interface ProdutoSugestaoDTO {
+    id: number;
+    nome: string;
+    nomeNormalizado?: string;
+    preco?: number;
+    ativo?: boolean;
+    isPersonalizado?: boolean;
+    tags?: string;
+}
+
+export interface ProdutoSubstituivel {
+    produtoAlertadoId: number;
+    produtoAlertadoNome: string;
+    patologia: PatologiaDTO;
+    produtoSugestao: ProdutoSugestaoDTO;
+}

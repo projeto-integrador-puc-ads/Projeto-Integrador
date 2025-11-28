@@ -12,11 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProdutoSubstituivelResponseDTO {
 
-    private Long produtoAlertadoId;       // Produto que gerou o alerta
+    private Long produtoAlertadoId;
     private String produtoAlertadoNome;
-    private PatologiaResponseDTO patologia; // Patologia que causou o alerta
-    private ProdutoResponseDTO produtoSugestao; // Produto substituto sugerido
+    private PatologiaResponseDTO patologia;
+    private ProdutoResponseDTO produtoSugestao;
 
-    public ProdutoSubstituivelResponseDTO(Produto produtoSugestao, Patologia patologia, Long id) {
-    }
 }

@@ -22,18 +22,8 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 let listasStore: ListaDeComprasSalva[] = [];
 
 export const listaComprasService = {
-    // ===== PRODUTOS ======================================================
 
-    /** Busca catálogo completo de produtos (simulado) */
-    async getProdutos(): Promise<Produto[]> {
-        await delay(200);
 
-        // Quando tiver API real:
-        // const { data } = await listaComprasApi.get<Produto[]>('/produtos');
-        // return data;
-
-        return mockProdutos;
-    },
 
     /**
      * Autocomplete: busca produtos pelo nome.
@@ -60,35 +50,6 @@ export const listaComprasService = {
     },
 
 
-
-
-    // ===== RELACIONADOS / POPULARES =====================================
-
-    /**
-     * Retorna produtos relacionados ao produto base ou,
-     * caso não haja relacionados, uma lista de populares.
-     */
-    async getRelacionadosOuPopulares(
-        baseProdutoId: number
-    ): Promise<Produto[]> {
-        await delay(200);
-
-        const candidatosIds =
-            mockRelacionados[baseProdutoId] &&
-            mockRelacionados[baseProdutoId].length
-                ? mockRelacionados[baseProdutoId]
-                : mockPopulares;
-
-        const produtos = candidatosIds
-            .map((id) => mockProdutos.find((p) => p.id === id))
-            .filter(
-                (p): p is Produto =>
-                    !!p && p.id !== baseProdutoId
-            );
-
-        return produtos;
-    },
-
     // ===== LISTAS DE COMPRAS (CRUD SIMULADO) ============================
 
     async criarLista(payload: ListaDeComprasDTO, userId: number): Promise<ListaDeComprasSalva> {
@@ -101,7 +62,6 @@ export const listaComprasService = {
 
         return data;
     },
-
 
 
 };
