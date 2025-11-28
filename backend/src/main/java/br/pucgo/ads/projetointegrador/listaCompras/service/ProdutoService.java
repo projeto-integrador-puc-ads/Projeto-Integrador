@@ -78,10 +78,7 @@ public class ProdutoService {
 
     @Transactional(readOnly = true)
     public List<ProdutoResponseDTO> buscarPorNome(String nome) {
-        String nomeNormalizado = normalizarNome(nome);
-        return produtoRepository.findTop5ByNomeContainingIgnoreCaseAndAtivoTrue(nomeNormalizado).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        return produtoRepository.findByNomeNormalizado(nome.toLowerCase().trim()).stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
