@@ -26,6 +26,8 @@ export type ListaDeComprasDTO = {
         produtoId: number;   // 👈 camelCase, igual ao DTO do back
         qtd: number;
     }[];
+    isTemplate?: boolean;
+    patologiaId?: number;
 };
 
 export type ListaDeComprasSalva = ListaDeComprasDTO & {

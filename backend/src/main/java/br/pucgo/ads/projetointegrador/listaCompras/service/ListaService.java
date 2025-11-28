@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.pucgo.ads.projetointegrador.listaCompras.entity.Patologia;
+import br.pucgo.ads.projetointegrador.listaCompras.repository.PatologiaRepository;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class ListaService {
     private final ItemListaService itemListaService;
     private final ProdutoRepository produtoRepository;
     private final UsuarioPatologiaRepository usuarioPatologiaRepository;
+    private final PatologiaRepository patologiaRepository;
 
     /**
      * Cria uma lista já com seus itens (usada pelo front da lista de compras).
@@ -52,7 +55,13 @@ public class ListaService {
         Lista lista = new Lista();
         lista.setTitulo(dto.getTitulo());
         lista.setUsuario(user);
-        lista.setTemplate(false);
+        lista.setTemplate(Boolean.TRUE.equals(dto.getIsTemplate()));
+
+        if (dto.getPatologiaId() != null) {
+            Patologia patologia = patologiaRepository.findById(dto.getPatologiaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Patologia não encontrada com ID: " + dto.getPatologiaId()));
+            lista.setPatologia(patologia);
+        }
 
         Lista listaSalva = listaRepository.save(lista);
 

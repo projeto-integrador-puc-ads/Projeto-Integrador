@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/lista-compras/patologia-itens") // O caminho base da URL
 @RequiredArgsConstructor
@@ -19,5 +21,10 @@ public class PatologiaItemController {
         PatologiaItemResponseDTO novoVinculo = service.vincular(dto);
 
         return ResponseEntity.ok(novoVinculo);
+    }
+
+    @GetMapping("/patologia/{patologiaId}")
+    public ResponseEntity<List<PatologiaItemResponseDTO>> listarPorPatologia(@PathVariable Long patologiaId) {
+        return ResponseEntity.ok(service.listarPorPatologia(patologiaId));
     }
 }

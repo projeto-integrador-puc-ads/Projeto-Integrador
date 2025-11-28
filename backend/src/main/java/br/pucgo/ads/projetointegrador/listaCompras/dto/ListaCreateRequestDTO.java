@@ -21,4 +21,6 @@ public class ListaCreateRequestDTO {
     @NotNull(message = "A lista de itens é obrigatória")
     @Size(min = 1, message = "A lista deve possuir ao menos um item")
     private List<ListaItemCreateDTO> itens;
+    private Boolean isTemplate;
+    private Long patologiaId;
 }
