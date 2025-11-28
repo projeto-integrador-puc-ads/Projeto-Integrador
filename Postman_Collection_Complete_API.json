@@ -1,0 +1,668 @@
+{
+    "info": {
+        "_postman_id": "complete-api-collection-2025",
+        "name": "Projeto Integrador - Complete API Collection",
+        "description": "Collection completa com todos os endpoints da API - Atualizada com DTOs e correções de segurança",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "🔐 Authentication",
+            "item": [
+                {
+                    "name": "Signup - Registrar Usuário",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    console.log('✅ Usuário cadastrado com sucesso!');",
+                                    "} else {",
+                                    "    console.log('❌ Erro:', pm.response.text());",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"João Silva\",\n    \"username\": \"joao.silva\",\n    \"email\": \"joao.silva@email.com\",\n    \"password\": \"senha123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/signup",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "signup"
+                            ]
+                        },
+                        "description": "🔓 Público - Registrar novo usuário"
+                    }
+                },
+                {
+                    "name": "Login - Obter Token JWT",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.environment.set('jwt_token', jsonData.accessToken);",
+                                    "    console.log('✅ Login realizado!');",
+                                    "    console.log('🔑 Token:', jsonData.accessToken);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"usernameOrEmail\": \"admin\",\n    \"password\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "🔓 Público - Fazer login e receber JWT"
+                    }
+                }
+            ],
+            "description": "Endpoints públicos de autenticação"
+        },
+        {
+            "name": "👥 Users",
+            "item": [
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/users/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "1"
+                            ]
+                        },
+                        "description": "🔒 Requer autenticação\n\n**Retorna:** UserResponseDto com role aninhada"
+                    }
+                },
+                {
+                    "name": "Get User by Email",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/users/email/admin@system.com",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "email",
+                                "admin@system.com"
+                            ]
+                        },
+                        "description": "🔒 Requer autenticação"
+                    }
+                },
+                {
+                    "name": "Get All Users (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/users",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN\n\n**Retorna:** Lista de UserResponseDto"
+                    }
+                },
+                {
+                    "name": "Update User (Self or ADMIN)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"João Silva Atualizado\",\n    \"email\": \"joao.novo@email.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/users/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "1"
+                            ]
+                        },
+                        "description": "🔒 Requer: ADMIN OU editar a si mesmo\n\n⚠️ **Segurança:** Usuário só pode editar seu próprio perfil, exceto ADMIN"
+                    }
+                },
+                {
+                    "name": "Delete User (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{base_url}}/api/users/2",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "2"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                }
+            ],
+            "description": "Endpoints de gerenciamento de usuários"
+        },
+        {
+            "name": "🎭 Roles",
+            "item": [
+                {
+                    "name": "Get All Roles (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/roles",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "roles"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN\n\n**Retorna:** Lista de RoleResponseDto com permissions"
+                    }
+                },
+                {
+                    "name": "Get Role by ID (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/roles/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "roles",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN\n\n**Retorna:** RoleResponseDto com lista de permissions"
+                    }
+                },
+                {
+                    "name": "Create Role (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"code\": \"MANAGER\",\n    \"name\": \"Gerente\",\n    \"scope\": \"DEPARTMENT\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/roles",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "roles"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Update Role (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"code\": \"MANAGER\",\n    \"name\": \"Gerente Sênior\",\n    \"scope\": \"GLOBAL\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/roles/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "roles",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Delete Role (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{base_url}}/api/roles/2",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "roles",
+                                "2"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                }
+            ],
+            "description": "Endpoints de gerenciamento de roles (ADMIN apenas)"
+        },
+        {
+            "name": "🔑 Permissions",
+            "item": [
+                {
+                    "name": "Get All Permissions (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN\n\n⚠️ **Atualizado:** Agora requer ADMIN (antes era qualquer autenticado)"
+                    }
+                },
+                {
+                    "name": "Get Permission by ID (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Get Permission by Name (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/name/CREATE_USER",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "name",
+                                "CREATE_USER"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Get Permissions by Module (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/module/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "module",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Create Permission (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"CREATE_USER\",\n    \"moduleId\": null\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Update Permission (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"UPDATE_USER\",\n    \"moduleId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Delete Permission (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "1"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                },
+                {
+                    "name": "Check Permission Exists (ADMIN only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{jwt_token}}"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/permissions/exists/CREATE_USER",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "permissions",
+                                "exists",
+                                "CREATE_USER"
+                            ]
+                        },
+                        "description": "🔐 Requer ROLE_ADMIN"
+                    }
+                }
+            ],
+            "description": "Endpoints de gerenciamento de permissões (ADMIN apenas)"
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "jwt_token",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}

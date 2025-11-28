@@ -1,7 +1,7 @@
 package br.pucgo.ads.projetointegrador.plataforma.controller;
 
 import br.pucgo.ads.projetointegrador.plataforma.dto.RoleDto;
-import br.pucgo.ads.projetointegrador.plataforma.entity.Role;
+import br.pucgo.ads.projetointegrador.plataforma.dto.RoleResponseDto;
 import br.pucgo.ads.projetointegrador.plataforma.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,26 +20,26 @@ public class RoleController {
 
 	@GetMapping
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<Role>> getAllRoles() {
+	public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
 		return ResponseEntity.ok(roleService.getAllRoles());
 	}
 
 	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
+	public ResponseEntity<RoleResponseDto> getRoleById(@PathVariable Long id) {
 		return ResponseEntity.ok(roleService.getRoleById(id));
 	}
 
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<Role> createRole(@RequestBody RoleDto roleDto) {
-		Role created = roleService.createRole(roleDto);
+	public ResponseEntity<RoleResponseDto> createRole(@RequestBody RoleDto roleDto) {
+		RoleResponseDto created = roleService.createRole(roleDto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(created);
 	}
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<Role> updateRole(@PathVariable Long id, @RequestBody RoleDto roleDto) {
+	public ResponseEntity<RoleResponseDto> updateRole(@PathVariable Long id, @RequestBody RoleDto roleDto) {
 		return ResponseEntity.ok(roleService.updateRole(id, roleDto));
 	}
 
