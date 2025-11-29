@@ -1,17 +1,16 @@
-package com.example.carekeeper.service.detection;
+package br.pucgo.ads.projetointegrador.carekeeper.service.detection;
 
-import com.example.carekeeper.dto.SensorDTO;
-import com.example.carekeeper.enums.AccidentType;
-import com.example.carekeeper.enums.EmailTemplate;
-import com.example.carekeeper.model.AccidentRecordEntity;
-import com.example.carekeeper.model.ContactEmailEntity;
-import com.example.carekeeper.model.UserEntity;
-import com.example.carekeeper.repository.AccidentRecordRepository;
-import com.example.carekeeper.repository.UserRepository;
-import com.example.carekeeper.service.detection.AccidentDetection;
-import com.example.carekeeper.service.ContactEmailService;
-import com.example.carekeeper.service.SendEmailService;
-import com.example.carekeeper.util.EnvironmentUtil;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.AccidentRecordEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ContactEmailEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.EmailTemplate;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
+import br.pucgo.ads.projetointegrador.carekeeper.repository.AccidentRecordRepository;
+import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
+import br.pucgo.ads.projetointegrador.carekeeper.service.ContactEmailService;
+import br.pucgo.ads.projetointegrador.carekeeper.service.SendEmailService;
+import br.pucgo.ads.projetointegrador.carekeeper.utils.EnvironmentUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -22,7 +21,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.UUID;
 
 @Service
 @Scope("prototype")
@@ -39,7 +37,7 @@ public class SensorService {
     private SensorDTO lastReading;
     private boolean hasDetectedAccidents;
 
-    @Value("${STATIC_MAP_API_KEY}")
+    @Value("${app.static-map-api-key}")
     private String staticMapApiKey;
 
     private static final Logger logger = Logger.getLogger(SensorService.class.getName());
@@ -65,7 +63,7 @@ public class SensorService {
     /**
      * Processa uma leitura do sensor e envia e-mails de alerta se acidentes forem detectados.
      */
-    public boolean processReading(UUID userId, SensorDTO currentReading, boolean isAlertActive) {
+    public boolean processReading(Long userId, SensorDTO currentReading, boolean isAlertActive) {
         if (isAlertActive || hasDetectedAccidents) {
             return true;
         }
@@ -77,8 +75,9 @@ public class SensorService {
         if (hasDetectedAccidents) {
             try {
                 // 🔹 Busca o nome do usuário
+                @SuppressWarnings("null")
                 String userName = userRepository.findById(userId)
-                        .map(UserEntity::getName)
+                        .map(User::getName)
                         .orElse("Usuário");
 
                 // Monta HTML dos alertas detectados

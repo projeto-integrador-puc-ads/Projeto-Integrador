@@ -1,22 +1,21 @@
-package com.example.carekeeper.controller;
+package br.pucgo.ads.projetointegrador.carekeeper.controller;
 
-import com.example.carekeeper.pojo.UserConfig;
-import com.example.carekeeper.service.ConfigurationService;
+import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.config.ConfigurationService;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.config.UserConfigurationCache;
+
 import org.springframework.web.bind.annotation.*;
-import com.example.carekeeper.config.detection.UserConfigService;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/usuarios")
 public class UserConfigurationController {
 
     private final ConfigurationService configurationService;
-    private final UserConfigService userConfigService;
+    private final UserConfigurationCache userConfigurationCache;
 
-    public UserConfigurationController(ConfigurationService configurationService, UserConfigService userConfigService) {
+    public UserConfigurationController(ConfigurationService configurationService, UserConfigurationCache userConfigurationCache) {
         this.configurationService = configurationService;
-        this.userConfigService = userConfigService;
+        this.userConfigurationCache = userConfigurationCache;
     }
 
     /**
@@ -24,7 +23,7 @@ public class UserConfigurationController {
      * Exemplo: GET /api/usuarios/{userId}/sensor-config
      */
     @GetMapping("/{userId}/sensor-config")
-    public UserConfig getSensorConfig(@PathVariable UUID userId) {
+    public UserConfig getSensorConfig(@PathVariable Long userId) {
         return configurationService.getUserConfig(userId);
     }
 
@@ -33,9 +32,9 @@ public class UserConfigurationController {
      * Exemplo: PUT /api/usuarios/{userId}/sensor-config
      */
     @PutMapping("/{userId}/sensor-config")
-    public UserConfig updateSensorConfig(@PathVariable UUID userId, @RequestBody UserConfig config) {
+    public UserConfig updateSensorConfig(@PathVariable Long userId, @RequestBody UserConfig config) {
         UserConfig userConfig = configurationService.updateUserConfig(userId, config);
-        this.userConfigService.refreshConfig(userId); // Atualiza o cache
+        this.userConfigurationCache.refreshConfig(userId);
         return userConfig;
     }
 }

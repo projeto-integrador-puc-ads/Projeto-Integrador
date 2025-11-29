@@ -1,7 +1,7 @@
-package com.example.carekeeper.interfaces;
+package br.pucgo.ads.projetointegrador.carekeeper.interfaces;
 
-import com.example.carekeeper.enums.AccidentType;
-import com.example.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
 
 public interface AccidentDetector {
     /**

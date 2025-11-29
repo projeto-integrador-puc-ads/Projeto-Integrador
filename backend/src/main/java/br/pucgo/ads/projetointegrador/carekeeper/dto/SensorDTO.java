@@ -1,4 +1,4 @@
-package com.example.carekeeper.dto;
+package br.pucgo.ads.projetointegrador.carekeeper.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

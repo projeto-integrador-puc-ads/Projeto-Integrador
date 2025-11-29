@@ -1,9 +1,9 @@
-package com.example.carekeeper.service;
+package br.pucgo.ads.projetointegrador.carekeeper.service;
 
-import com.example.carekeeper.dto.AccidentLocationDTO;
-import com.example.carekeeper.dto.AccidentTypeCountDTO;
-import com.example.carekeeper.model.AccidentRecordEntity;
-import com.example.carekeeper.repository.AccidentRecordRepository;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.AccidentLocationDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.AccidentTypeCountDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.AccidentRecordEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.repository.AccidentRecordRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -31,29 +31,28 @@ public class AccidentRecordService {
         return accidentRecordRepository.findAll();
     }
 
-    public List<AccidentRecordEntity> findByUserId(UUID userId) {
+    public List<AccidentRecordEntity> findByUserId(Long userId) {
         return accidentRecordRepository.findByUserId(userId);
     }
 
+    @SuppressWarnings("null")
     public AccidentRecordEntity save(AccidentRecordEntity record) {
         return accidentRecordRepository.save(record);
     }
 
+    @SuppressWarnings("null")
     public void deleteById(Long id) {
         accidentRecordRepository.deleteById(id);
     }
 
-    // -------------------
-    // Estatísticas (com ou sem filtro de usuário)
-    // -------------------
-
-    public Long getTotalRecords(UUID userId) {
+    
+    public Long getTotalRecords(Long userId) {
         if (userId != null)
             return accidentRecordRepository.countByUserId(userId);
         return accidentRecordRepository.count();
     }
 
-    public Long getAccidentsToday(UUID userId) {
+    public Long getAccidentsToday(Long userId) {
         LocalDate today = LocalDate.now();
         long startOfDay = today.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
         long endOfDay = today.plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC).toEpochMilli();
@@ -63,7 +62,7 @@ public class AccidentRecordService {
         return accidentRecordRepository.countByDetectedAtBetween(startOfDay, endOfDay);
     }
 
-    public List<AccidentLocationDTO> getAcidentesLocalizacao(UUID userId) {
+    public List<AccidentLocationDTO> getAcidentesLocalizacao(Long userId) {
         List<AccidentRecordEntity> records = userId != null
                 ? accidentRecordRepository.findByUserId(userId)
                 : accidentRecordRepository.findAll();
@@ -82,7 +81,7 @@ public class AccidentRecordService {
                 .collect(Collectors.toList());
     }
 
-    public int[] getAcidentesPorHorario(UUID userId) {
+    public int[] getAcidentesPorHorario(Long userId) {
         List<AccidentRecordEntity> records = userId != null
                 ? accidentRecordRepository.findByUserId(userId)
                 : accidentRecordRepository.findAll();
@@ -95,7 +94,7 @@ public class AccidentRecordService {
         return intervals;
     }
 
-    public List<AccidentTypeCountDTO> getAcidentesPorTipo(UUID userId) {
+    public List<AccidentTypeCountDTO> getAcidentesPorTipo(Long userId) {
         List<AccidentRecordEntity> records = userId != null
                 ? accidentRecordRepository.findByUserId(userId)
                 : accidentRecordRepository.findAll();
@@ -110,7 +109,7 @@ public class AccidentRecordService {
                 .collect(Collectors.toList());
     }
 
-    public int[][] getHeatmapData(UUID userId) {
+    public int[][] getHeatmapData(Long userId) {
         List<AccidentRecordEntity> records = userId != null
                 ? accidentRecordRepository.findByUserId(userId)
                 : accidentRecordRepository.findAll();

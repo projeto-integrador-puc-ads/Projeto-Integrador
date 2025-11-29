@@ -1,13 +1,13 @@
-package com.example.carekeeper.repository;
+package br.pucgo.ads.projetointegrador.carekeeper.repository;
 
-import com.example.carekeeper.model.ConfigurationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ConfigurationEntity;
+
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface ConfigurationRepository extends JpaRepository<ConfigurationEntity, Long> {
-    Optional<ConfigurationEntity> findByUserId(UUID userId);
+    Optional<ConfigurationEntity> findByUserId(Long userId);
 }

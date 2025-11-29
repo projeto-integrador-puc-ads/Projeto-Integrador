@@ -1,4 +1,4 @@
-package com.example.carekeeper.model;
+package br.pucgo.ads.projetointegrador.carekeeper.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,8 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
+/*  
+    * Representa a configuração personalizada de um usuário para o sistema CareKeeper.
+*/
 @Entity
 @Table(name = "user_configuration")
 @Data
@@ -24,12 +25,12 @@ public class ConfigurationEntity {
     private Long id;
 
     @Column(name = "user_id", nullable = false, unique = true, columnDefinition = "VARCHAR(36)")
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "config_json", columnDefinition = "TEXT")
     private String configJson;
 
-    public ConfigurationEntity(UUID userId, String configJson) {
+    public ConfigurationEntity(Long userId, String configJson) {
         this.userId = userId;
         this.configJson = configJson;
     }

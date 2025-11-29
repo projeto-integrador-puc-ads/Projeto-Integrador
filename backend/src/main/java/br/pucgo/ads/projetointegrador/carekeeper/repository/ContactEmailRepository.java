@@ -1,10 +1,11 @@
-package com.example.carekeeper.repository;
+package br.pucgo.ads.projetointegrador.carekeeper.repository;
 
-import com.example.carekeeper.model.ContactEmailEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
-import java.util.UUID;
 
-public interface ContactEmailRepository extends JpaRepository<ContactEmailEntity, UUID> {
-    List<ContactEmailEntity> findByOwnerId(UUID ownerId);
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ContactEmailEntity;
+
+import java.util.List;
+
+public interface ContactEmailRepository extends JpaRepository<ContactEmailEntity, Long> {
+    List<ContactEmailEntity> findByOwnerId(Long ownerId);
 }

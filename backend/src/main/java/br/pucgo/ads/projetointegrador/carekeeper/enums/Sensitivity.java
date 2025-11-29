@@ -1,4 +1,4 @@
-package com.example.carekeeper.enums;
+package br.pucgo.ads.projetointegrador.carekeeper.enums;
 
 /**
  * Níveis de sensibilidade expostos aos usuários. Cada nível é mapeado para um multiplicador

@@ -1,32 +1,31 @@
-package com.example.carekeeper.service.detection;
+package br.pucgo.ads.projetointegrador.carekeeper.service.detection;
 
-import com.example.carekeeper.dto.SensorDTO;
-import com.example.carekeeper.enums.AccidentType;
-import com.example.carekeeper.interfaces.AccidentDetector;
-import com.example.carekeeper.service.detection.detector.FallDetector;
-import com.example.carekeeper.service.detection.detector.GeofenceDetector;
-import com.example.carekeeper.service.detection.detector.ProlongedImmobilityDetector;
-import com.example.carekeeper.pojo.UserConfig;
-import com.example.carekeeper.config.detection.UserConfigService;
-import com.example.carekeeper.util.EnvironmentUtil;
+import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.interfaces.AccidentDetector;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.config.UserConfigurationCache;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.detector.FallDetector;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.detector.GeofenceDetector;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.detector.ProlongedImmobilityDetector;
+import br.pucgo.ads.projetointegrador.carekeeper.utils.EnvironmentUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Slf4j
 public class AccidentDetection {
 
     private final List<AccidentDetector> detectors = new ArrayList<>();
-    private final UserConfigService userConfigService;
+    private final UserConfigurationCache userConfigurationCache;
 
-    public AccidentDetection(EnvironmentUtil envUtil, UserConfigService userConfigService) {
-        this.userConfigService = userConfigService;
+    public AccidentDetection(EnvironmentUtil envUtil, UserConfigurationCache userConfigurationCache) {
+        this.userConfigurationCache = userConfigurationCache;
 
-        UserConfig defaults = userConfigService.getDefaultConfig();
+        UserConfig defaults = userConfigurationCache.getDefaultConfig();
         detectors.add(new FallDetector(defaults.getFall(), envUtil));
         detectors.add(new GeofenceDetector(defaults.getGeofence(), envUtil));
 
@@ -37,10 +36,10 @@ public class AccidentDetection {
         }
     }
 
-    public List<AccidentType> check(UUID userId, SensorDTO current, SensorDTO previous, EnvironmentUtil envUtil) {
+    public List<AccidentType> check(Long userId, SensorDTO current, SensorDTO previous, EnvironmentUtil envUtil) {
         List<AccidentType> detectedAccidents = new ArrayList<>();
 
-        UserConfig cfg = userConfigService.getConfigForUser(userId);
+        UserConfig cfg = userConfigurationCache.getConfigForUser(userId);
 
         if (envUtil.isDev()) {
             log.debug("Configurações do usuário userId={}", userId);

@@ -1,4 +1,4 @@
-package com.example.carekeeper.enums;
+package br.pucgo.ads.projetointegrador.carekeeper.enums;
 
 public enum EmailTemplate {
     PANIC_ALERT("templates/panic_alert_template.html"),

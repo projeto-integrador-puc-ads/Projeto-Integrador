@@ -1,13 +1,12 @@
-package com.example.carekeeper.controller;
+package br.pucgo.ads.projetointegrador.carekeeper.controller;
 
-import com.example.carekeeper.model.ContactEmailEntity;
-import com.example.carekeeper.service.ContactEmailService;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ContactEmailEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.service.ContactEmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Controller para gerenciar os e-mails de contato dos usuários.
@@ -26,7 +25,7 @@ public class ContactEmailController {
      * Retorna todos os contatos de um usuário.
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ContactEmailEntity>> getContactsByUser(@PathVariable UUID userId) {
+    public ResponseEntity<List<ContactEmailEntity>> getContactsByUser(@PathVariable Long userId) {
         List<ContactEmailEntity> contacts = contactEmailService.getContactsByUserId(userId);
         return ResponseEntity.ok(contacts);
     }
@@ -35,7 +34,7 @@ public class ContactEmailController {
      * Retorna um contato específico pelo ID.
      */
     @GetMapping("/{contactId}")
-    public ResponseEntity<ContactEmailEntity> getContactById(@PathVariable UUID contactId) {
+    public ResponseEntity<ContactEmailEntity> getContactById(@PathVariable Long contactId) {
         ContactEmailEntity contact = contactEmailService.getById(contactId);
         return ResponseEntity.ok(contact);
     }
@@ -45,7 +44,7 @@ public class ContactEmailController {
      */
     @PostMapping("/user/{userId}")
     public ResponseEntity<ContactEmailEntity> createContact(
-            @PathVariable UUID userId,
+            @PathVariable Long userId,
             @RequestBody ContactEmailEntity contact) {
         ContactEmailEntity created = contactEmailService.create(userId, contact);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -56,7 +55,7 @@ public class ContactEmailController {
      */
     @PutMapping("/{contactId}")
     public ResponseEntity<ContactEmailEntity> updateContact(
-            @PathVariable UUID contactId,
+            @PathVariable Long contactId,
             @RequestBody ContactEmailEntity contact) {
         ContactEmailEntity updated = contactEmailService.update(contactId, contact);
         return ResponseEntity.ok(updated);
@@ -66,7 +65,7 @@ public class ContactEmailController {
      * Deleta um contato pelo ID.
      */
     @DeleteMapping("/{contactId}")
-    public ResponseEntity<Void> deleteContact(@PathVariable UUID contactId) {
+    public ResponseEntity<Void> deleteContact(@PathVariable Long contactId) {
         contactEmailService.delete(contactId);
         return ResponseEntity.noContent().build();
     }

@@ -1,6 +1,6 @@
-package com.example.carekeeper.model;
+package br.pucgo.ads.projetointegrador.carekeeper.entity;
 
-import com.example.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,8 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
+/**
+ * Representa um registro de acidente detectado pelo sistema CareKeeper.
+*/
 @Entity
 @Table(name = "accident_record")
 @Data
@@ -27,7 +28,7 @@ public class AccidentRecordEntity {
     private Long id;
 
     @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "sensor_json", columnDefinition = "TEXT")
     private String sensorJson;
@@ -39,7 +40,7 @@ public class AccidentRecordEntity {
     @Column(name = "detected_at")
     private Long detectedAt;
 
-    public AccidentRecordEntity(UUID userId, String sensorJson, AccidentType accidentType, Long detectedAt) {
+    public AccidentRecordEntity(Long userId, String sensorJson, AccidentType accidentType, Long detectedAt) {
         this.userId = userId;
         this.sensorJson = sensorJson;
         this.accidentType = accidentType;

@@ -1,6 +1,7 @@
-package com.example.carekeeper.pojo;
+package br.pucgo.ads.projetointegrador.carekeeper.config.detection;
 
-import com.example.carekeeper.enums.Sensitivity;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.Sensitivity;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

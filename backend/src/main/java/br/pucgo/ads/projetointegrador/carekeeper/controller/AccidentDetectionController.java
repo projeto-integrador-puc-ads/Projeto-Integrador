@@ -1,12 +1,11 @@
-package com.example.carekeeper.controller;
+package br.pucgo.ads.projetointegrador.carekeeper.controller;
 
-import com.example.carekeeper.dto.SensorDTO;
-import com.example.carekeeper.service.detection.SensorService;
-import lombok.RequiredArgsConstructor;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.SensorService;
+import br.pucgo.ads.projetointegrador.plataforma.security.CustomUserDetails;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
-import com.example.carekeeper.security.JwtUtil;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -15,11 +14,13 @@ import org.springframework.security.core.Authentication;
  */
 @RestController
 @RequestMapping("/api/monitor")
-@RequiredArgsConstructor
 public class AccidentDetectionController {
 
     private final SensorService sensorService;
-    private final JwtUtil jwtUtil;
+
+    public AccidentDetectionController(SensorService sensorService) {
+        this.sensorService = sensorService;
+    }
 
     /**
      * Este controlador recebe leituras de sensores enviadas pelo aplicativo Android
@@ -63,7 +64,8 @@ public class AccidentDetectionController {
             @RequestParam(name = "ativo", defaultValue = "false") boolean isAlertActive,
             Authentication authentication
     ) {
-        UUID userId = UUID.fromString(authentication.getName());
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUser().getId();
         boolean accidentDetected = sensorService.processReading(userId, sensorDTO, isAlertActive);
 
         return accidentDetected

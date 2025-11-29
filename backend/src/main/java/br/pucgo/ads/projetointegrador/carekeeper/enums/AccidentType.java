@@ -1,4 +1,4 @@
-package com.example.carekeeper.enums;
+package br.pucgo.ads.projetointegrador.carekeeper.enums;
 
 import lombok.Getter;
 

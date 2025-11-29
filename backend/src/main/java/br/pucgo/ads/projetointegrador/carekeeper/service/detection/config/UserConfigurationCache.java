@@ -1,26 +1,25 @@
-package com.example.carekeeper.config.detection;
+package br.pucgo.ads.projetointegrador.carekeeper.service.detection.config;
 
-import com.example.carekeeper.model.ConfigurationEntity;
-import com.example.carekeeper.pojo.UserConfig;
-import com.example.carekeeper.repository.ConfigurationRepository;
+import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ConfigurationEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.repository.ConfigurationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class UserConfigService {
+public class UserConfigurationCache {
 
     private final ConfigurationRepository configurationRepository;
     private final ObjectMapper mapper;
 
     // Cache em memória por userId
-    private final Map<UUID, UserConfig> configCache = new ConcurrentHashMap<>();
+    private final Map<Long, UserConfig> configCache = new ConcurrentHashMap<>();
 
-    public UserConfigService(ConfigurationRepository configurationRepository) {
+    public UserConfigurationCache(ConfigurationRepository configurationRepository) {
         this.configurationRepository = configurationRepository;
         this.mapper = new ObjectMapper();
     }
@@ -35,7 +34,7 @@ public class UserConfigService {
     /**
      * Retorna a configuração do usuário, usando cache para evitar múltiplas consultas ao banco.
      */
-    public UserConfig getConfigForUser(UUID userId) {
+    public UserConfig getConfigForUser(Long userId) {
         // Verifica cache primeiro
         return configCache.computeIfAbsent(userId, this::loadConfigFromDb);
     }
@@ -44,7 +43,7 @@ public class UserConfigService {
      * Carrega a configuração do banco e desserializa para UserConfig.
      * Se não existir, cria uma configuração padrão e persiste.
      */
-    private UserConfig loadConfigFromDb(UUID userId) {
+    private UserConfig loadConfigFromDb(Long userId) {
         try {
             Optional<ConfigurationEntity> entityOpt = configurationRepository.findByUserId(userId);
             if (entityOpt.isPresent()) {
@@ -72,7 +71,7 @@ public class UserConfigService {
     /**
      * Atualiza manualmente a configuração de um usuário no cache (ex.: após alteração).
      */
-    public void refreshConfig(UUID userId) {
+    public void refreshConfig(Long userId) {
         configCache.remove(userId);
         getConfigForUser(userId); // recarrega do banco
     }

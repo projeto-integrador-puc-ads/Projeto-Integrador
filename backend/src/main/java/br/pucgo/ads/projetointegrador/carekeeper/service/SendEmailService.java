@@ -1,6 +1,6 @@
-package com.example.carekeeper.service;
+package br.pucgo.ads.projetointegrador.carekeeper.service;
 
-import com.example.carekeeper.enums.EmailTemplate;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.EmailTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,6 +38,7 @@ public class SendEmailService {
      * @param contentId    id da imagem inline (ex: "unatiIcon")
      * @param imagePath    caminho da imagem (em resources/static/images)
      */
+    @SuppressWarnings("null")
     public void sendEmailWithInlineImage(String to,
                                          String subject,
                                          EmailTemplate template,
@@ -59,7 +60,7 @@ public class SendEmailService {
                     int start = 0;
                     while ((start = htmlBuilder.indexOf("{{" + key + "}}", start)) != -1) {
                         htmlBuilder.replace(start, start + key.length() + 4, value);
-                        start += value.length(); // avança para não entrar em loop infinito
+                        start += value.length();
                     }
                 }
             }

@@ -1,13 +1,12 @@
-package com.example.carekeeper.service;
+package br.pucgo.ads.projetointegrador.carekeeper.service.detection.config;
 
-import com.example.carekeeper.model.ConfigurationEntity;
-import com.example.carekeeper.pojo.UserConfig;
-import com.example.carekeeper.repository.ConfigurationRepository;
+import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ConfigurationEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.repository.ConfigurationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ConfigurationService {
@@ -24,7 +23,7 @@ public class ConfigurationService {
      * Obtém a configuração atual do usuário.
      * Se não existir, retorna uma configuração padrão.
      */
-    public UserConfig getUserConfig(UUID userId) {
+    public UserConfig getUserConfig(Long userId) {
         Optional<ConfigurationEntity> optionalConfig = configurationRepository.findByUserId(userId);
 
         if (optionalConfig.isEmpty()) {
@@ -42,7 +41,7 @@ public class ConfigurationService {
     /**
      * Atualiza ou cria a configuração completa do usuário.
      */
-    public UserConfig updateUserConfig(UUID userId, UserConfig config) {
+    public UserConfig updateUserConfig(Long userId, UserConfig config) {
         try {
             String json = objectMapper.writeValueAsString(config);
 

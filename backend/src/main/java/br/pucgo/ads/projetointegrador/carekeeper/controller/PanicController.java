@@ -1,14 +1,15 @@
-package com.example.carekeeper.controller;
+package br.pucgo.ads.projetointegrador.carekeeper.controller;
 
-import java.util.UUID;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.service.PanicAlertService;
+import br.pucgo.ads.projetointegrador.plataforma.security.CustomUserDetails;
 
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+
 import lombok.RequiredArgsConstructor;
 
-import com.example.carekeeper.dto.PanicAlertRequest;
-import com.example.carekeeper.service.PanicAlertService;
 
 /**
  * Controller responsável por gerenciar alertas de pânico.
@@ -52,11 +53,11 @@ public class PanicController {
      */
     @PostMapping("/alerta")
     public ResponseEntity<Void> triggerPanic(
-            @RequestBody PanicAlertRequest request,
+            @RequestBody SensorDTO request,
             Authentication authentication
     ) {
-        // Obtém o ID do usuário a partir do token JWT
-        UUID userId = UUID.fromString(authentication.getName());
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUser().getId();
 
         boolean sent = panicAlertService.sendPanicAlert(userId, request);
 

@@ -1,12 +1,13 @@
-package com.example.carekeeper.model;
+package br.pucgo.ads.projetointegrador.carekeeper.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 
 /**
  * Representa um endereço de e-mail de contato associado a um usuário.
@@ -21,7 +22,7 @@ public class ContactEmailEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String email;
@@ -34,5 +35,5 @@ public class ContactEmailEntity {
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_user_id", nullable = false)
-    private UserEntity owner;
+    private User owner;
 }

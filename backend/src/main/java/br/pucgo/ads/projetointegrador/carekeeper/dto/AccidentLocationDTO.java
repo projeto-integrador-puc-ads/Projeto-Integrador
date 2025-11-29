@@ -1,6 +1,5 @@
-package com.example.carekeeper.dto;
+package br.pucgo.ads.projetointegrador.carekeeper.dto;
 
-import com.example.carekeeper.enums.AccidentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

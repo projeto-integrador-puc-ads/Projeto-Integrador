@@ -1,11 +1,11 @@
-package com.example.carekeeper.service.detection.detector;
+package br.pucgo.ads.projetointegrador.carekeeper.service.detection.detector;
 
-import com.example.carekeeper.interfaces.AccidentDetector;
-import com.example.carekeeper.enums.AccidentType;
-import com.example.carekeeper.dto.SensorDTO;
-import com.example.carekeeper.util.EnvironmentUtil;
-import com.example.carekeeper.pojo.UserConfig;
-import com.example.carekeeper.enums.Sensitivity;
+import br.pucgo.ads.projetointegrador.carekeeper.interfaces.AccidentDetector;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.utils.EnvironmentUtil;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.Sensitivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

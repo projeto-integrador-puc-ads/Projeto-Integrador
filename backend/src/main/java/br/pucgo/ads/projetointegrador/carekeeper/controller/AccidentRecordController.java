@@ -1,13 +1,13 @@
-package com.example.carekeeper.controller;
+package br.pucgo.ads.projetointegrador.carekeeper.controller;
 
-import com.example.carekeeper.model.AccidentRecordEntity;
-import com.example.carekeeper.dto.AccidentLocationDTO;
-import com.example.carekeeper.dto.AccidentTypeCountDTO;
-import com.example.carekeeper.service.AccidentRecordService;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.AccidentLocationDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.AccidentTypeCountDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.AccidentRecordEntity;
+import br.pucgo.ads.projetointegrador.carekeeper.service.AccidentRecordService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/registros-acidentes")
@@ -37,7 +37,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/usuario/{userId}
      */
     @GetMapping("/usuario/{userId}")
-    public List<AccidentRecordEntity> buscarPorUsuario(@PathVariable UUID userId) {
+    public List<AccidentRecordEntity> buscarPorUsuario(@PathVariable Long userId) {
         return service.findByUserId(userId);
     }
 
@@ -68,7 +68,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/total-registros?userId={id}
      */
     @GetMapping("/total-registros")
-    public Long totalRegistros(@RequestParam(required = false) UUID userId) {
+    public Long totalRegistros(@RequestParam(required = false) Long userId) {
         return service.getTotalRecords(userId);
     }
 
@@ -77,7 +77,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/acidentes-hoje?userId={id}
      */
     @GetMapping("/acidentes-hoje")
-    public Long acidentesHoje(@RequestParam(required = false) UUID userId) {
+    public Long acidentesHoje(@RequestParam(required = false) Long userId) {
         return service.getAccidentsToday(userId);
     }
 
@@ -87,7 +87,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/localizacao?userId={id}
      */
     @GetMapping("/localizacao")
-    public List<AccidentLocationDTO> getAcidentesLocalizacao(@RequestParam(required = false) UUID userId) {
+    public List<AccidentLocationDTO> getAcidentesLocalizacao(@RequestParam(required = false) Long userId) {
         return service.getAcidentesLocalizacao(userId);
     }
 
@@ -97,7 +97,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/por-horario?userId={id}
      */
     @GetMapping("/por-horario")
-    public int[] getAcidentesPorHorario(@RequestParam(required = false) UUID userId) {
+    public int[] getAcidentesPorHorario(@RequestParam(required = false) Long userId) {
         return service.getAcidentesPorHorario(userId);
     }
 
@@ -107,7 +107,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/por-tipo?userId={id}
      */
     @GetMapping("/por-tipo")
-    public List<AccidentTypeCountDTO> getAcidentesPorTipo(@RequestParam(required = false) UUID userId) {
+    public List<AccidentTypeCountDTO> getAcidentesPorTipo(@RequestParam(required = false) Long userId) {
         return service.getAcidentesPorTipo(userId);
     }
 
@@ -117,7 +117,7 @@ public class AccidentRecordController {
      * Exemplo: GET /api/registros-acidentes/heatmap?userId={id}
      */
     @GetMapping("/heatmap")
-    public int[][] getAcidentesHeatmap(@RequestParam(required = false) UUID userId) {
+    public int[][] getAcidentesHeatmap(@RequestParam(required = false) Long userId) {
         return service.getHeatmapData(userId);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.carekeeper.service;
+package br.pucgo.ads.projetointegrador.carekeeper.service;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -6,18 +6,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.carekeeper.enums.EmailTemplate;
-import com.example.carekeeper.model.ContactEmailEntity;
-import com.example.carekeeper.model.UserEntity;
-import com.example.carekeeper.dto.PanicAlertRequest;
-import com.example.carekeeper.repository.UserRepository;
-import com.example.carekeeper.service.ContactEmailService;
-import com.example.carekeeper.service.SendEmailService;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.EmailTemplate;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
+import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.ContactEmailEntity;
+import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,22 +26,24 @@ public class PanicAlertService {
     private final ContactEmailService contactEmailService;
     private final UserRepository userRepository;
 
-    @Value("${STATIC_MAP_API_KEY}")
+    @Value("${app.static-map-api-key}")
     private String staticMapApiKey;
 
     @Value("${panic.alert.image.path:src/main/resources/static/images/logo_unati_horizontal.png}")
     private String alertImagePath;
 
-    public boolean sendPanicAlert(UUID userId, PanicAlertRequest request) {
+    @SuppressWarnings("null")
+    public boolean sendPanicAlert(Long userId, SensorDTO request) {
 
         List<ContactEmailEntity> contatos = contactEmailService.getContactsByUserId(userId);
+        
         if (contatos.isEmpty()) {
-            return false; // nenhum contato encontrado
+            return false; 
         }
 
         // Nome do usuário
         String userName = userRepository.findById(userId)
-                .map(UserEntity::getName)
+                .map(User::getName)
                 .orElse("Usuário");
 
         Instant now = Instant.now();
@@ -59,7 +58,7 @@ public class PanicAlertService {
 
         // Placeholders do template
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("message", request.getLeitura());
+        placeholders.put("message", "Botão de pânico acionado");
         placeholders.put("latitude", String.valueOf(request.getLatitude()));
         placeholders.put("longitude", String.valueOf(request.getLongitude()));
         placeholders.put("STATIC_MAP_API_KEY", staticMapApiKey);
