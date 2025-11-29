@@ -3,18 +3,16 @@ import { ModuleCard } from './ModuleCard';
 import MedicationIcon from '@mui/icons-material/Medication';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Ícone original
-import PersonSearchIcon from '@mui/icons-material/PersonSearch'; // Novo ícone para iniciar consulta
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import { useNavigate } from 'react-router-dom';
-import CoronavirusIcon from '@mui/icons-material/Coronavirus';
 
 
 export function ModuleGrid() {
   const navigate = useNavigate();
-  
+
 
   const items = [
     {
@@ -49,7 +47,7 @@ export function ModuleGrid() {
       desc: 'Atualize seus dados de médico.',
       to: '/informacoes_medico',
     },
-    
+
     {
       icon: <PersonSearchIcon sx={{ fontSize: 40 }} color="primary" />,
       title: 'Iniciar Consulta',

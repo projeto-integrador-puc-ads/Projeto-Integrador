@@ -3,6 +3,7 @@ package br.pucgo.ads.projetointegrador.plataforma.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -21,18 +22,29 @@ public class JwtTokenProvider {
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationInMs;
 
-    // Generate token
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
-        Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + jwtExpirationInMs);
 
-        return Jwts.builder()
+    public String generateToken(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String username = userDetails.getUsername();
+        String role = null;
+        if (userDetails.getUser() != null && userDetails.getUser().getRole() != null) {
+            role = userDetails.getUser().getRole().getName();
+        }
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+
+        JwtBuilder builder = Jwts.builder()
                 .subject(username)
-                .issuedAt(currentDate)
-                .expiration(expireDate)
-                .signWith(key())
-                .compact();
+                .issuedAt(now)
+                .expiration(expiryDate);
+
+        if (role != null && !role.isBlank()) {
+            builder.claim("role", role);
+        }
+
+        return builder.signWith(key()).compact();
     }
 
     private SecretKey key() {
@@ -48,6 +60,16 @@ public class JwtTokenProvider {
                 .getPayload();
         return claims.getSubject();
     }
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("role", String.class);
+    }
+
 
     // Validate token
     public boolean validateToken(String token) {

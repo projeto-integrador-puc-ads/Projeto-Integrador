@@ -3,9 +3,10 @@ import { Box, Button, Card, CardContent, Stack, TextField, Typography } from '@m
 import { setAuthToken } from '@/lib/http';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../api/auth';
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -15,13 +16,27 @@ export default function LoginForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // Mock de autenticação: em produção, chame a API.
-      await new Promise((r) => setTimeout(r, 500));
-      setAuthToken('demo-token');
-      enqueueSnackbar('Login realizado com sucesso!', { variant: 'success' });
+      const response = await authApi.login({ usernameOrEmail, password });
+      
+      // Salvar token no interceptor HTTP
+      setAuthToken(response.accessToken);
+      
+      // Opcional: Salvar dados do usuário no localStorage
+      localStorage.setItem('user', JSON.stringify({
+        userId: response.userId,
+        username: response.username,
+        email: response.email,
+        name: response.name,
+        roleName: response.roleName,
+        roleCode: response.roleCode,
+        permissions: response.permissions,
+      }));
+      
+      enqueueSnackbar(`Bem-vindo(a), ${response.name}!`, { variant: 'success' });
       navigate('/home', { replace: true });
-    } catch (err) {
-      enqueueSnackbar('Falha ao autenticar. Tente novamente.', { variant: 'error' });
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || 'Credenciais inválidas. Tente novamente.';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -36,10 +51,10 @@ export default function LoginForm() {
               Entrar
             </Typography>
             <TextField
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="E-mail ou Usuário"
+              type="text"
+              value={usernameOrEmail}
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
               required
               autoFocus
               fullWidth

@@ -192,7 +192,6 @@ export default function InformacoesSaudePage() {
         <RoundedTextField label="Idade" name="idade" type="number" value={editData.idade} onChange={handleChange} />
         <RoundedTextField label="Peso (kg)" name="peso" type="number" value={editData.peso} onChange={handleChange} />
         <RoundedTextField label="Altura (m)" name="altura" type="number" value={editData.altura} onChange={handleChange} />
-        <RoundedTextField label="Alergias (texto)" name="alergias" value={editData.alergias} onChange={handleChange} multiline />
       </Stack>
 
       <Button

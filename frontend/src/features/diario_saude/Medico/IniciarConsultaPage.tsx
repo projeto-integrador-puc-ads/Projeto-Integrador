@@ -13,8 +13,9 @@ import {
 } from "@mui/material";
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import type { Prescricao } from "../api/prescricaoApi";
+import type { Prescricao } from "../api/types";
 import http from "@/lib/http";
+import { usuarioApi } from "../api/usuarioApi";
 
 // --------------------------
 // Componentes reutilizáveis
@@ -26,19 +27,6 @@ function PageContainer({ children }: { children: React.ReactNode }) {
 function PageTitle({ children }: { children: React.ReactNode }) {
   return <Typography variant="h4" mb={3} textAlign="center">{children}</Typography>;
 }
-
-// --------------------------
-// API de pacientes
-// --------------------------
-const usuarioApi = {
-  listar: async (): Promise<any[]> => {
-    const token = localStorage.getItem("token");
-    const { data } = await http.get("/api/diario_saude/usuario", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return Array.isArray(data) ? data : [];
-  },
-};
 
 // --------------------------
 // Página
@@ -55,10 +43,10 @@ export default function IniciarConsulta() {
   // Buscar pacientes via React Query
   // --------------------------
   const { data: pacientes = [], error } = useQuery({
-    queryKey: ["pacientes"],
-    queryFn: usuarioApi.listar,
-    enabled: !!token,
-  });
+    queryKey: ["pacientes"],
+    queryFn: usuarioApi.listar, // Chama a função importada
+    enabled: !!usuario?.id_usuario, // Use o objeto usuário para habilitar
+  });
 
   const filtered = pacientes.filter(p =>
     p.nome.toLowerCase().includes(search.toLowerCase())

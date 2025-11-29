@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
     Box,
-    Paper,
     Typography,
     List,
     ListItemText,
@@ -12,78 +11,24 @@ import {
     DialogContent,
     DialogActions,
     Button,
+    Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-
 import PageContainer from "../components/PageContainer";
 import PageTitle from "../components/PageTitle";
 import SectionTitle from "../components/SectionTitle";
 import BackButton from "../components/BackButton";
-
+import ExercicioRecomendadoDetalhes from "../components/ExercicioRecomendadoDetalhes";
 import { prescricaoApi } from "../api/prescricaoApi";
 import type { Prescricao, PrescricaoMedicamento, PrescricaoExame } from "../api/types";
-import { type ExercicioRecomendado, exercicioRecomendadoApi } from "../api/exercicioRecomendadoApi"; 
 
-// Função para formatar a frequência em horas
+//Função utilitária
 function formatFrequencia(f: string | number | undefined) {
     if (!f) return "-";
     const num = typeof f === "string" ? parseInt(f) : f;
     return isNaN(num) ? f : `${num}h`;
 }
-
-// COMPONENTE DE DETALHES DE EXERCÍCIOS
-function ExercicioRecomendadoDetalhes({ prescricaoId }: { prescricaoId: number }) {
-    const [exercicios, setExercicios] = useState<ExercicioRecomendado[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    useEffect(() => {
-        if (!prescricaoId) return;
-
-        setLoading(true);
-        setError(false);
-
-        exercicioRecomendadoApi.listar(prescricaoId)
-            .then((res) => {
-                setExercicios(res);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Erro ao carregar exercícios:", err);
-                setError(true);
-                setLoading(false);
-            });
-    }, [prescricaoId]);
-
-    if (loading) {
-        return <Typography>Carregando exercícios...</Typography>;
-    }
-    if (error) {
-        return <Typography color="error">Erro ao carregar exercícios.</Typography>;
-    }
-
-    return (
-        <>
-            <Typography variant="subtitle1" fontWeight="bold" mt={2} mb={1}>
-                Exercícios Recomendados:
-            </Typography>
-            <List dense>
-                {exercicios.length > 0 ? (
-                    exercicios.map((e, index) => (
-                        <ListItemText 
-                            key={index}
-                            primary={e.descricao} 
-                        />
-                    ))
-                ) : (
-                    <Typography color="text.secondary">- Nenhuma recomendação de exercício.</Typography>
-                )}
-            </List>
-        </>
-    );
-}
-// FIM: COMPONENTE DE DETALHES DE EXERCÍCIOS
 
 
 export default function HistoricoConsultasPacientePage() {
@@ -100,18 +45,21 @@ export default function HistoricoConsultasPacientePage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [consultaSelecionada, setConsultaSelecionada] = useState<Prescricao | null>(null);
 
+    //FETCHING PRINCIPAL COM TANSTACK QUERY
     const { data: consultas = [], isLoading } = useQuery({
         queryKey: ["prescricao", pacienteId],
         queryFn: () => prescricaoApi.porUsuario(pacienteId),
         enabled: !!pacienteId,
         select: (lista) =>
             lista
+                //FILTRO: Mostrar apenas prescrições que contêm algum item
                 .filter(
                     (c) =>
                         (c.medicamentos?.length ?? 0) > 0 || 
                         (c.exames?.length ?? 0) > 0 ||
                         (c.exerciciosRecomendados?.length ?? 0) > 0 
                 )
+                //ORDENAÇÃO: Mais recente primeiro
                 .sort(
                     (a, b) =>
                         new Date(b.data_prescricao).getTime() -
@@ -137,6 +85,7 @@ export default function HistoricoConsultasPacientePage() {
                 Paciente: <b>{pacienteNome}</b>
             </SectionTitle>
 
+            {/* Renderização da Lista de Consultas */}
             {isLoading ? (
                 <Typography color="text.secondary" align="center" mt={2}>
                     Carregando…
@@ -169,6 +118,7 @@ export default function HistoricoConsultasPacientePage() {
                 </List>
             )}
 
+            {/*Dialog de Detalhes da Consulta */}
             <Dialog open={dialogOpen} onClose={handleClose} fullWidth maxWidth="sm">
                 <DialogTitle>
                     {consultaSelecionada?.nomeMedico} — {consultaSelecionada?.data_prescricao}
@@ -180,22 +130,26 @@ export default function HistoricoConsultasPacientePage() {
                         Medicamentos:
                     </Typography>
                     <List dense>
-                        {consultaSelecionada?.medicamentos?.map((m: PrescricaoMedicamento, i) => (
-                            <Paper key={i} sx={{ p: 2, mb: 1 }}>
-                                <Box display="flex" flexDirection="column" gap={0.5}>
-                                    <Typography fontWeight="bold">{m.nome_medicamento || "-"}</Typography>
-                                    <Box display="flex" gap={2} flexWrap="wrap">
-                                        <Typography>Princípio ativo: {m.principio_ativo || "-"}</Typography>
-                                        <Typography>Concentração: {m.concentracao || "-"}</Typography>
-                                        <Typography>Via: {m.via || "-"}</Typography>
+                        {consultaSelecionada?.medicamentos?.length ? (
+                            consultaSelecionada.medicamentos.map((m: PrescricaoMedicamento, i) => (
+                                <Paper key={i} sx={{ p: 2, mb: 1 }}>
+                                    <Box display="flex" flexDirection="column" gap={0.5}>
+                                        <Typography fontWeight="bold">{m.nome_medicamento || "-"}</Typography>
+                                        <Box display="flex" gap={2} flexWrap="wrap">
+                                            <Typography>Princípio ativo: {m.principio_ativo || "-"}</Typography>
+                                            <Typography>Concentração: {m.concentracao || "-"}</Typography>
+                                            <Typography>Via: {m.via || "-"}</Typography>
+                                        </Box>
+                                        <Box display="flex" gap={2} flexWrap="wrap">
+                                            <Typography>Dosagem: {m.dosagem || "-"}</Typography>
+                                            <Typography>Frequência: {formatFrequencia(m.frequencia)}</Typography>
+                                        </Box>
                                     </Box>
-                                    <Box display="flex" gap={2} flexWrap="wrap">
-                                        <Typography>Dosagem: {m.dosagem || "-"}</Typography>
-                                        <Typography>Frequência: {formatFrequencia(m.frequencia)}</Typography>
-                                    </Box>
-                                </Box>
-                            </Paper>
-                        )) ?? <Typography>-</Typography>}
+                                </Paper>
+                            ))
+                        ) : (
+                             <Typography color="text.secondary">- Nenhum medicamento prescrito.</Typography>
+                        )}
                     </List>
 
                     <Divider sx={{ my: 2 }} />
@@ -205,25 +159,27 @@ export default function HistoricoConsultasPacientePage() {
                         Exames:
                     </Typography>
                     <List dense>
-                        {consultaSelecionada?.exames?.map((e: PrescricaoExame, i) => (
-                            <ListItemText
-                                key={i}
-                                // 🟢 CORREÇÃO: Acessa 'nome_exame' diretamente do objeto 'e'
-                                primary={e.nome_exame || "Exame desconhecido"}
-                                secondary={e.observacao || ""}
-                            />
-                        )) ?? <Typography>-</Typography>}
+                        {consultaSelecionada?.exames?.length ? (
+                            consultaSelecionada.exames.map((e: PrescricaoExame, i) => (
+                                <ListItemText
+                                    key={i}
+                                    primary={e.nome_exame || "Exame desconhecido"}
+                                    secondary={e.observacao || ""}
+                                />
+                            ))
+                        ) : (
+                             <Typography color="text.secondary">- Nenhum exame prescrito.</Typography>
+                        )}
                     </List>
-                    
+
+                    <Divider sx={{ my: 2 }} />
+
                     {/* EXERCÍCIOS RECOMENDADOS */}
                     {consultaSelecionada?.id_prescricao && (
-                        <>
-                            <Divider sx={{ my: 2 }} />
-                            <ExercicioRecomendadoDetalhes prescricaoId={consultaSelecionada.id_prescricao} />
-                        </>
+                        <ExercicioRecomendadoDetalhes prescricaoId={consultaSelecionada.id_prescricao} />
                     )}
 
-                    {/* Observações */}
+                    {/* Observações (Mantido) */}
                     {consultaSelecionada?.observacoes && (
                         <>
                             <Divider sx={{ my: 2 }} />

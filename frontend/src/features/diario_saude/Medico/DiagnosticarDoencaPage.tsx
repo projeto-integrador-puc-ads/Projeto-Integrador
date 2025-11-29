@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Box,
-  Button,
-  Typography,
-  Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Autocomplete,
-  TextField,
-  useMediaQuery,
+  Box,
+  Button,
+  Typography,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Autocomplete,
+  TextField,
+  useMediaQuery,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -27,141 +27,157 @@ import { doencaApi } from "../api/doencaApi";
 import { usuarioDoencaApi } from "../api/usuarioDoencaApi";
 
 export default function DiagnosticarDoencaPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
 
-  const paciente = location.state?.paciente;
-  const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
+  const paciente = location.state?.paciente;
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [doencaSelecionada, setDoencaSelecionada] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [doencaSelecionada, setDoencaSelecionada] = useState<any>(null);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  useEffect(() => {
-    if (!paciente) navigate("/medico");
-  }, [paciente, navigate]);
+  if (!paciente?.id_usuario) {
+    navigate("/medico", { replace: true });
+    return null;
+  }
 
-  // LISTA DOENÇAS DO SISTEMA
-  const { data: listaDoencasSistema = [] } = useQuery({
-    queryKey: ["doencas", "sistema"],
-    queryFn: () => doencaApi.listar(),
-  });
+  const pacienteId = paciente.id_usuario;
 
-  // LISTA DOENÇAS DO PACIENTE
-  const { data: doencasPaciente = [] } = useQuery({
-    queryKey: ["usuario", paciente?.id_usuario, "doencas"],
-    queryFn: () => usuarioDoencaApi.listar(paciente.id_usuario),
-    enabled: !!paciente?.id_usuario,
-  });
+  // --- QUERIES DE LEITURA (REACT QUERY) ---
 
-  // ADICIONAR DOENÇA
-  const addDoencaMutation = useMutation({
-    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
-      usuarioDoencaApi.adicionar(usuarioId, doencaId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["usuario", paciente?.id_usuario, "doencas"]);
-      setDialogOpen(false);
-      setDoencaSelecionada(null);
-    },
-  });
+  // 1. LISTA DOENÇAS DO SISTEMA
+  const { data: listaDoencasSistema = [] } = useQuery({
+    queryKey: ["doencas", "sistema"],
+    queryFn: () => doencaApi.listar(),
+  });
 
-  const handleAddDoenca = () => {
-    if (!doencaSelecionada || !paciente) return alert("Selecione uma doença.");
-    addDoencaMutation.mutate({ usuarioId: paciente.id_usuario, doencaId: doencaSelecionada.id });
-  };
+  // 2. LISTA DOENÇAS DO PACIENTE
+  const { data: doencasPaciente = [] } = useQuery({
+    queryKey: ["usuario", pacienteId, "doencas"],
+    queryFn: () => usuarioDoencaApi.listar(pacienteId),
+    enabled: !!pacienteId,
+  });
 
-  // REMOVER DOENÇA
-  const removeDoencaMutation = useMutation({
-    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
-      usuarioDoencaApi.remover(usuarioId, doencaId),
-    onSuccess: () => queryClient.invalidateQueries(["usuario", paciente?.id_usuario, "doencas"]),
-  });
+  // --- MUTAÇÕES (REACT QUERY) ---
 
-  const handleRemoveDoenca = (id: number) => {
-    if (!paciente) return;
-    removeDoencaMutation.mutate({ usuarioId: paciente.id_usuario, doencaId: id });
-  };
+  // ADICIONAR DOENÇA
+  const addDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.adicionar(usuarioId, doencaId),
+    onSuccess: () => {
+      // Invalida a query do paciente para buscar a lista atualizada
+      queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]);
+      setDialogOpen(false);
+      setDoencaSelecionada(null);
+    },
+  });
 
-  return (
-    <PageContainer>
-      <Button
-        onClick={() => navigate(-1)}
-        startIcon={<ArrowBackIcon />}
-        fullWidth={isMobile}
-        sx={{ mb: 2, textTransform: "none" }}
-      >
-        Voltar
-      </Button>
+  const handleAddDoenca = () => {
+    if (!doencaSelecionada) return alert("Selecione uma doença.");
+    // O pacienteId está garantido pela checagem inicial
+    addDoencaMutation.mutate({ usuarioId: pacienteId, doencaId: doencaSelecionada.id });
+  };
 
-      <PageTitle>Doenças do Paciente</PageTitle>
+  // REMOVER DOENÇA
+  const removeDoencaMutation = useMutation({
+    mutationFn: ({ usuarioId, doencaId }: { usuarioId: number; doencaId: number }) =>
+      usuarioDoencaApi.remover(usuarioId, doencaId),
+    onSuccess: () => 
+      // Invalida a query do paciente para buscar a lista atualizada
+      queryClient.invalidateQueries(["usuario", pacienteId, "doencas"]),
+  });
 
-      <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 2 }}>
-        Paciente: <strong>{paciente?.nome}</strong>
-      </Typography>
+  const handleRemoveDoenca = (id: number) => {
+    removeDoencaMutation.mutate({ usuarioId: pacienteId, doencaId: id });
+  };
 
-      <SectionTitle>Doenças cadastradas</SectionTitle>
+  // --- RENDERIZAÇÃO ---
+  return (
+    <PageContainer>
+      <Button
+        onClick={() => navigate(-1)}
+        startIcon={<ArrowBackIcon />}
+        fullWidth={isMobile}
+        sx={{ mb: 2, textTransform: "none" }}
+      >
+        Voltar
+      </Button>
 
-      {doencasPaciente.length === 0 ? (
-        <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
-          Nenhuma doença cadastrada para este paciente.
-        </Typography>
-      ) : (
-        doencasPaciente.map((d) => (
-          <ListItemCard
-            key={d.id || d.doenca?.id}
-            title={d.nome || d.doenca?.nome}
-            onDelete={() => handleRemoveDoenca(d.id || d.doenca?.id)}
-          />
-        ))
-      )}
+      <PageTitle>Doenças do Paciente</PageTitle>
 
-      <Button
-        startIcon={<AddIcon />}
-        fullWidth
-        sx={{ mt: 2 }}
-        onClick={() => setDialogOpen(true)}
-      >
-        Adicionar Doença
-      </Button>
+      <Typography variant={isMobile ? "body1" : "h6"} sx={{ mb: 2 }}>
+        Paciente: <strong>{paciente.nome}</strong>
+      </Typography>
 
-      <Box textAlign="center" mt={6}>
-        <Typography variant={isMobile ? "body1" : "h6"}>{usuario?.nome}</Typography>
-        <Typography variant="body2">{new Date().toLocaleDateString("pt-BR")}</Typography>
-      </Box>
+      <SectionTitle>Doenças cadastradas</SectionTitle>
 
-      {/* DIALOG */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>Adicionar Doença</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <Autocomplete
-              options={listaDoencasSistema}
-              getOptionLabel={(option) => option.nome}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={(e, v) => setDoencaSelecionada(v)}
-              
-              renderOption={(props, option) => (
-                <li {...props} key={option.id}>
-                  {option.nome}
-                </li>
-              )}
+      {doencasPaciente.length === 0 ? (
+        <Typography color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
+          Nenhuma doença cadastrada para este paciente.
+        </Typography>
+      ) : (
+        doencasPaciente.map((d) => (
+          <ListItemCard
+            key={d.id || d.doenca?.id}
+            title={d.nome || d.doenca?.nome}
+            // Passamos o ID da doença/associação para a remoção
+            onDelete={() => handleRemoveDoenca(d.id || d.doenca?.id)}
+          />
+        ))
+      )}
 
-              renderInput={(params) => (
-                <TextField {...params} label="Pesquise a doença" fullWidth />
-              )}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddDoenca} disabled={addDoencaMutation.isLoading}>
-            {addDoencaMutation.isLoading ? "Adicionando..." : "Adicionar"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </PageContainer>
-  );
+      <Button
+        startIcon={<AddIcon />}
+        fullWidth
+        sx={{ mt: 2 }}
+        onClick={() => setDialogOpen(true)}
+      >
+        Adicionar Doença
+      </Button>
+
+      <Box textAlign="center" mt={6}>
+        <Typography variant={isMobile ? "body1" : "h6"}>{usuario?.nome}</Typography>
+        <Typography variant="body2">{new Date().toLocaleDateString("pt-BR")}</Typography>
+      </Box>
+
+      {/* DIALOG */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontSize: isMobile ? "1.2rem" : "1.4rem" }}>Adicionar Doença</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <Autocomplete
+              options={listaDoencasSistema}
+              getOptionLabel={(option: any) => option.nome}
+              isOptionEqualToValue={(option: any, value: any) => option.id === value.id}
+              onChange={(e, v) => setDoencaSelecionada(v)}
+
+              renderOption={(props, option: any) => (
+                <li {...props} key={option.id}>
+                  {option.nome}
+                </li>
+              )}
+
+              renderInput={(params) => (
+                <TextField {...params} label="Pesquise a doença" fullWidth />
+              )}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+          <Button
+                variant="contained"
+                onClick={handleAddDoenca}
+                disabled={addDoencaMutation.isLoading}
+            >
+            {addDoencaMutation.isLoading ? "Adicionando..." : "Adicionar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </PageContainer>
+  );
 }

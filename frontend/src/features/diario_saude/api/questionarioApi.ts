@@ -5,9 +5,7 @@ const base = "/api/diario_saude/questionario";
 
 export const questionarioApi = {
   listarPerguntas: async (): Promise<Pergunta[]> => {
-    const token = localStorage.getItem("token");
     const { data } = await http.get(`${base}/perguntas`, {
-      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!Array.isArray(data)) return [];
@@ -32,14 +30,11 @@ export const questionarioApi = {
   obterRespostas: async (
     usuarioId: number
   ): Promise<(RespostaDTO & { pergunta: Pergunta })[]> => {
-    const token = localStorage.getItem("token");
     const { data } = await http.get(`${base}/respostas/${usuarioId}`, {
-      headers: { Authorization: `Bearer ${token}` },
     });
 
     return Array.isArray(data)
       ? data.map((r: any) => ({
-          // Adiciona perguntaId para satisfazer RespostaDTO
           perguntaId: r.pergunta?.id,
           resposta: r.resposta,
           peso: r.peso,

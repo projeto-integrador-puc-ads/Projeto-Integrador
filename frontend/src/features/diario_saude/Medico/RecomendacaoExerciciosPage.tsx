@@ -149,15 +149,17 @@ export default function RecomendacaoExerciciosPage() {
                 </Box>
 
                 {/* SALVAR */}
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    sx={{ mt: 4 }}
-                    onClick={handleSalvar}
-                >
-                    Salvar Recomendações
-                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ mt: 4 }}
+                    onClick={handleSalvar}
+                    // 🎯 Desabilita se não houver recomendações ou se estiver carregando
+                    disabled={recomendacoes.length === 0 || addExercicioMutation.isLoading}
+                >
+                    {addExercicioMutation.isLoading ? "Salvando..." : "Salvar Recomendações"}
+                </Button>
             </Paper>
 
             {/* DIALOG */}
