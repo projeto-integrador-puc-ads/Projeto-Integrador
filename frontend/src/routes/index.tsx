@@ -25,6 +25,8 @@ import AlergiasPage from '@/features/diario_saude/Medico/AlergiasPage';
 import SaudeMenuPage from '@/features/diario_saude/Idoso/SaudeMenuPage';
 import RespostasPage from '@/features/diario_saude/Idoso/RespostasPage';
 import HistoricoConsultasMedicoPage from '@/features/diario_saude/Medico/HistoricoConsultasMedicoPage';
+import AdminUsuarioCreatePage from '@/features/admin/pages/AdminUsuarioCreatePage';
+
 
 
 function Home() {
@@ -53,6 +55,7 @@ export function AppRoutes() {
         {/* Rotas administrativas */}
         <Route path="admin" element={<AdminPage />} />
         <Route path="admin/usuarios" element={<AdminUsuariosPage />} />
+        <Route path="admin/usuarios/novo" element={<AdminUsuarioCreatePage />} />
         <Route path="admin/medicos" element={<AdminMedicosPage />} />
         <Route path="admin/cuidadores" element={<AdminCuidadoresPage />} />
         <Route path="admin/usuarios/:id/edit" element={<EditUsuarioPage />} />

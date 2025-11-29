@@ -16,11 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -30,28 +27,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAuthenticationFilter authenticationFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> {})//TEMPORÁRIO PARA CONECTAR COM O FRONT
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos de autenticação
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                
-                // Endpoints dos outros grupos (protegidos)
-                .requestMatchers("/api/grupo1/**").authenticated()
-                .requestMatchers("/api/grupo2/**").authenticated()
-                .requestMatchers("/api/grupo3/**").authenticated()
-                .requestMatchers("/api/grupo4/**").authenticated()
-                .requestMatchers("/api/grupo5/**").authenticated()
-                .requestMatchers("/api/grupo6/**").authenticated()
-                
-                // Endpoints de gerenciamento de usuários
-                .requestMatchers("/api/users/**").authenticated()
-                
-                // Qualquer outra requisição precisa autenticação
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
@@ -64,19 +49,6 @@ public class SecurityConfig {
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-    //TEMPORARIO PARA CONECTAR FRONT E BACK
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 
     @Bean
