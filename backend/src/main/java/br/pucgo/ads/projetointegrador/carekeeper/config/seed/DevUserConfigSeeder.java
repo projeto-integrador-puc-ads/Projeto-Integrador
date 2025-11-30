@@ -12,13 +12,15 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /**
  * Popula o banco de dados com uma configuração padrão de usuário
  * ao iniciar a aplicação (apenas no profile "dev").
  */
-@Order(2)
+@Order(1)
 @Profile("dev")
+@Component
 public class DevUserConfigSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DevUserConfigSeeder.class);

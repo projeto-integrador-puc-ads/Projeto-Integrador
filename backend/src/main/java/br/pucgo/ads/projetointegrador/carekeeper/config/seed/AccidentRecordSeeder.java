@@ -8,8 +8,10 @@ import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,8 +25,9 @@ import java.util.Random;
  * Se o repositório de registros de acidentes estiver vazio,
  * serão criados 20 registros aleatórios associados aos usuários existentes.
  */
-@Order(4)
+@Order(2)
 @Profile("dev")
+@Component
 public class AccidentRecordSeeder {
 
     @Bean

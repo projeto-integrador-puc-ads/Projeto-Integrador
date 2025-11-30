@@ -2,7 +2,6 @@ package br.pucgo.ads.projetointegrador.carekeeper.service;
 
 import br.pucgo.ads.projetointegrador.carekeeper.enums.EmailTemplate;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -80,7 +79,7 @@ public class SendEmailService {
 
             // Adiciona imagem inline se houver
             if (imagePath != null && !imagePath.isEmpty() && contentId != null) {
-                FileSystemResource image = new FileSystemResource(imagePath);
+                ClassPathResource image = new ClassPathResource(imagePath);
                 helper.addInline(contentId, image);
             }
 

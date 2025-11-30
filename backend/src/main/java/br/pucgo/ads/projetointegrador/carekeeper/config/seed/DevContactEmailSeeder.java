@@ -9,9 +9,10 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Cria contatos de exemplo no ambiente de desenvolvimento.
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @Order(3)
 @Profile("dev")
+@Component
 public class DevContactEmailSeeder implements ApplicationRunner {
 
     private final ContactEmailRepository contactRepo;
@@ -34,21 +36,21 @@ public class DevContactEmailSeeder implements ApplicationRunner {
     @Override
     @SuppressWarnings("null")
     public void run(ApplicationArguments args) {
-        User user = userRepo.findByEmail("demo@carekeeper.com").orElseGet(() -> {
-            User newUser = new User();
-            newUser.setName("Usuário Demo");
-            newUser.setEmail("demo@carekeeper.com");
-            newUser.setCreatedAt(OffsetDateTime.now());
-            newUser.setStatus("ACTIVE");
-            return userRepo.save(newUser);
-        });
+        Optional<User> optionalUser = userRepo.findByEmail("admin@system.com");
+
+        if (optionalUser.isEmpty()) {
+            return;
+        }
+
+        User user = optionalUser.get();
 
         List<ContactEmailEntity> contacts = List.of(
-                new ContactEmailEntity(null, "gabrielbarbosadev2022@gmail.com", "Gabriel Barbosa", user),
-                new ContactEmailEntity(null, "lovablel59011551@gmail.com", "Lovable", user),
-                new ContactEmailEntity(null, "20222012000046@pucgo.edu.br", "Gabriel Barbosa (PUC)", user));
+            new ContactEmailEntity("gabrielbarbosadev2022@gmail.com", "Gabriel Barbosa", user),
+            new ContactEmailEntity("lovablel59011551@gmail.com", "Lovable", user),
+            new ContactEmailEntity("20222012000046@pucgo.edu.br", "Gabriel Barbosa (PUC)", user)
+        );
 
         contactRepo.saveAll(contacts);
-
     }
+
 }

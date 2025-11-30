@@ -23,13 +23,14 @@ public class AccidentDetectionController {
     }
 
     /**
-     * Este controlador recebe leituras de sensores enviadas pelo aplicativo Android
-     * e utiliza essas informações para determinar se ocorreu um possível acidente
-     * (ex: queda, impacto brusco ou imobilidade prolongada).
+     * Recebe leituras de sensores enviadas pelo aplicativo Android e verifica possíveis acidentes.
+     * 
+     * Logs:
+     * - O conteúdo do SensorDTO recebido é registrado para depuração.
      *
      * Autenticação:
      * - O identificador do usuário (userId) é extraído automaticamente do token JWT.
-     * - O cliente deve incluir o cabeçalho Authorization: Bearer <token> em cada requisição.
+     * - O cliente deve incluir o cabeçalho Authorization: Bearer <token>.
      *
      * Endpoint principal:
      * POST /monitor/leitura

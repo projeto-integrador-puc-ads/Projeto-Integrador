@@ -36,4 +36,10 @@ public class ContactEmailEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_user_id", nullable = false)
     private User owner;
+    
+    public ContactEmailEntity(String email, String name, User owner) {
+        this.email = email;
+        this.name = name;
+        this.owner = owner;
+    }
 }

@@ -7,10 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import br.pucgo.ads.projetointegrador.carekeeper.enums.EmailTemplate;
+import br.pucgo.ads.projetointegrador.carekeeper.enums.AccidentType;
+import br.pucgo.ads.projetointegrador.carekeeper.entity.AccidentRecordEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.carekeeper.dto.SensorDTO;
 import br.pucgo.ads.projetointegrador.carekeeper.entity.ContactEmailEntity;
@@ -22,14 +27,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PanicAlertService {
 
+    private static final Logger log = LoggerFactory.getLogger(PanicAlertService.class);
+
     private final SendEmailService emailService;
     private final ContactEmailService contactEmailService;
     private final UserRepository userRepository;
+    private final AccidentRecordService accidentRecordService;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.static-map-api-key}")
     private String staticMapApiKey;
 
-    @Value("${panic.alert.image.path:src/main/resources/static/images/logo_unati_horizontal.png}")
+    @Value("${panic.alert.image.path:static/images/logo_unati_horizontal.png}")
     private String alertImagePath;
 
     @SuppressWarnings("null")
@@ -77,6 +86,23 @@ public class PanicAlertService {
                 "unatiIcon",       
                 alertImagePath   
             );
+        }
+
+        try {
+            String sensorJson;
+            try {
+                sensorJson = objectMapper.writeValueAsString(request);
+            } catch (Exception e) {
+                log.error("Erro ao serializar SensorDTO, usando fallback: {}", e.getMessage());
+                sensorJson = "{\"latitude\":" + request.getLatitude() + ",\"longitude\":" + request.getLongitude() + "}";
+            }
+
+            long detectedAt = Instant.now().toEpochMilli();
+            AccidentRecordEntity record = new AccidentRecordEntity(userId, sensorJson, AccidentType.PANIC_ALERT, detectedAt);
+            accidentRecordService.save(record);
+            log.info("Registro de acidente salvo: {}", record);
+        } catch (Exception e) {
+            log.error("Erro ao salvar registro de acidente: {}", e.getMessage(), e);
         }
 
         return true;

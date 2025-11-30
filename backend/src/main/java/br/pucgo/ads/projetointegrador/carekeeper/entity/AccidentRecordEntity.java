@@ -27,7 +27,7 @@ public class AccidentRecordEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "sensor_json", columnDefinition = "TEXT")

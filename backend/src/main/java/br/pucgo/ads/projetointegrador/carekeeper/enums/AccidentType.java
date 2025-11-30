@@ -4,6 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum AccidentType {
+    PANIC_ALERT(
+        "Alerta de Pânico",
+        "Botão de pânico acionado. Verifique imediatamente a situação e acione ajuda se necessário."
+    ),
     FALL(
         "Queda detectada",
         "{{name}} sofreu uma possível queda. Verifique imediatamente se ele(a) está bem e, se necessário, acione ajuda."
