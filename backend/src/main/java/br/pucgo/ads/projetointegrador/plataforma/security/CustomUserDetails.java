@@ -20,13 +20,16 @@ public class CustomUserDetails implements UserDetails {
 
     public static CustomUserDetails fromUser(User user) {
 
-        GrantedAuthority authority =
-                new SimpleGrantedAuthority(user.getRole().getName());
+        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getName());
 
         return new CustomUserDetails(
                 user,
-                Set.of(authority)
-        );
+                Set.of(authority));
+    }
+
+    // Método para acessar o ID do usuário em @PreAuthorize
+    public Long getId() {
+        return user.getId();
     }
 
     @Override

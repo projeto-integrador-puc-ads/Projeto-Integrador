@@ -33,12 +33,11 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-
     public AuthServiceImpl(AuthenticationManager authenticationManager,
-                          UserRepository userRepository,
-                          RoleRepository roleRepository,
-                          PasswordEncoder passwordEncoder,
-                          JwtTokenProvider jwtTokenProvider) {
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -52,9 +51,7 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsernameOrEmail(),
-                        loginDto.getPassword()
-                )
-        );
+                        loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -67,12 +64,12 @@ public class AuthServiceImpl implements AuthService {
 
         // 4. Combinar permissões do Role + Permissões diretas do User
         Set<Permission> allPermissions = new HashSet<>();
-        
+
         // Permissões do Role
         if (user.getRole() != null && user.getRole().getPermissions() != null) {
             allPermissions.addAll(user.getRole().getPermissions());
         }
-        
+
         // Permissões diretas do User
         if (user.getPermissions() != null) {
             allPermissions.addAll(user.getPermissions());
@@ -86,21 +83,20 @@ public class AuthServiceImpl implements AuthService {
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setName(user.getName());
-        
+
         if (user.getRole() != null) {
             response.setRoleName(user.getRole().getName());
             response.setRoleCode(user.getRole().getCode());
         }
-        
+
         // Converter permissões para formato JSON {id: nome}
         Set<Map<String, Object>> permissionsJson = allPermissions.stream()
                 .map(permission -> Map.of(
                         "id", (Object) permission.getId(),
                         "name", (Object) permission.getName(),
-                        "module_id", (Object) (permission.getModule() != null ? permission.getModule().getId() : "")
-                ))
+                        "module_id", (Object) (permission.getModule() != null ? permission.getModule().getId() : "")))
                 .collect(Collectors.toSet());
-        
+
         response.setPermissions(permissionsJson);
 
         return response;
@@ -108,50 +104,56 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String signup(SignupDto signupDto) {
+        // Validar se username já existe
         if (userRepository.existsByUsername(signupDto.getUsername())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Username already exists!");
         }
 
+        // Validar se email já existe
         if (userRepository.existsByEmail(signupDto.getEmail())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email already exists!");
         }
+
+        // Determinar a role do usuário
         Role role;
-
         if (signupDto.getRoleId() != null) {
-
             role = roleRepository.findById(signupDto.getRoleId())
-                .orElseThrow(() ->
-                    new ApiException(HttpStatus.BAD_REQUEST,
-                        "Role não encontrada com ID: " + signupDto.getRoleId())
-                );
-
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
+                            "Role não encontrada com ID: " + signupDto.getRoleId()));
         } else {
-            role = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() ->
-                    new ApiException(HttpStatus.BAD_REQUEST,
-                        "Role não encontrada: USER")
-                );
+            // Role padrão: ROLE_IDOSO
+            role = roleRepository.findByName("ROLE_IDOSO")
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
+                            "Role padrão ROLE_IDOSO não encontrada"));
         }
 
+        // Criar novo usuário
         User user = new User();
         user.setName(signupDto.getName());
         user.setUsername(signupDto.getUsername());
         user.setEmail(signupDto.getEmail());
         user.setPassword(passwordEncoder.encode(signupDto.getPassword()));
-        
-        if (role.getName().equals("MEDICO")) {
+        user.setRole(role);
+
+        // Campos comuns a todos os usuários
+        user.setBirthDate(signupDto.getBirthDate());
+        user.setPhone(signupDto.getPhone());
+        // doc é o CPF - pode ser usado para validação futura
+        // Armazenamos no campo apropriado se existir na entidade User
+
+        // Campos específicos por role
+        if (role.getName().equals("ROLE_MEDICO")) {
             if (signupDto.getCrm() == null || signupDto.getCrm().isBlank()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "CRM é obrigatório para médicos.");
             }
             user.setCrm(signupDto.getCrm());
         }
 
-        if (role.getName().equals("CUIDADOR")) {
+        if (role.getName().equals("ROLE_CUIDADOR")) {
             user.setCertificacao(signupDto.getCertificacao());
             user.setExperiencia(signupDto.getExperiencia());
         }
 
-        user.setRole(role);
         userRepository.save(user);
         return "User registered successfully!";
     }

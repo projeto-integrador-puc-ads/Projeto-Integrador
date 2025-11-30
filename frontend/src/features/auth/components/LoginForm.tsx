@@ -20,17 +20,7 @@ export default function LoginForm() {
       
       // Salvar token no interceptor HTTP
       setAuthToken(response.accessToken);
-      // Persistir token no localStorage para que outras partes
-      // do app (ex: feature `carehub` que tem seu próprio http)
-      // possam inicializar o interceptor a partir do storage.
-      try {
-        localStorage.setItem('token', response.accessToken);
-        localStorage.setItem('accessToken', response.accessToken);
-      } catch (e) {
-        // se a escrita falhar (ex: modo de privacidade), seguimos sem bloqueio
-        // a aplicação já tem o interceptor global configurado por setAuthToken
-        console.warn('Não foi possível salvar token no localStorage', e);
-      }
+      localStorage.setItem('token', response.accessToken);
       
       // Opcional: Salvar dados do usuário no localStorage
       localStorage.setItem('user', JSON.stringify({
@@ -41,6 +31,7 @@ export default function LoginForm() {
         roleName: response.roleName,
         roleCode: response.roleCode,
         permissions: response.permissions,
+        accessToken: response.accessToken,
       }));
       
       enqueueSnackbar(`Bem-vindo(a), ${response.name}!`, { variant: 'success' });
@@ -92,3 +83,5 @@ export default function LoginForm() {
     </Box>
   );
 }
+
+

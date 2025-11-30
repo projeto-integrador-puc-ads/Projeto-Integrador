@@ -19,9 +19,9 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner initData(RoleRepository roleRepository,
-                               UserRepository userRepository,
-                               PermissionRepository permissionRepository,
-                               PasswordEncoder passwordEncoder) {
+            UserRepository userRepository,
+            PermissionRepository permissionRepository,
+            PasswordEncoder passwordEncoder) {
         return args -> {
 
             // ==================== PASSO 1: Criar Permissões ====================
@@ -74,44 +74,81 @@ public class DataInitializer {
             // ==================== PASSO 2: Criar Roles com Permissões ====================
             System.out.println("Inicializando roles...");
 
+            // ROLE_ADMIN - Administrador do sistema
             Role adminRole = roleRepository.findByName("ROLE_ADMIN")
                     .orElseGet(() -> {
                         Role newRole = new Role();
                         newRole.setCode("ADMIN");
                         newRole.setName("ROLE_ADMIN");
                         newRole.setScope("GLOBAL");
-                        
+
                         // Admin tem TODAS as permissões
                         newRole.setPermissions(new HashSet<>(Arrays.asList(
-                            createPermission,
-                            readPermission,
-                            updatePermission,
-                            deletePermission,
-                            manageUsersPermission,
-                            manageRolesPermission
-                        )));
-                        
+                                createPermission,
+                                readPermission,
+                                updatePermission,
+                                deletePermission,
+                                manageUsersPermission,
+                                manageRolesPermission)));
+
                         return roleRepository.save(newRole);
                     });
 
-            Role userRole = roleRepository.findByName("ROLE_USER")
+            // ROLE_IDOSO - Usuário idoso
+            Role idosoRole = roleRepository.findByName("ROLE_IDOSO")
                     .orElseGet(() -> {
                         Role newRole = new Role();
-                        newRole.setCode("USER");
-                        newRole.setName("ROLE_USER");
+                        newRole.setCode("IDOSO");
+                        newRole.setName("ROLE_IDOSO");
                         newRole.setScope("LIMITED");
-                        
-                        // User tem apenas permissão de leitura
-                        newRole.setPermissions(new HashSet<>(Arrays.asList(readPermission)));
-                        
+
+                        // Idoso tem permissão de leitura e atualização (próprio perfil)
+                        newRole.setPermissions(new HashSet<>(Arrays.asList(
+                                readPermission,
+                                updatePermission)));
+
+                        return roleRepository.save(newRole);
+                    });
+
+            // ROLE_CUIDADOR - Cuidador profissional
+            Role cuidadorRole = roleRepository.findByName("ROLE_CUIDADOR")
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setCode("CUIDADOR");
+                        newRole.setName("ROLE_CUIDADOR");
+                        newRole.setScope("LIMITED");
+
+                        // Cuidador tem permissões de leitura e atualização
+                        newRole.setPermissions(new HashSet<>(Arrays.asList(
+                                readPermission,
+                                updatePermission)));
+
+                        return roleRepository.save(newRole);
+                    });
+
+            // ROLE_MEDICO - Médico
+            Role medicoRole = roleRepository.findByName("ROLE_MEDICO")
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setCode("MEDICO");
+                        newRole.setName("ROLE_MEDICO");
+                        newRole.setScope("LIMITED");
+
+                        // Médico tem permissões de leitura, criação e atualização
+                        newRole.setPermissions(new HashSet<>(Arrays.asList(
+                                createPermission,
+                                readPermission,
+                                updatePermission)));
+
                         return roleRepository.save(newRole);
                     });
 
             System.out.println("Roles criadas com sucesso!");
 
-            // ==================== PASSO 3: Criar usuário admin ====================
-            if (!userRepository.existsByUsername("admin")) {
+            // ==================== PASSO 3: Criar usuários de teste ====================
 
+            // Criar usuário admin
+            if (!userRepository.existsByUsername("admin")) {
                 User admin = new User();
                 admin.setName("Administrador Geral");
                 admin.setUsername("admin");
@@ -120,10 +157,24 @@ public class DataInitializer {
                 admin.setRole(adminRole);
 
                 userRepository.save(admin);
-
                 System.out.println("Administrador criado com sucesso!");
             } else {
                 System.out.println("Usuário admin já existe. Nenhuma ação necessária.");
+            }
+
+            // Criar usuário idoso de teste
+            if (!userRepository.existsByUsername("idoso")) {
+                User idoso = new User();
+                idoso.setName("João Silva Santos");
+                idoso.setUsername("idoso");
+                idoso.setEmail("joao.silva@email.com");
+                idoso.setPassword(passwordEncoder.encode("123456"));
+                idoso.setRole(idosoRole);
+
+                userRepository.save(idoso);
+                System.out.println("Usuário idoso criado com sucesso!");
+            } else {
+                System.out.println("Usuário idoso já existe. Nenhuma ação necessária.");
             }
         };
     }

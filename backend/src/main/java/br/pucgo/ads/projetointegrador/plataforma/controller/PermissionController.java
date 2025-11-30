@@ -26,25 +26,25 @@ public class PermissionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PermissionResponseDto> getPermissionById(@PathVariable Long id) {
         return ResponseEntity.ok(permissionService.getPermissionById(id));
     }
 
     @GetMapping("/name/{name}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PermissionResponseDto> getPermissionByName(@PathVariable String name) {
         return ResponseEntity.ok(permissionService.getPermissionByName(name));
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PermissionResponseDto>> getAllPermissions() {
         return ResponseEntity.ok(permissionService.getAllPermissions());
     }
 
     @GetMapping("/module/{moduleId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PermissionResponseDto>> getPermissionsByModuleId(@PathVariable Long moduleId) {
         return ResponseEntity.ok(permissionService.getPermissionsByModuleId(moduleId));
     }
@@ -65,7 +65,7 @@ public class PermissionController {
     }
 
     @GetMapping("/exists/{name}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> existsByName(@PathVariable String name) {
         return ResponseEntity.ok(permissionService.existsByName(name));
     }

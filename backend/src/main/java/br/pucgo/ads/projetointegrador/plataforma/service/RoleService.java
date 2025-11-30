@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.plataforma.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.dto.RoleDto;
+import br.pucgo.ads.projetointegrador.plataforma.dto.RoleResponseDto;
 import br.pucgo.ads.projetointegrador.plataforma.entity.Role;
 
 import java.util.List;
@@ -9,13 +10,13 @@ public interface RoleService {
 
     Role findByName(String name);
 
-    List<Role> getAllRoles();
+    List<RoleResponseDto> getAllRoles();
 
-    Role getRoleById(Long id);
+    RoleResponseDto getRoleById(Long id);
 
-    Role createRole(RoleDto roleDto);
+    RoleResponseDto createRole(RoleDto roleDto);
 
-    Role updateRole(Long id, RoleDto roleDto);
+    RoleResponseDto updateRole(Long id, RoleDto roleDto);
 
     void deleteRole(Long id);
 
