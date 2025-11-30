@@ -38,16 +38,14 @@ public class PanicAlertService {
     @Value("${app.static-map-api-key}")
     private String staticMapApiKey;
 
-    @Value("${panic.alert.image.path:static/images/logo_unati_horizontal.png}")
-    private String alertImagePath;
+    private final String imagePath = "static/images/logo_unati_horizontal.png";
 
     @SuppressWarnings("null")
     public boolean sendPanicAlert(Long userId, SensorDTO request) {
 
         List<ContactEmailEntity> contatos = contactEmailService.getContactsByUserId(userId);
-        
         if (contatos.isEmpty()) {
-            return false; 
+            return false;
         }
 
         // Nome do usuário
@@ -56,7 +54,6 @@ public class PanicAlertService {
                 .orElse("Usuário");
 
         Instant now = Instant.now();
-
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                 .withZone(ZoneId.of("America/Sao_Paulo"));
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
@@ -76,33 +73,39 @@ public class PanicAlertService {
         placeholders.put("time", time);
         placeholders.put("timestamp", date + " " + time);
 
-        // Envia e-mail para todos os contatos
-        for (ContactEmailEntity contato : contatos) {
-            emailService.sendEmailWithInlineImage(
-                contato.getEmail(),
-                "Alerta de Emergência 🚨",  
-                EmailTemplate.PANIC_ALERT,
-                placeholders,
-                "unatiIcon",       
-                alertImagePath   
-            );
-        }
-
+        // Salva registro no banco mesmo que envio de e-mail falhe
         try {
             String sensorJson;
             try {
                 sensorJson = objectMapper.writeValueAsString(request);
             } catch (Exception e) {
                 log.error("Erro ao serializar SensorDTO, usando fallback: {}", e.getMessage());
-                sensorJson = "{\"latitude\":" + request.getLatitude() + ",\"longitude\":" + request.getLongitude() + "}";
+                sensorJson = "{\"latitude\":" + request.getLatitude() + ",\"longitude\":" + request.getLongitude()
+                        + "}";
             }
 
             long detectedAt = Instant.now().toEpochMilli();
-            AccidentRecordEntity record = new AccidentRecordEntity(userId, sensorJson, AccidentType.PANIC_ALERT, detectedAt);
+            AccidentRecordEntity record = new AccidentRecordEntity(userId, sensorJson, AccidentType.PANIC_ALERT,
+                    detectedAt);
             accidentRecordService.save(record);
             log.info("Registro de acidente salvo: {}", record);
         } catch (Exception e) {
             log.error("Erro ao salvar registro de acidente: {}", e.getMessage(), e);
+        }
+
+        // Envia e-mail para todos os contatos dentro de try-catch
+        for (ContactEmailEntity contato : contatos) {
+            try {
+                emailService.sendEmailWithInlineImage(
+                        contato.getEmail(),
+                        "Alerta de Emergência 🚨",
+                        EmailTemplate.PANIC_ALERT,
+                        placeholders,
+                        "unatiIcon",
+                        imagePath);
+            } catch (Exception e) {
+                log.error("Falha ao enviar e-mail para {}: {}", contato.getEmail(), e.getMessage(), e);
+            }
         }
 
         return true;

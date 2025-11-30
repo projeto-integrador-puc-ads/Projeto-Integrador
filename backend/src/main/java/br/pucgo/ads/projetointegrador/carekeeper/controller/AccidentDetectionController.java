@@ -62,12 +62,11 @@ public class AccidentDetectionController {
     @PostMapping("/leitura")
     public ResponseEntity<Void> detectAccident(
             @RequestBody SensorDTO sensorDTO,
-            @RequestParam(name = "ativo", defaultValue = "false") boolean isAlertActive,
             Authentication authentication
     ) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Long userId = userDetails.getUser().getId();
-        boolean accidentDetected = sensorService.processReading(userId, sensorDTO, isAlertActive);
+        boolean accidentDetected = sensorService.processReading(userId, sensorDTO);
 
         return accidentDetected
                 ? ResponseEntity.ok().build()

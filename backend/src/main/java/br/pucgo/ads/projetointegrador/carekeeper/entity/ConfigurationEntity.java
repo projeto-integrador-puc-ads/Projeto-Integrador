@@ -24,7 +24,7 @@ public class ConfigurationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false, unique = true, columnDefinition = "VARCHAR(36)")
+    @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
     @Column(name = "config_json", columnDefinition = "TEXT")

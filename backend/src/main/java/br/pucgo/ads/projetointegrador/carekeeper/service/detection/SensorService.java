@@ -10,7 +10,6 @@ import br.pucgo.ads.projetointegrador.carekeeper.repository.AccidentRecordReposi
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
 import br.pucgo.ads.projetointegrador.carekeeper.service.ContactEmailService;
 import br.pucgo.ads.projetointegrador.carekeeper.service.SendEmailService;
-import br.pucgo.ads.projetointegrador.carekeeper.utils.EnvironmentUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -28,7 +27,6 @@ public class SensorService {
 
     private final SendEmailService emailService;
     private final AccidentDetection accidentDetection;
-    private final EnvironmentUtil envUtil;
     private final ContactEmailService contactEmailService;
     private final AccidentRecordRepository accidentRecordRepo;
     private final UserRepository userRepository;
@@ -40,12 +38,13 @@ public class SensorService {
     @Value("${app.static-map-api-key}")
     private String staticMapApiKey;
 
+    private final String imagePath = "static/images/logo_unati_horizontal.png";
+
     private static final Logger logger = Logger.getLogger(SensorService.class.getName());
 
         public SensorService(
             SendEmailService emailService,
             AccidentDetection accidentDetection,
-            EnvironmentUtil envUtil,
             ContactEmailService contactEmailService,
             AccidentRecordRepository accidentRecordRepo,
             UserRepository userRepository,
@@ -53,7 +52,6 @@ public class SensorService {
     ) {
         this.emailService = emailService;
         this.accidentDetection = accidentDetection;
-        this.envUtil = envUtil;
         this.contactEmailService = contactEmailService;
         this.accidentRecordRepo = accidentRecordRepo;
         this.userRepository = userRepository;
@@ -63,12 +61,12 @@ public class SensorService {
     /**
      * Processa uma leitura do sensor e envia e-mails de alerta se acidentes forem detectados.
      */
-    public boolean processReading(Long userId, SensorDTO currentReading, boolean isAlertActive) {
-        if (isAlertActive || hasDetectedAccidents) {
+    public boolean processReading(Long userId, SensorDTO currentReading) {
+        if (hasDetectedAccidents) {
             return true;
         }
 
-        List<AccidentType> accidents = accidentDetection.check(userId, currentReading, lastReading, envUtil);
+        List<AccidentType> accidents = accidentDetection.check(userId, currentReading, lastReading);
         lastReading = currentReading;
         hasDetectedAccidents = hasAccidents(accidents);
 
@@ -117,9 +115,6 @@ public class SensorService {
                     return true;
                 }
 
-                // Caminho da imagem local embutida (logo Unati)
-                String imagePath = "src/main/resources/static/images/logo_unati_horizontal.png";
-
                 // Envia o e-mail para todos os contatos do usuário
                 String subject = "🚨 " + accidents.size() + " acidente(s) detectado(s)";
                 for (ContactEmailEntity contato : contatos) {
@@ -129,7 +124,7 @@ public class SensorService {
                             EmailTemplate.EMERGENCY_ALERT_TEMPLATE,
                             placeholders,
                             "unatiIcon", // deve coincidir com cid do HTML
-                            imagePath
+                            this.imagePath
                     );
                 }
 
@@ -139,10 +134,6 @@ public class SensorService {
                     AccidentRecordEntity record = new AccidentRecordEntity(
                             userId, sensorJson, at, currentReading.getTimestamp());
                     accidentRecordRepo.save(record);
-                }
-
-                if (envUtil.isDev()) {
-                    logger.info("Alertas salvos no banco para userId=" + userId + " (count=" + accidents.size() + ")");
                 }
 
             } catch (Exception e) {
