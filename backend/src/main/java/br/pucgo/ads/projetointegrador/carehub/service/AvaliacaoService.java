@@ -7,10 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import br.pucgo.ads.projetointegrador.carehub.dto.avaliacao.AvaliacaoRequestDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.avaliacao.AvaliacaoResponseDTO;
 import br.pucgo.ads.projetointegrador.carehub.entity.Avaliacao;
-import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
-import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
@@ -28,9 +26,6 @@ public class AvaliacaoService {
 
     @Autowired
     private CuidadorRepository cuidadorRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
 
     @Autowired
     private AgendamentoRepository agendamentoRepository;

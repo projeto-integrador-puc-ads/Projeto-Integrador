@@ -167,6 +167,7 @@ export default function ChatPage() {
     const [playing, setPlaying] = useState(false);
     const [current, setCurrent] = useState(0);
     const [duration, setDuration] = useState<number | null>(null);
+    const [playbackRate, setPlaybackRate] = useState(1);
 
     useEffect(() => {
       const a = new Audio(src);
@@ -174,16 +175,19 @@ export default function ChatPage() {
       const onTime = () => setCurrent(a.currentTime);
       const onPlay = () => setPlaying(true);
       const onPause = () => setPlaying(false);
+      const onEnded = () => { setPlaying(false); setCurrent(0); };
       const onLoaded = () => setDuration(a.duration || 0);
       a.addEventListener('timeupdate', onTime);
       a.addEventListener('play', onPlay);
       a.addEventListener('pause', onPause);
+      a.addEventListener('ended', onEnded);
       a.addEventListener('loadedmetadata', onLoaded);
       return () => {
         a.pause();
         a.removeEventListener('timeupdate', onTime);
         a.removeEventListener('play', onPlay);
         a.removeEventListener('pause', onPause);
+        a.removeEventListener('ended', onEnded);
         a.removeEventListener('loadedmetadata', onLoaded);
         audioRef.current = null;
       };
@@ -195,26 +199,118 @@ export default function ChatPage() {
       if (playing) a.pause(); else a.play();
     };
 
+    const toggleSpeed = () => {
+      const rates = [1, 1.5, 2];
+      const currentIndex = rates.indexOf(playbackRate);
+      const nextRate = rates[(currentIndex + 1) % rates.length];
+      setPlaybackRate(nextRate);
+      if (audioRef.current) audioRef.current.playbackRate = nextRate;
+    };
+
+    const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+      const a = audioRef.current;
+      if (!a || !duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      a.currentTime = percent * duration;
+    };
+
+    // Gera waveform visual simples (barras aleatórias estilizadas)
+    const waveformBars = Array.from({ length: 28 }, (_, i) => {
+      const seed = src.charCodeAt(i % src.length) + i;
+      const height = 20 + ((seed % 30) / 30) * 80;
+      return height;
+    });
+
+    const progress = duration ? (current / duration) * 100 : 0;
+
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 240 }}>
         <IconButton
           size="small"
           onClick={toggle}
           sx={{
-            bgcolor: inverted ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-            color: inverted ? 'white' : 'inherit',
-            width: 40,
-            height: 40,
-            borderRadius: 1.2
+            bgcolor: inverted ? 'rgba(255,255,255,0.15)' : 'primary.main',
+            color: inverted ? 'white' : 'white',
+            width: 36,
+            height: 36,
+            boxShadow: inverted ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
+            '&:hover': {
+              bgcolor: inverted ? 'rgba(255,255,255,0.25)' : 'primary.dark',
+              transform: 'scale(1.05)'
+            },
+            transition: 'all 0.2s'
           }}
         >
-          {playing ? <Pause /> : <PlayArrow />}
+          {playing ? <Pause sx={{ fontSize: 20 }} /> : <PlayArrow sx={{ fontSize: 20 }} />}
         </IconButton>
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ height: 8, bgcolor: inverted ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', borderRadius: 1, overflow: 'hidden' }}>
-            <Box sx={{ width: duration ? `${Math.min(100, (current / (duration || 1)) * 100)}%` : '0%', height: '100%', bgcolor: inverted ? 'rgba(255,255,255,0.9)' : 'primary.main' }} />
+        
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Waveform visual estilo WhatsApp */}
+          <Box 
+            onClick={seek}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 0.4, 
+              height: 32, 
+              cursor: 'pointer',
+              mb: 0.5,
+              '&:hover .waveform-bar': {
+                opacity: 0.8
+              }
+            }}
+          >
+            {waveformBars.map((height, i) => (
+              <Box
+                key={i}
+                className="waveform-bar"
+                sx={{
+                  flex: 1,
+                  height: `${height}%`,
+                  maxHeight: 32,
+                  bgcolor: (i / waveformBars.length * 100) < progress 
+                    ? (inverted ? 'rgba(255,255,255,0.9)' : 'primary.main')
+                    : (inverted ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)'),
+                  borderRadius: 1,
+                  transition: 'all 0.15s',
+                  transform: playing && (i / waveformBars.length * 100) < progress ? 'scaleY(1.1)' : 'scaleY(1)'
+                }}
+              />
+            ))}
           </Box>
-          <Typography variant="caption" color={inverted ? 'rgba(255,255,255,0.9)' : 'text.secondary'}>{duration ? formatTime(duration) : '--'}</Typography>
+          
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontSize: 11,
+                fontWeight: 500,
+                color: inverted ? 'rgba(255,255,255,0.85)' : 'text.secondary'
+              }}
+            >
+              {playing ? formatTime(current) : formatTime(duration)}
+            </Typography>
+            
+            {/* Botão de velocidade estilo WhatsApp */}
+            <Chip
+              label={`${playbackRate}x`}
+              size="small"
+              onClick={toggleSpeed}
+              sx={{
+                height: 18,
+                fontSize: 10,
+                fontWeight: 'bold',
+                bgcolor: inverted ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                color: inverted ? 'white' : 'text.secondary',
+                cursor: 'pointer',
+                '&:hover': {
+                  bgcolor: inverted ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)'
+                },
+                transition: 'all 0.2s'
+              }}
+            />
+          </Stack>
         </Box>
       </Box>
     );
@@ -709,14 +805,18 @@ export default function ChatPage() {
                               return mediaSrc ? (
                                 <AudioPlayer src={mediaSrc} inverted={m.remetenteId === userId} />
                               ) : (
-                                <Typography variant="caption" color="text.secondary">Carregando mídia...</Typography>
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ py: 1 }}>
+                                  <CircularProgress size={16} sx={{ color: m.remetenteId === userId ? 'rgba(255,255,255,0.7)' : 'primary.main' }} />
+                                  <Typography variant="caption" sx={{ fontSize: 11, opacity: 0.8 }}>Carregando áudio...</Typography>
+                                </Stack>
                               );
                             })()
-                          ) : null}
-                          {m.conteudo && (
-                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                              {m.conteudo}
-                            </Typography>
+                          ) : (
+                            m.conteudo && (
+                              <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                {m.conteudo}
+                              </Typography>
+                            )
                           )}
                           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, mt: 0.5 }}>
                             {m.id < 0 && <CircularProgress size={14} color="inherit" />}

@@ -137,10 +137,14 @@ public class MensagemService {
                     Mensagem ultimaMensagem = mensagemRepository.findUltimaMensagemEntre(usuarioId, usuario.getId());
                     if (ultimaMensagem != null) {
                         String preview = ultimaMensagem.getConteudo();
-                        if (preview.length() > 50) {
-                            preview = preview.substring(0, 50) + "...";
+                        if (preview != null) {
+                            if (preview.length() > 50) {
+                                preview = preview.substring(0, 50) + "...";
+                            }
+                            dto.setUltimaMensagem(preview);
+                        } else {
+                            dto.setUltimaMensagem("🎤 Áudio");
                         }
-                        dto.setUltimaMensagem(preview);
                         dto.setDataUltimaMensagem(ultimaMensagem.getDataEnvio());
                     }
                     

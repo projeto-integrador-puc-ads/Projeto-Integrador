@@ -164,18 +164,71 @@ public class DataInitializer {
 				 }
 			 }
 
+			// Buscar Gildenor para os agendamentos
+			Cuidador gildenorAgendamento = cuidadorRepo.findByUsername("gildenor").orElse(cuidador);
+			
+			// Avaliação de Maria para Gildenor (agendamento concluído anterior) - CRIAR PRIMEIRO
+			Agendamento agendamentoConcluido1 = new Agendamento();
+			agendamentoConcluido1.setCuidador(gildenorAgendamento);
+			agendamentoConcluido1.setCliente(cliente);
+			agendamentoConcluido1.setDataHoraInicio(LocalDateTime.now().minusDays(7).withHour(9).withMinute(0));
+			agendamentoConcluido1.setDataHoraFim(LocalDateTime.now().minusDays(7).withHour(12).withMinute(0));
+			agendamentoConcluido1.setStatus(Agendamento.StatusAgendamento.CONCLUIDO);
+			agendamentoConcluido1.setObservacoes("Primeiro atendimento - Concluído");
+			agendamentoConcluido1.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+			agendamentoConcluido1 = agendamentoRepo.save(agendamentoConcluido1);
+			
+			// Agendamento concluído com João - CRIAR ANTES DO REGISTRO
+			Agendamento agendamentoConcluidoJoao = new Agendamento();
+			agendamentoConcluidoJoao.setCuidador(cuidador);
+			agendamentoConcluidoJoao.setCliente(cliente);
+			agendamentoConcluidoJoao.setDataHoraInicio(LocalDateTime.now().minusDays(10).withHour(14).withMinute(0));
+			agendamentoConcluidoJoao.setDataHoraFim(LocalDateTime.now().minusDays(10).withHour(16).withMinute(0));
+			agendamentoConcluidoJoao.setStatus(Agendamento.StatusAgendamento.CONCLUIDO);
+			agendamentoConcluidoJoao.setObservacoes("Atendimento regular");
+			agendamentoConcluidoJoao.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
+			agendamentoConcluidoJoao = agendamentoRepo.save(agendamentoConcluidoJoao);
+			
+			// Agendamento confirmado entre Maria e Gildenor para amanhã
 			Agendamento agendamento = new Agendamento();
-			agendamento.setCuidador(cuidador);
+			agendamento.setCuidador(gildenorAgendamento);
 			agendamento.setCliente(cliente);
 			agendamento.setDataHoraInicio(LocalDateTime.now().plusDays(1).withHour(9).withMinute(0));
 			agendamento.setDataHoraFim(LocalDateTime.now().plusDays(1).withHour(12).withMinute(0));
 			agendamento.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
-			agendamento.setObservacoes("Primeira visita");
+			agendamento.setObservacoes("Auxílio com medicação e acompanhamento");
 			agendamento.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
 			agendamento = agendamentoRepo.save(agendamento);
+			
+			// Agendamento adicional com João
+			Agendamento agendamentoJoao = new Agendamento();
+			agendamentoJoao.setCuidador(cuidador);
+			agendamentoJoao.setCliente(cliente);
+			agendamentoJoao.setDataHoraInicio(LocalDateTime.now().plusDays(3).withHour(14).withMinute(0));
+			agendamentoJoao.setDataHoraFim(LocalDateTime.now().plusDays(3).withHour(16).withMinute(0));
+			agendamentoJoao.setStatus(Agendamento.StatusAgendamento.PENDENTE);
+			agendamentoJoao.setObservacoes("Avaliação semanal");
+			agendamentoJoao.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+			agendamentoRepo.save(agendamentoJoao);
 
+			// Registro de acompanhamento do atendimento concluído com Gildenor
+			RegistroAcompanhamento registroGildenor = new RegistroAcompanhamento();
+			registroGildenor.setAgendamento(agendamentoConcluido1);
+			registroGildenor.setCuidador(gildenorAgendamento);
+			registroGildenor.setCliente(cliente);
+			registroGildenor.setPressaoArterial("125/85 mmHg");
+			registroGildenor.setGlicemia("98 mg/dL");
+			registroGildenor.setMedicamentosAdministrados("Losartana 50mg às 8h");
+			registroGildenor.setAlimentacao("Café da manhã completo e lanche da tarde");
+			registroGildenor.setAtividadesRealizadas("Exercícios de alongamento e caminhada de 15 minutos");
+			registroGildenor.setObservacoes("Paciente estava bem disposta e colaborativa.");
+			registroGildenor.setIntercorrencias("Nenhuma");
+			registroGildenor.setSinaisVitais("PA 125/85, FC 88 bpm, Temp 36.5°C");
+			registroRepo.save(registroGildenor);
+			
+			// Registro do atendimento do João
 			RegistroAcompanhamento registro = new RegistroAcompanhamento();
-			registro.setAgendamento(agendamento);
+			registro.setAgendamento(agendamentoConcluidoJoao);
 			registro.setCuidador(cuidador);
 			registro.setCliente(cliente);
 			registro.setPressaoArterial("120/80 mmHg");
@@ -187,23 +240,101 @@ public class DataInitializer {
 			registro.setIntercorrencias("Nenhuma");
 			registro.setSinaisVitais("PA 120/80, 92 bpm");
 			registroRepo.save(registro);
+			
+			Avaliacao avaliacaoGildenor = new Avaliacao();
+			avaliacaoGildenor.setCuidador(gildenorAgendamento);
+			avaliacaoGildenor.setCliente(cliente);
+			avaliacaoGildenor.setAgendamento(agendamentoConcluido1);
+			avaliacaoGildenor.setNota(5);
+			avaliacaoGildenor.setComentario("Gildenor é muito atencioso e cuidadoso. Recomendo!");
+			avaliacaoRepo.save(avaliacaoGildenor);
 
+			// Atualizar média do Gildenor após criar avaliação
+			gildenorAgendamento.setAvaliacaoMedia(new BigDecimal("5.00"));
+			gildenorAgendamento.setTotalAvaliacoes(1);
+			cuidadorRepo.save(gildenorAgendamento);
+			
+			// Avaliação para João (agendamento já foi criado acima)
 			Avaliacao avaliacao = new Avaliacao();
 			avaliacao.setCuidador(cuidador);
 			avaliacao.setCliente(cliente);
+			avaliacao.setAgendamento(agendamentoConcluidoJoao);
 			avaliacao.setNota(5);
 			avaliacao.setComentario("Excelente atendimento!");
 			avaliacaoRepo.save(avaliacao);
 
-			// Atualizar média do cuidador após criar avaliação
+			// Atualizar média do cuidador João após criar avaliação
 			cuidador.setAvaliacaoMedia(new BigDecimal("5.00"));
 			cuidador.setTotalAvaliacoes(1);
 			cuidadorRepo.save(cuidador);
 
+			// Mensagens entre Maria e Gildenor (buscar Gildenor)
+			Cuidador gildenorCuidador = cuidadorRepo.findByUsername("gildenor").orElse(cuidador);
+			
+			// Conversa com mensagens variadas para teste
+			Mensagem m1 = new Mensagem();
+			m1.setRemetente(cliente);
+			m1.setDestinatario(gildenorCuidador);
+			m1.setConteudo("Olá Gildenor, tudo bem? Gostaria de conversar sobre os cuidados.");
+			m1.setDataEnvio(LocalDateTime.now().minusHours(5));
+			mensagemRepo.save(m1);
+
+			Mensagem m2 = new Mensagem();
+			m2.setRemetente(gildenorCuidador);
+			m2.setDestinatario(cliente);
+			m2.setConteudo("Olá Dona Maria! Tudo ótimo. Fico à disposição para ajudá-la.");
+			m2.setDataEnvio(LocalDateTime.now().minusHours(4).minusMinutes(50));
+			mensagemRepo.save(m2);
+
+			Mensagem m3 = new Mensagem();
+			m3.setRemetente(cliente);
+			m3.setDestinatario(gildenorCuidador);
+			m3.setConteudo("Preciso de ajuda com a medicação. Você poderia vir amanhã?");
+			m3.setDataEnvio(LocalDateTime.now().minusHours(4).minusMinutes(30));
+			mensagemRepo.save(m3);
+
+			Mensagem m4 = new Mensagem();
+			m4.setRemetente(gildenorCuidador);
+			m4.setDestinatario(cliente);
+			m4.setConteudo("Claro! Posso ir às 9h da manhã. Está bom para a senhora?");
+			m4.setDataEnvio(LocalDateTime.now().minusHours(4).minusMinutes(15));
+			mensagemRepo.save(m4);
+
+			Mensagem m5 = new Mensagem();
+			m5.setRemetente(cliente);
+			m5.setDestinatario(gildenorCuidador);
+			m5.setConteudo("Perfeito! Às 9h está ótimo. Obrigada!");
+			m5.setDataEnvio(LocalDateTime.now().minusHours(4));
+			mensagemRepo.save(m5);
+
+			Mensagem m6 = new Mensagem();
+			m6.setRemetente(gildenorCuidador);
+			m6.setDestinatario(cliente);
+			m6.setConteudo("De nada! Até amanhã então. Qualquer coisa, pode me chamar aqui.");
+			m6.setDataEnvio(LocalDateTime.now().minusHours(3).minusMinutes(45));
+			mensagemRepo.save(m6);
+
+			// Mensagem mais recente para aparecer no topo
+			Mensagem m7 = new Mensagem();
+			m7.setRemetente(cliente);
+			m7.setDestinatario(gildenorCuidador);
+			m7.setConteudo("Bom dia! Confirma o horário de hoje?");
+			m7.setDataEnvio(LocalDateTime.now().minusMinutes(30));
+			mensagemRepo.save(m7);
+
+			Mensagem m8 = new Mensagem();
+			m8.setRemetente(gildenorCuidador);
+			m8.setDestinatario(cliente);
+			m8.setConteudo("Bom dia Dona Maria! Sim, estarei aí às 9h em ponto.");
+			m8.setDataEnvio(LocalDateTime.now().minusMinutes(15));
+			mensagemRepo.save(m8);
+
+			// Mensagem do João também
 			Mensagem mensagem = new Mensagem();
 			mensagem.setRemetente(cliente);
 			mensagem.setDestinatario(cuidador);
 			mensagem.setConteudo("Ola Joao, combinado para amanha?");
+			mensagem.setDataEnvio(LocalDateTime.now().minusDays(1));
 			mensagemRepo.save(mensagem);
 
 			// --- Dados adicionais para popular diferentes cenários ---
@@ -240,18 +371,38 @@ public class DataInitializer {
 				agendamentoRepo.save(pend);
 
 				// Mensagens entre cliente extra e cuidador gildenor
-				// Conversa inicial com o cuidador principal (Joao)
-				Mensagem m1 = new Mensagem();
-				m1.setRemetente(extra1);
-				m1.setDestinatario(cuidador);
-				m1.setConteudo("Oi, vi seu perfil e gostaria de agendar.");
-				mensagemRepo.save(m1);
+				// Buscar Gildenor novamente para garantir
+				Cuidador gildenorExtra = cuidadorRepo.findByUsername("gildenor").orElse(cuidador);
+				
+				// Conversa inicial com o cuidador Gildenor
+				Mensagem mx1 = new Mensagem();
+				mx1.setRemetente(extra1);
+				mx1.setDestinatario(gildenorExtra);
+				mx1.setConteudo("Oi, vi seu perfil e gostaria de agendar.");
+				mx1.setDataEnvio(LocalDateTime.now().minusDays(2));
+				mensagemRepo.save(mx1);
 
-				Mensagem m2 = new Mensagem();
-				m2.setRemetente(cuidador);
-				m2.setDestinatario(extra1);
-				m2.setConteudo("Olá! Podemos combinar sim. Qual horário prefere?");
-				mensagemRepo.save(m2);
+				Mensagem mx2 = new Mensagem();
+				mx2.setRemetente(gildenorExtra);
+				mx2.setDestinatario(extra1);
+				mx2.setConteudo("Olá! Podemos combinar sim. Qual horário prefere?");
+				mx2.setDataEnvio(LocalDateTime.now().minusDays(2).plusHours(1));
+				mensagemRepo.save(mx2);
+				
+				// Conversa com João também
+				Mensagem mj1 = new Mensagem();
+				mj1.setRemetente(extra1);
+				mj1.setDestinatario(cuidador);
+				mj1.setConteudo("Olá João, você também atende na minha região?");
+				mj1.setDataEnvio(LocalDateTime.now().minusDays(3));
+				mensagemRepo.save(mj1);
+
+				Mensagem mj2 = new Mensagem();
+				mj2.setRemetente(cuidador);
+				mj2.setDestinatario(extra1);
+				mj2.setConteudo("Sim! Atendo em toda Goiânia. Podemos agendar uma visita.");
+				mj2.setDataEnvio(LocalDateTime.now().minusDays(3).plusMinutes(30));
+				mensagemRepo.save(mj2);
 			}
 
 			// Agendamento reagendado (cuidador propôs nova data)

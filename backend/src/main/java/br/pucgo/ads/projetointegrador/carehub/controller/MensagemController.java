@@ -11,9 +11,6 @@ import org.springframework.http.MediaType;
 
 import java.util.Map;
 import java.util.List;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.io.FileInputStream;
 
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.ContatoDTO;
 import br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemRequestDTO;
@@ -72,8 +69,8 @@ public class MensagemController {
         String storageKey = java.util.UUID.randomUUID().toString();
         String mediaUrl = "/api/carehub/mensagens/media/" + storageKey;
 
-        // create message using existing service (persist message with mediaUrl)
-        MensagemResponseDTO mensagem = mensagemService.enviarMensagem(remetenteId, new br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemRequestDTO(destinatarioId, "[Mídia]", mediaUrl, file.getContentType()));
+        // create message using existing service (persist message with mediaUrl, no text content for audio)
+        MensagemResponseDTO mensagem = mensagemService.enviarMensagem(remetenteId, new br.pucgo.ads.projetointegrador.carehub.dto.mensagem.MensagemRequestDTO(destinatarioId, null, mediaUrl, file.getContentType()));
 
         // Persist media blob in DB
         try {
@@ -107,14 +104,21 @@ public class MensagemController {
             return ResponseEntity.status(403).build();
         }
         var mensagem = maybe.get();
+        mensagem = java.util.Objects.requireNonNull(mensagem);
         Long remetenteId = mensagem.getRemetente() == null ? null : mensagem.getRemetente().getId();
         Long destinatarioId = mensagem.getDestinatario() == null ? null : mensagem.getDestinatario().getId();
         if (!usuarioId.equals(remetenteId) && !usuarioId.equals(destinatarioId)) {
             return ResponseEntity.status(403).build();
         }
 
-        String contentType = mm.getContentType() == null ? "application/octet-stream" : mm.getContentType();
-        InputStreamResource resource = new InputStreamResource(new java.io.ByteArrayInputStream(mm.getData()));
+        // Garantir que o contentType seja não-nulo para satisfazer o analisador de null-safety
+        String rawContentType = mm.getContentType();
+        if (rawContentType == null) rawContentType = "application/octet-stream";
+        final String contentType = java.util.Objects.requireNonNull(rawContentType);
+
+        // garantir não-nulidade dos bytes antes de construir o resource
+        byte[] dataBytes = java.util.Objects.requireNonNull(mm.getData());
+        InputStreamResource resource = new InputStreamResource(new java.io.ByteArrayInputStream(dataBytes));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .contentType(MediaType.parseMediaType(contentType))

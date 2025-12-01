@@ -10,8 +10,6 @@ import org.springframework.stereotype.Repository;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 
 import java.util.List;
-import org.springframework.data.domain.Page;
-import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorProjection;
 
 @Repository
 public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
@@ -20,6 +18,8 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     List<Cuidador> findByDeletedAtIsNull();
 
     boolean existsByUsername(String username);
+    
+    java.util.Optional<Cuidador> findByUsername(String username);
     
                 @Query(value = "SELECT c FROM Cuidador c " +
                     "WHERE c.deletedAt IS NULL " +
