@@ -6,6 +6,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // ✅ Novo ícone
 import { useNavigate } from 'react-router-dom';
 
@@ -37,7 +38,6 @@ export function ModuleGrid() {
       desc: 'Acompanhe suas consultas médicas.',
       to: '/grupo4/consultas',
     },
-
     // ✅ Novo módulo: Atendimento Médico
     {
       icon: <LocalHospitalIcon sx={{ fontSize: 40 }} color="error" />,
@@ -45,12 +45,17 @@ export function ModuleGrid() {
       desc: 'Registre informações de consultas e diagnósticos.',
       to: '/atendimento',
     },
-
     {
       icon: <EscalatorWarningIcon sx={{ fontSize: 40 }} />,
       title: 'Ajudador',
       desc: 'Dicas rápidas e ajuda no dia a dia.',
       to: '/grupo5/ajudador',
+    },
+    {
+      icon: <MonitorHeartIcon sx={{ fontSize: 40 }} />,
+      title: 'Monitoramento de Acidentes',
+      desc: 'Visualize incidentes e configure os monitores de segurança.',
+      to: '/monitoramento-de-acidentes',
     },
     {
       icon: <HelpOutlineIcon sx={{ fontSize: 40 }} />,

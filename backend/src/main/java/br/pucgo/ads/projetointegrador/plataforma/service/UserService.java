@@ -11,4 +11,5 @@ public interface UserService {
     UserResponseDto updateUser(Long id, UserProfileDto userDto);
     void deleteUser(Long id);
     boolean existsByEmail(String email);
+    long countUsers();
 }

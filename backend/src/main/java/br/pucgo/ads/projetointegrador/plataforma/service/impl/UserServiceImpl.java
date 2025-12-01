@@ -115,4 +115,9 @@ public class UserServiceImpl implements UserService {
 
         return dto;
     }
+
+    @Override
+    public long countUsers() {
+        return userRepository.count();
+    }
 }

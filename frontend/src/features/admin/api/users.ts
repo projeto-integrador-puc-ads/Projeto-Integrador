@@ -67,4 +67,8 @@ export const adminUsersApi = {
   remover: async (id: number): Promise<void> => {
     await http.delete(`/api/users/${id}`);
   },
+  contar: async (): Promise<number> => {
+    const { data } = await http.get<number>('/api/users/count');
+    return typeof data === 'number' ? data : 0;
+  },
 };

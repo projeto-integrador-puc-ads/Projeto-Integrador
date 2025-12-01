@@ -49,4 +49,10 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> countUsers() {
+        long count = userService.countUsers();
+        return ResponseEntity.ok(count);
+    }
 }
