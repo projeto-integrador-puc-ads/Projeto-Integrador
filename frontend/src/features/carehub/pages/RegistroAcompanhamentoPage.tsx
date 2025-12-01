@@ -20,7 +20,7 @@ import { Save, CheckCircle } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
 import { useSnackbar } from 'notistack';
-import { getUserId } from '../components/auth';
+import { getUserId, isCuidador } from '../components/auth';
 
 interface Agendamento {
   id: number;
@@ -36,6 +36,7 @@ export function RegistroAcompanhamentoPage() {
   const [loading, setLoading] = useState(false);
   
   const cuidadorId = getUserId(); // Cuidador logado
+  const ehCuidador = isCuidador();
 
   const [formData, setFormData] = useState({
     pressaoArterial: '',
@@ -59,10 +60,10 @@ export function RegistroAcompanhamentoPage() {
   }, []);
 
   useEffect(() => {
-    if (cuidadorId) {
+    if (cuidadorId && ehCuidador) {
       carregarAgendamentos();
     }
-  }, [cuidadorId]);
+  }, [cuidadorId, ehCuidador]);
 
   const carregarAgendamentos = async () => {
     if (!cuidadorId) return;
@@ -71,9 +72,9 @@ export function RegistroAcompanhamentoPage() {
       const response = await http.get(
         `/api/carehub/agendamentos/cuidador/${cuidadorId}`
       );
-      // Filtrar apenas agendamentos confirmados ou em andamento
+      // Filtrar apenas agendamentos em andamento (registro deve ser feito durante o atendimento)
       const agendamentosAtivos = response.data.filter(
-        (ag: Agendamento) => ag.status === 'CONFIRMADO' || ag.status === 'EM_ANDAMENTO' || ag.status === 'CONCLUIDO'
+        (ag: Agendamento) => ag.status === 'EM_ANDAMENTO'
       );
       setAgendamentos(agendamentosAtivos);
     } catch (error) {
@@ -165,14 +166,22 @@ export function RegistroAcompanhamentoPage() {
         Este registro será adicionado ao histórico do cliente e ficará disponível para consultas futuras.
       </Alert>
 
-      {agendamentoSelecionado && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          <strong>✅ Atendimento em Andamento:</strong> Você está registrando o acompanhamento em tempo real. 
-          Preencha os dados conforme realiza as atividades.
+      {!ehCuidador && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Acesso restrito: apenas usuários com função de cuidador podem criar registros de acompanhamento. Se você acredita que seu perfil deveria ser cuidador, verifique sua conta ou contacte o administrador.
         </Alert>
       )}
 
-      <Card component="form" onSubmit={handleSubmit}>
+      {ehCuidador && (
+        <>
+          {agendamentoSelecionado && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              <strong>✅ Atendimento em Andamento:</strong> Você está registrando o acompanhamento em tempo real. 
+              Preencha os dados conforme realiza as atividades.
+            </Alert>
+          )}
+
+          <Card component="form" onSubmit={handleSubmit}>
         <CardContent>
           <Stack spacing={3}>
             {/* Seleção de Agendamento */}
@@ -318,6 +327,8 @@ export function RegistroAcompanhamentoPage() {
           </Stack>
         </CardContent>
       </Card>
+        </>
+      )}
     </Box>
   );
 }

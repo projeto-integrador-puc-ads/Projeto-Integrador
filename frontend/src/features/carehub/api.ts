@@ -80,6 +80,17 @@ export const mensagensApi = {
     });
     return data;
   },
+  uploadMedia: async (remetenteId: number, destinatarioId: number, file: File): Promise<MensagemResponseDTO> => {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    form.append('destinatarioId', String(destinatarioId));
+    const { data } = await http.post('/api/carehub/mensagens/media', form, {
+      // Não setar Content-Type manualmente para multipart/form-data; axios
+      // define o boundary automaticamente.
+      headers: { 'X-User-Id': String(remetenteId) },
+    });
+    return data;
+  },
   conversa: async (autenticadoId: number, usuarioId: number): Promise<MensagemResponseDTO[]> => {
     const { data } = await http.get(`/api/carehub/mensagens/conversa/${usuarioId}`, {
       headers: { 'X-User-Id': String(autenticadoId) },

@@ -15,6 +15,9 @@ public class AvaliacaoRequestDTO {
     @NotNull(message = "ID do cuidador é obrigatório")
     private Long cuidadorId;
 
+    @NotNull(message = "ID do agendamento é obrigatório")
+    private Long agendamentoId;
+
     @NotNull(message = "Nota é obrigatória")
     @Min(value = 1, message = "Nota mínima é 1")
     @Max(value = 5, message = "Nota máxima é 5")

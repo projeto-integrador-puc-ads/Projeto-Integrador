@@ -25,6 +25,9 @@ public class MensagemService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository agendamentoRepository;
+
     @Transactional
     public MensagemResponseDTO enviarMensagem(Long remetenteId, MensagemRequestDTO dto) {
         Objects.requireNonNull(remetenteId, "Remetente ID cannot be null");
@@ -36,10 +39,18 @@ public class MensagemService {
         User destinatario = usuarioRepository.findById(destinatarioId)
                 .orElseThrow(() -> new RuntimeException("Destinatário não encontrado"));
 
+        // Verificar existência de agendamento entre remetente e destinatario
+        boolean podeTrocar = agendamentoRepository.existsBetweenUsers(remetenteId, destinatarioId);
+        if (!podeTrocar) {
+            throw new br.pucgo.ads.projetointegrador.carehub.exception.OperacaoNaoPermitidaException("Troca de mensagens só permitida quando existe um atendimento entre as partes");
+        }
+
         Mensagem mensagem = new Mensagem();
         mensagem.setRemetente(remetente);
         mensagem.setDestinatario(destinatario);
         mensagem.setConteudo(dto.getConteudo());
+        mensagem.setMediaUrl(dto.getMediaUrl());
+        mensagem.setMediaType(dto.getMediaType());
 
         mensagem = mensagemRepository.save(mensagem);
         return toResponseDTO(mensagem);
@@ -59,7 +70,12 @@ public class MensagemService {
     public List<MensagemResponseDTO> buscarConversa(Long usuario1Id, Long usuario2Id) {
         Objects.requireNonNull(usuario1Id, "Usuario1 ID cannot be null");
         Objects.requireNonNull(usuario2Id, "Usuario2 ID cannot be null");
-        
+        // Verificar se existe agendamento entre os usuários; se não, recusar acesso
+        boolean existe = agendamentoRepository.existsBetweenUsers(usuario1Id, usuario2Id);
+        if (!existe) {
+            throw new br.pucgo.ads.projetointegrador.carehub.exception.OperacaoNaoPermitidaException("Acesso à conversa negado: sem atendimento entre as partes");
+        }
+
         return mensagemRepository.findConversaBetween(usuario1Id, usuario2Id).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -157,6 +173,8 @@ public class MensagemService {
         dto.setConteudo(mensagem.getConteudo());
         dto.setDataEnvio(mensagem.getDataEnvio());
         dto.setLida(mensagem.getLida());
+        dto.setMediaUrl(mensagem.getMediaUrl());
+        dto.setMediaType(mensagem.getMediaType());
         return dto;
     }
 }

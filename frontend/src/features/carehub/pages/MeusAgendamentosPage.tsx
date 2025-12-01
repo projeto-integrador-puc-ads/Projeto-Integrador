@@ -14,6 +14,7 @@ import {
   Tab,
   Badge,
 } from '@mui/material';
+import { AvaliacaoModal } from '../components/AvaliacaoModal';
 import {
   CalendarToday,
   AccessTime,
@@ -23,12 +24,15 @@ import {
   HourglassEmpty,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
+import { getUserId, isCuidador } from '../components/auth';
 import http from '../libHttp';
-import { getUserId } from '../components/auth';
 
 interface Agendamento {
   id: number;
   clienteNome: string;
+  clienteId?: number;
+  cuidadorId?: number;
+  cuidadorNome?: string;
   dataHoraInicio: string;
   dataHoraFim: string;
   status: string;
@@ -57,8 +61,16 @@ export function MeusAgendamentosPage() {
   const [validacoes, setValidacoes] = useState<Record<number, ValidacaoInicio>>({});
   const [tabAtual, setTabAtual] = useState(0);
   
-  // ID do cuidador logado
-  const cuidadorId = getUserId();
+  // ID do usuário logado e papel
+  const currentUserId = getUserId();
+  const isUserCuidador = isCuidador();
+  const cuidadorId = currentUserId; // usado nas chamadas quando usuário for cuidador
+  const clienteId = currentUserId;
+
+  const [avaliacaoModalOpen, setAvaliacoesModalOpen] = useState(false);
+  const [avaliacaoCuidadorId, setAvaliacaoCuidadorId] = useState<number | null>(null);
+  const [avaliacaoCuidadorNome, setAvaliacaoCuidadorNome] = useState<string | undefined>(undefined);
+  const [avaliacaoAgendamentoId, setAvaliacaoAgendamentoId] = useState<number | null>(null);
 
   useEffect(() => {
     carregarAgendamentos();
@@ -364,22 +376,38 @@ export function MeusAgendamentosPage() {
                 {agendamento.status === 'PENDENTE' && (
                   <Box sx={{ p: 2, pt: 0 }}>
                     <Stack spacing={1}>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="success"
-                        onClick={() => atualizarStatus(agendamento.id, 'CONFIRMADO')}
-                      >
-                        ✓ Confirmar Disponibilidade
-                      </Button>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        color="error"
-                        onClick={() => atualizarStatus(agendamento.id, 'CANCELADO')}
-                      >
-                        ✕ Recusar Agendamento
-                      </Button>
+                      {isUserCuidador ? (
+                        <>
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            color="success"
+                            onClick={() => atualizarStatus(agendamento.id, 'CONFIRMADO')}
+                          >
+                            ✓ Confirmar Disponibilidade
+                          </Button>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="error"
+                            onClick={() => atualizarStatus(agendamento.id, 'CANCELADO')}
+                          >
+                            ✕ Recusar Agendamento
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Alert severity="info">Aguardando confirmação do cuidador.</Alert>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="error"
+                            onClick={() => atualizarStatus(agendamento.id, 'CANCELADO')}
+                          >
+                            Cancelar Solicitação
+                          </Button>
+                        </>
+                      )}
                     </Stack>
                   </Box>
                 )}
@@ -397,17 +425,21 @@ export function MeusAgendamentosPage() {
                           ✓ Você pode iniciar o atendimento agora!
                         </Alert>
                       )}
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        onClick={() => atualizarStatus(agendamento.id, 'EM_ANDAMENTO')}
-                        disabled={validacoes[agendamento.id] && !validacoes[agendamento.id].podeIniciar}
-                      >
-                        {validacoes[agendamento.id]?.podeIniciar 
-                          ? '▶ Iniciar Atendimento' 
-                          : '⏰ Aguardando Horário'}
-                      </Button>
+                      {isUserCuidador ? (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          onClick={() => atualizarStatus(agendamento.id, 'EM_ANDAMENTO')}
+                          disabled={validacoes[agendamento.id] && !validacoes[agendamento.id].podeIniciar}
+                        >
+                          {validacoes[agendamento.id]?.podeIniciar 
+                            ? '▶ Iniciar Atendimento' 
+                            : '⏰ Aguardando Horário'}
+                        </Button>
+                      ) : (
+                        <Alert severity="info">Aguarde o cuidador iniciar o atendimento.</Alert>
+                      )}
                       <Button
                         fullWidth
                         variant="outlined"
@@ -427,14 +459,18 @@ export function MeusAgendamentosPage() {
                       <Alert severity="success" sx={{ fontSize: '0.85rem' }}>
                         Atendimento em andamento. Não esqueça de preencher o registro de acompanhamento!
                       </Alert>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="success"
-                        onClick={() => atualizarStatus(agendamento.id, 'CONCLUIDO')}
-                      >
-                        ✓ Finalizar Atendimento
-                      </Button>
+                      {isUserCuidador ? (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="success"
+                          onClick={() => atualizarStatus(agendamento.id, 'CONCLUIDO')}
+                        >
+                          ✓ Finalizar Atendimento
+                        </Button>
+                      ) : (
+                        <Alert severity="info">O cuidador pode finalizar o atendimento quando concluído.</Alert>
+                      )}
                     </Stack>
                   </Box>
                 )}
@@ -449,11 +485,40 @@ export function MeusAgendamentosPage() {
                         ? '✓ Atendimento concluído com sucesso!' 
                         : '✕ Este agendamento foi cancelado.'}
                     </Alert>
+                    {agendamento.status === 'CONCLUIDO' && !isUserCuidador && currentUserId === agendamento.clienteId && (
+                      <Box sx={{ mt: 2 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => {
+                            // abrir modal de avaliação e pré-selecionar o agendamento
+                            setAvaliacaoCuidadorId(agendamento.cuidadorId ?? undefined as any);
+                            setAvaliacaoCuidadorNome(agendamento.cuidadorNome);
+                            setAvaliacaoAgendamentoId(agendamento.id);
+                            setAvaliacoesModalOpen(true);
+                          }}
+                        >
+                          Avaliar
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </Card>
           ))}
         </Box>
+      )}
+      {/* Modal de Avaliação (pré-seleciona agendamento quando aberto daqui) */}
+      {avaliacaoModalOpen && avaliacaoCuidadorId && clienteId && (
+        <AvaliacaoModal
+          open={avaliacaoModalOpen}
+          onClose={() => setAvaliacoesModalOpen(false)}
+          cuidadorId={avaliacaoCuidadorId}
+          cuidadorNome={avaliacaoCuidadorNome || ''}
+          clienteId={clienteId}
+          initialAgendamentoId={avaliacaoAgendamentoId ?? undefined}
+        />
       )}
     </Box>
   );

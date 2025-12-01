@@ -8,15 +8,14 @@ import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import { CalendarMonth, Schedule, CheckCircle, Cancel, AccessTime, Person, LocationOn } from '@mui/icons-material';
 
-import { getUserId, getUserRole } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
 
 export default function AgendamentosPage() {
   // feature-level accessibility styles
   import('../components/carehub-accessibility.css');
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-  const userRole = getUserRole();
-  const isCuidador = userRole?.includes('CUIDADOR') || false;
+  const isCuidador = isRoleCuidador();
   const params = new URLSearchParams(window.location.search);
   const initialCuidador = Number(params.get('cuidadorId') || '') || undefined;
   
@@ -377,30 +376,35 @@ export default function AgendamentosPage() {
                 
                 {/* Botões de ação */}
                 <Stack direction="row" gap={1}>
-                  <Button 
-                    size="small" 
-                    variant="outlined"
-                    color="error"
-                    disabled={atualizarStatusMutation.isPending || a.status === 'CANCELADO'}
-                    onClick={() => atualizarStatusMutation.mutate({ id: a.id, status: 'CANCELADO' })}
-                    fullWidth
-                    startIcon={<Cancel />}
-                    sx={{ borderRadius: 1.5 }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    size="small" 
-                    variant="outlined"
-                    color="success"
-                    disabled={atualizarStatusMutation.isPending || a.status === 'CONFIRMADO'}
-                    onClick={() => atualizarStatusMutation.mutate({ id: a.id, status: 'CONFIRMADO' })}
-                    fullWidth
-                    startIcon={<CheckCircle />}
-                    sx={{ borderRadius: 1.5 }}
-                  >
-                    Confirmar
-                  </Button>
+                  {a.clienteId === clienteId && (
+                    <Button 
+                      size="small" 
+                      variant="outlined"
+                      color="error"
+                      disabled={atualizarStatusMutation.isPending || a.status === 'CANCELADO'}
+                      onClick={() => atualizarStatusMutation.mutate({ id: a.id, status: 'CANCELADO' })}
+                      fullWidth
+                      startIcon={<Cancel />}
+                      sx={{ borderRadius: 1.5 }}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
+
+                  {isCuidador && a.cuidadorId === getUserId() && a.status !== 'CONFIRMADO' && a.status !== 'CANCELADO' && (
+                    <Button 
+                      size="small" 
+                      variant="outlined"
+                      color="success"
+                      disabled={atualizarStatusMutation.isPending}
+                      onClick={() => atualizarStatusMutation.mutate({ id: a.id, status: 'CONFIRMADO' })}
+                      fullWidth
+                      startIcon={<CheckCircle />}
+                      sx={{ borderRadius: 1.5 }}
+                    >
+                      Confirmar
+                    </Button>
+                  )}
                 </Stack>
               </CardContent>
             </Card>

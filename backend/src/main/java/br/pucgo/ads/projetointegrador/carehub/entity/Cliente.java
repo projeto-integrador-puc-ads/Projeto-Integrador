@@ -1,6 +1,4 @@
 package br.pucgo.ads.projetointegrador.carehub.entity;
-
-import br.pucgo.ads.projetointegrador.carehub.entity.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,11 +12,14 @@ import {
   IconButton,
   Fade,
   Zoom,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Star, Close, SentimentVeryDissatisfied, SentimentDissatisfied, SentimentNeutral, SentimentSatisfied, SentimentVerySatisfied } from '@mui/icons-material';
 import { useSnackbarSync as useSnackbar } from '../libSnackbar';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { criarAvaliacao, type AvaliacaoRequest } from '../api/avaliacoes';
+import { agendamentosApi } from '../api';
 
 interface AvaliacaoModalProps {
   open: boolean;
@@ -24,6 +27,7 @@ interface AvaliacaoModalProps {
   cuidadorId: number;
   cuidadorNome: string;
   clienteId: number;
+  initialAgendamentoId?: number;
 }
 
 interface RatingLabel {
@@ -60,12 +64,38 @@ const ratingLabels: { [key: number]: RatingLabel } = {
   },
 };
 
-export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, clienteId }: AvaliacaoModalProps) {
+export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, clienteId, initialAgendamentoId }: AvaliacaoModalProps) {
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
   const [nota, setNota] = useState<number>(5);
   const [comentario, setComentario] = useState('');
   const [hoveredRating, setHoveredRating] = useState<number>(-1);
+  const [agendamentos, setAgendamentos] = useState<Array<any>>([]);
+  const [agendamentoId, setAgendamentoId] = useState<number | null>(null);
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Carregar agendamentos do cliente relacionados a este cuidador
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const lista = await agendamentosApi.porCliente(clienteId);
+        const filtrados = lista.filter((a: any) => a.cuidadorId === cuidadorId && a.status === 'CONCLUIDO');
+        setAgendamentos(filtrados);
+        if (filtrados.length > 0) {
+          if (initialAgendamentoId && filtrados.some((f: any) => f.id === initialAgendamentoId)) {
+            setAgendamentoId(initialAgendamentoId);
+          } else {
+            setAgendamentoId(filtrados[0].id);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, [open, clienteId, cuidadorId, initialAgendamentoId]);
 
   const mutation = useMutation({
     mutationFn: (avaliacao: AvaliacaoRequest) => criarAvaliacao(clienteId, avaliacao),
@@ -95,10 +125,16 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
       return;
     }
 
+    if (!agendamentoId) {
+      enqueueSnackbar('Selecione o atendimento que você está avaliando (somente atendimentos concluídos).');
+      return;
+    }
+
     mutation.mutate({
       cuidadorId,
       nota,
       comentario: comentario.trim(),
+      agendamentoId,
     });
   };
 
@@ -117,6 +153,7 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
       onClose={handleClose} 
       maxWidth="sm" 
       fullWidth
+      fullScreen={fullScreen}
       aria-labelledby="avaliacao-title"
       aria-describedby="avaliacao-desc"
       PaperProps={{
@@ -253,6 +290,27 @@ export function AvaliacaoModal({ open, onClose, cuidadorId, cuidadorNome, client
             <Typography variant="subtitle2" color="text.secondary" mb={1} fontWeight="medium">
               Deixe um comentário sobre sua experiência
             </Typography>
+            {/* Seleção de Agendamento vinculado à avaliação */}
+            <Box mb={2}>
+              <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                Selecione o atendimento (obrigatório)
+              </Typography>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                value={agendamentoId ?? ''}
+                onChange={(e) => setAgendamentoId(Number(e.target.value))}
+                SelectProps={{ native: true }}
+              >
+                <option value="">-- Selecione --</option>
+                {agendamentos.map((ag: any) => (
+                  <option key={ag.id} value={ag.id}>
+                    {new Date(ag.dataHoraInicio).toLocaleString()} - {ag.status}
+                  </option>
+                ))}
+              </TextField>
+            </Box>
             <Typography variant="caption" color="text.secondary" display="block" mb={1.5}>
               ⭐ Dica: Seja específico sobre o que mais gostou ou o que pode melhorar
             </Typography>

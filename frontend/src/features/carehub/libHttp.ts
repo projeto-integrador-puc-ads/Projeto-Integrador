@@ -20,7 +20,17 @@ try {
     localStorage.getItem('accessToken') ||
     localStorage.getItem('jwtToken') ||
     localStorage.getItem('authToken') ||
-    null
+    // fallback: some flows store a `user` object with accessToken inside
+    (function() {
+      try {
+        const u = localStorage.getItem('user');
+        if (!u) return null;
+        const parsed = JSON.parse(u);
+        return parsed?.accessToken || parsed?.token || parsed?.access_token || null;
+      } catch (e) {
+        return null;
+      }
+    })() || null
   ) : null;
   if (stored) {
     token = stored;

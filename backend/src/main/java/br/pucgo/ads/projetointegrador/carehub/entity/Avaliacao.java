@@ -29,6 +29,10 @@ public class Avaliacao {
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agendamento_id")
+    private Agendamento agendamento;
+
     @Min(1)
     @Max(5)
     @Column(nullable = false)

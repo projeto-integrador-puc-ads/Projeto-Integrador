@@ -83,6 +83,8 @@ export interface ProntuarioResponseDTO extends Omit<ProntuarioRequestDTO, 'clien
 export interface MensagemRequestDTO {
   destinatarioId: number;
   conteudo: string;
+  mediaUrl?: string;
+  mediaType?: string;
 }
 
 export interface MensagemResponseDTO {
@@ -92,18 +94,25 @@ export interface MensagemResponseDTO {
   conteudo: string;
   lida: boolean;
   dataEnvio: string;
+  mediaUrl?: string;
+  mediaType?: string;
 }
 
 export interface AvaliacaoRequestDTO {
   cuidadorId: number;
+  agendamentoId: number;
   nota: number; // 1..5
   comentario?: string;
 }
 
-export interface AvaliacaoResponseDTO extends AvaliacaoRequestDTO {
+export interface AvaliacaoResponseDTO {
   id: number;
+  cuidadorId: number;
+  nota: number;
+  comentario?: string;
   clienteId: number;
   clienteNome?: string;
   cuidadorNome?: string;
   dataAvaliacao: string;
+  agendamentoId?: number;
 }

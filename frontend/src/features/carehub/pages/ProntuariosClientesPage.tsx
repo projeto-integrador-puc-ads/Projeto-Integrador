@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
-import { getUserId } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
 
 interface Prontuario {
   id: number;
@@ -50,6 +50,18 @@ export function ProntuariosClientesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const cuidadorId = getUserId();
+  const isCuidador = isRoleCuidador();
+
+  if (!isCuidador) {
+    return (
+      <Box>
+        <PageHeader title="Prontuários dos Clientes" />
+        <Alert severity="warning">
+          Esta página é acessível apenas para cuidadores. Faça login com uma conta de cuidador para visualizar os prontuários dos seus clientes.
+        </Alert>
+      </Box>
+    );
+  }
 
   useEffect(() => {
     if (cuidadorId) {

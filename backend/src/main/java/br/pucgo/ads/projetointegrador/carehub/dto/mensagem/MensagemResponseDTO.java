@@ -18,4 +18,6 @@ public class MensagemResponseDTO {
     private String conteudo;
     private LocalDateTime dataEnvio;
     private Boolean lida;
+    private String mediaUrl;
+    private String mediaType;
 }

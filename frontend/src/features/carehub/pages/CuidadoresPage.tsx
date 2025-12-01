@@ -1,4 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
+import { getUserId, isCuidador } from '../components/auth';
+import { useNavigate } from 'react-router-dom';
 import '../components/carehub-accessibility.css';
 import { Box, Button, Card, CardContent, Chip, FormControlLabel, Pagination, Stack, Switch, TextField, Typography, CircularProgress, Rating, Avatar, Divider, Paper } from '@mui/material';
 import { cuidadoresApi } from '../api';
@@ -20,11 +22,18 @@ export default function CuidadoresPage() {
 
   // Recuperar clienteId do cabeçalho (simulado - em produção viria do contexto de auth)
   useEffect(() => {
-    const userId = Number(localStorage.getItem('userId'));
-    if (userId) {
-      setClienteId(userId);
-    }
+    const userId = getUserId();
+    if (userId) setClienteId(userId);
   }, []);
+
+  // Redirecionar cuidadores para a área de prontuários (não devem acessar busca de cuidadores)
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isCuidador()) {
+      // Se for cuidador, redireciona para a lista de prontuários dos seus clientes
+      navigate('/carehub/cuidador/prontuarios', { replace: true });
+    }
+  }, [navigate]);
 
   const params = useMemo(() => ({
     localizacao: q || undefined,
@@ -272,7 +281,7 @@ export default function CuidadoresPage() {
                       variant="contained" 
                       size="medium" 
                       fullWidth
-                      href={`/carehub/agendamentos?cuidadorId=${c.id}`}
+                      onClick={() => navigate(`/carehub/agendamentos?cuidadorId=${c.id}`)}
                       sx={{ 
                         borderRadius: 2,
                         textTransform: 'none',
@@ -294,7 +303,7 @@ export default function CuidadoresPage() {
                   <Stack direction="row" gap={1} mt={1.5}>
                     <Button 
                       size="small" 
-                      href="/carehub/chat"
+                      onClick={() => navigate('/carehub/chat')}
                       variant="outlined"
                       startIcon={<Chat />}
                       sx={{ 

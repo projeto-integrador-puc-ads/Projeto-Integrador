@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import http from '../libHttp';
 import { getUserId } from '../components/auth';
+import { PageHeader } from '../components/PageHeader';
 
 interface Agendamento {
   id: number;
@@ -35,7 +36,15 @@ interface Agendamento {
 
 export function ProximosAtendimentosPage() {
   const userId = getUserId();
-  
+  if (!userId) {
+    return (
+      <Box p={3}>
+        <Alert severity="warning">
+          Faça login para ver seus próximos atendimentos.\n
+        </Alert>
+      </Box>
+    );
+  }
   const { data: agendamentos = [], isLoading, error } = useQuery<Agendamento[]>({
     queryKey: ['proximos-atendimentos', userId],
     queryFn: async () => {
@@ -144,17 +153,11 @@ export function ProximosAtendimentosPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <AccessTime sx={{ fontSize: 40, color: 'primary.main' }} />
-        <Box>
-          <Typography variant="h4" fontWeight="bold">
-            Próximos Atendimentos
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Seus agendamentos para os próximos dias
-          </Typography>
-        </Box>
-      </Box>
+      <PageHeader
+        title="Próximos Atendimentos"
+        subtitle="Seus agendamentos para os próximos dias"
+        backTo="/carehub"
+      />
 
       {agendamentos.length > 0 ? (
         <>

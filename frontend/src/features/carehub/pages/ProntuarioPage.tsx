@@ -19,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { PageHeader } from '../components/PageHeader';
 import { Save, Lock } from '@mui/icons-material';
-import { getUserId, getUserRole } from '../components/auth';
+import { getUserId, isCliente } from '../components/auth';
 
 export default function ProntuarioPage() {
   const navigate = useNavigate();
@@ -29,15 +29,10 @@ export default function ProntuarioPage() {
   const [podeEditar, setPodeEditar] = useState(false);
   const [verificandoPermissao, setVerificandoPermissao] = useState(true);
 
-  // Verificar se é cliente e bloquear acesso
+  // Verificar se é cliente e bloquear acesso (prontuário é para cuidadores)
   useEffect(() => {
-    const userRole = getUserRole();
-    
-    // Se for cliente, redirecionar para home
-    if (userRole === 'CLIENTE') {
-      enqueueSnackbar('Acesso negado: prontuários são exclusivos para cuidadores', { 
-        variant: 'error' 
-      });
+    if (isCliente()) {
+      enqueueSnackbar('Acesso negado: prontuários são exclusivos para cuidadores', { variant: 'error' });
       navigate('/carehub');
       return;
     }
@@ -128,13 +123,18 @@ export default function ProntuarioPage() {
       />
 
       {!podeEditar && !verificandoPermissao && (
-        <Alert severity="warning" icon={<Lock />}>
+        <Alert severity="warning" icon={<Lock />}> 
           <Typography variant="body2" fontWeight="medium">
             Modo Somente Leitura
           </Typography>
-          <Typography variant="caption">
-            Você só pode editar prontuários durante atendimentos agendados para hoje (status CONFIRMADO ou EM_ANDAMENTO)
+          <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+            Você só pode editar prontuários durante atendimentos agendados para hoje (status CONFIRMADO ou EM_ANDAMENTO).
           </Typography>
+          <Box>
+            <Button variant="outlined" size="small" onClick={() => navigate('/carehub/meus-agendamentos')}>
+              Ver meus agendamentos
+            </Button>
+          </Box>
         </Alert>
       )}
 

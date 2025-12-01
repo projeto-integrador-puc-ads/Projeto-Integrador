@@ -105,6 +105,65 @@ public class DataInitializer {
 			cuidador.setTaxaHora(new BigDecimal("35.00"));
 			cuidador = cuidadorRepo.save(cuidador);
 
+			 // Adicionar mais cuidadores de teste, incluindo 'Gildenor Cuidador'
+			 if (!cuidadorRepo.existsByUsername("gildenor")) {
+				 Cuidador gildenor = new Cuidador();
+				 gildenor.setName("Gildenor Cuidador");
+				 gildenor.setUsername("gildenor");
+				 gildenor.setEmail("gildenor@example.com");
+				 gildenor.setPassword(encoder.encode("123456"));
+				 gildenor.setRoles(Set.of("CAREHUB_CUIDADOR"));
+				 gildenor.setRole(cuidadorRole);
+				 gildenor.setTelefone("62933334444");
+				 gildenor.setAtivo(true);
+				 gildenor.setExperiencia("10 anos com cuidados domiciliares");
+				 gildenor.setCidade("Goiânia");
+				 gildenor.setEstado("GO");
+				 gildenor.setDisponibilidade(true);
+				 gildenor.setTaxaHora(new BigDecimal("40.00"));
+				 cuidadorRepo.save(gildenor);
+			 }
+
+		 	 // Adicionar vários cuidadores de teste com endereços/cidades distintas
+		 	 String[] cidades = new String[] {"Goiânia", "Anápolis", "Trindade", "Rio Verde", "Catalão"};
+		 	 for (int i = 0; i < cidades.length; i++) {
+		 	 	 String uname = "cuidador_teste" + (i + 1);
+		 	 	 if (!cuidadorRepo.existsByUsername(uname)) {
+		 	 	 	 Cuidador ct = new Cuidador();
+		 	 	 	 ct.setName("Cuidador Teste " + (i + 1));
+		 	 	 	 ct.setUsername(uname);
+		 	 	 	 ct.setEmail(uname + "@example.com");
+		 	 	 	 ct.setPassword(encoder.encode("123456"));
+		 	 	 	 ct.setRoles(Set.of("CAREHUB_CUIDADOR"));
+		 	 	 	 ct.setRole(cuidadorRole);
+		 	 	 	 ct.setTelefone("62970000" + (10 + i));
+		 	 	 	 ct.setAtivo(true);
+		 	 	 	 ct.setExperiencia((2 + i) + " anos de experiência");
+		 	 	 	 ct.setCidade(cidades[i]);
+		 	 	 	 ct.setEstado("GO");
+		 	 	 	 ct.setDisponibilidade(i % 2 == 0);
+		 	 	 	 ct.setTaxaHora(new BigDecimal(30 + i * 5));
+		 	 	 	 cuidadorRepo.save(ct);
+		 	 	 }
+		 	 }
+
+			 // Criar múltiplos idosos (clientes) para popular o sistema
+			 for (int i = 1; i <= 5; i++) {
+				 String username = "idoso" + i;
+				 if (!clienteRepo.existsByUsername(username)) {
+					 Cliente c = new Cliente();
+					 c.setName("Idoso Teste " + i);
+					 c.setUsername(username);
+					 c.setEmail(username + "@example.com");
+					 c.setPassword(encoder.encode("123456"));
+					 c.setRoles(Set.of("CAREHUB_CLIENTE"));
+					 c.setRole(clienteRole);
+					 c.setTelefone("62990000" + (100 + i));
+					 c.setAtivo(true);
+					 clienteRepo.save(c);
+				 }
+			 }
+
 			Agendamento agendamento = new Agendamento();
 			agendamento.setCuidador(cuidador);
 			agendamento.setCliente(cliente);
@@ -146,6 +205,128 @@ public class DataInitializer {
 			mensagem.setDestinatario(cuidador);
 			mensagem.setConteudo("Ola Joao, combinado para amanha?");
 			mensagemRepo.save(mensagem);
+
+			// --- Dados adicionais para popular diferentes cenários ---
+			// Cliente extra (se não existir)
+			if (!clienteRepo.existsByUsername("idoso_extra1")) {
+				Cliente extra1 = new Cliente();
+				extra1.setName("Idoso Extra 1");
+				extra1.setUsername("idoso_extra1");
+				extra1.setEmail("idoso_extra1@example.com");
+				extra1.setPassword(encoder.encode("123456"));
+				extra1.setRoles(Set.of("CAREHUB_CLIENTE"));
+				extra1.setRole(clienteRole);
+				extra1.setTelefone("62977770001");
+				extra1.setAtivo(true);
+				extra1 = clienteRepo.save(extra1);
+
+				Prontuario pextra = new Prontuario();
+				pextra.setCliente(extra1);
+				pextra.setDataNascimento(LocalDate.of(1948, 8, 20));
+				pextra.setHistoricoMedico("Diabetes tipo 2");
+				pextra.setMedicamentosUso("Metformina");
+				pextra.setAlergias("Nenhuma");
+				prontuarioRepo.save(pextra);
+
+				// Agendamento pendente (cliente propôs)
+				Agendamento pend = new Agendamento();
+				pend.setCuidador(cuidador);
+				pend.setCliente(extra1);
+				pend.setDataHoraInicio(LocalDateTime.now().plusDays(2).withHour(10).withMinute(0));
+				pend.setDataHoraFim(LocalDateTime.now().plusDays(2).withHour(11).withMinute(0));
+				pend.setStatus(Agendamento.StatusAgendamento.PENDENTE);
+				pend.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+				pend.setObservacoes("Proposta enviada via app");
+				agendamentoRepo.save(pend);
+
+				// Mensagens entre cliente extra e cuidador gildenor
+				// Conversa inicial com o cuidador principal (Joao)
+				Mensagem m1 = new Mensagem();
+				m1.setRemetente(extra1);
+				m1.setDestinatario(cuidador);
+				m1.setConteudo("Oi, vi seu perfil e gostaria de agendar.");
+				mensagemRepo.save(m1);
+
+				Mensagem m2 = new Mensagem();
+				m2.setRemetente(cuidador);
+				m2.setDestinatario(extra1);
+				m2.setConteudo("Olá! Podemos combinar sim. Qual horário prefere?");
+				mensagemRepo.save(m2);
+			}
+
+			// Agendamento reagendado (cuidador propôs nova data)
+			Agendamento reag = new Agendamento();
+			reag.setCuidador(cuidador);
+			reag.setCliente(cliente);
+			reag.setDataHoraInicio(LocalDateTime.now().plusDays(3).withHour(14).withMinute(0));
+			reag.setDataHoraFim(LocalDateTime.now().plusDays(3).withHour(15).withMinute(0));
+			reag.setStatus(Agendamento.StatusAgendamento.REAGENDADO);
+			reag.setTipoAtendimento(TipoAtendimento.PRESENCIAL);
+			reag.setObservacoes("Cuidador sugeriu nova data devido a indisponibilidade");
+			agendamentoRepo.save(reag);
+
+			// Agendamento em andamento (agora)
+			Agendamento andamento = new Agendamento();
+			andamento.setCuidador(cuidador);
+			andamento.setCliente(cliente);
+			andamento.setDataHoraInicio(LocalDateTime.now().minusMinutes(15));
+			andamento.setDataHoraFim(LocalDateTime.now().plusMinutes(45));
+			andamento.setStatus(Agendamento.StatusAgendamento.EM_ANDAMENTO);
+			andamento.setTipoAtendimento(TipoAtendimento.ACOMPANHAMENTO);
+			andamento.setObservacoes("Atendimento em progresso (seed)");
+			andamento = agendamentoRepo.save(andamento);
+
+			// Criar registro parcial para o atendimento em andamento
+			RegistroAcompanhamento regAnd = new RegistroAcompanhamento();
+			regAnd.setAgendamento(andamento);
+			regAnd.setCuidador(cuidador);
+			regAnd.setCliente(cliente);
+			regAnd.setPressaoArterial("118/76 mmHg");
+			regAnd.setGlicemia("100 mg/dL");
+			regAnd.setObservacoes("Registro inicial durante atendimento em andamento.");
+			registroRepo.save(regAnd);
+
+			// Agendamento concluído (passado) com avaliação
+			Agendamento concluido = new Agendamento();
+			concluido.setCuidador(cuidador);
+			concluido.setCliente(cliente);
+			concluido.setDataHoraInicio(LocalDateTime.now().minusDays(5).withHour(9).withMinute(0));
+			concluido.setDataHoraFim(LocalDateTime.now().minusDays(5).withHour(11).withMinute(0));
+			concluido.setStatus(Agendamento.StatusAgendamento.CONCLUIDO);
+			concluido.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+			concluido.setObservacoes("Atendimento concluído (seed)");
+			concluido = agendamentoRepo.save(concluido);
+
+			RegistroAcompanhamento regConc = new RegistroAcompanhamento();
+			regConc.setAgendamento(concluido);
+			regConc.setCuidador(cuidador);
+			regConc.setCliente(cliente);
+			regConc.setPressaoArterial("122/80 mmHg");
+			regConc.setGlicemia("92 mg/dL");
+			regConc.setMedicamentosAdministrados("Losartana 50mg");
+			regConc.setAtividadesRealizadas("Alongamento");
+			regConc.setObservacoes("Sessão tranquila, paciente respondeu bem.");
+			registroRepo.save(regConc);
+
+			Avaliacao aval2 = new Avaliacao();
+			aval2.setCuidador(cuidador);
+			aval2.setCliente(cliente);
+			aval2.setNota(4);
+			aval2.setComentario("Boa atenção e cuidado, obrigado.");
+			avaliacaoRepo.save(aval2);
+
+			// Atualizar estatísticas simples do cuidador usando valores pré-existentes
+			try {
+				int prevTotal = cuidador.getTotalAvaliacoes() == null ? 0 : cuidador.getTotalAvaliacoes();
+				double prevAvg = cuidador.getAvaliacaoMedia() == null ? 0.0 : cuidador.getAvaliacaoMedia().doubleValue();
+				int novoTotal = prevTotal + 1; // adicionamos a avaliacao aval2 acima
+				double novoAvg = (prevAvg * prevTotal + aval2.getNota()) / novoTotal;
+				cuidador.setTotalAvaliacoes(novoTotal);
+				cuidador.setAvaliacaoMedia(new BigDecimal(String.format("%.2f", novoAvg)));
+				cuidadorRepo.save(cuidador);
+			} catch (Exception ex) {
+				// Se alguma operação falhar aqui, não interrompemos o seeding
+			}
 		};
 	}
 }

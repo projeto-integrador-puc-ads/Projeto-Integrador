@@ -19,11 +19,11 @@ export function CareHubRoutes() {
 
   return (
     <Routes>
-      {/* Página inicial do CareHub */}
-      <Route path="/" element={<CareHubHomePage />} />
+      {/* Página inicial do CareHub (rota relativa) */}
+      <Route index element={<CareHubHomePage />} />
 
-      {/* Rota de debug temporária */}
-      <Route path="/debug" element={<CareHubDebugPage />} />
+      {/* Rota de debug temporária (relativa) */}
+      <Route path="debug" element={<CareHubDebugPage />} />
 
       {/* Rotas compartilhadas */}
       <Route path="proximos" element={<ProximosAtendimentosPage />} />

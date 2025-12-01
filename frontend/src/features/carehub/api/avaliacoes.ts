@@ -13,6 +13,7 @@ export interface AvaliacaoResponse {
 
 export interface AvaliacaoRequest {
   cuidadorId: number;
+  agendamentoId?: number;
   nota: number;
   comentario: string;
 }

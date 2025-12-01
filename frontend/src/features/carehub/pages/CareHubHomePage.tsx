@@ -3,20 +3,15 @@ import '../components/carehub-accessibility.css';
 import { CareHubModuleGrid } from '../components/CareHubModuleGrid';
 import { Favorite } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
-import { initializeAuthToken, getUser, getUserRole, debugAuthStorage, setTokenManually } from '../components/auth';
+import { initializeAuthToken, getUser, getUserRole, setTokenManually, isCuidador, isCliente } from '../components/auth';
 
 export default function CareHubHomePage() {
   console.log('CareHubHomePage rendered');
 
   const [authStatus, setAuthStatus] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
   const [userInfo, setUserInfo] = useState<any>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
-    // Debug: verificar o que está no localStorage
-    const debugData = debugAuthStorage();
-    setDebugInfo(debugData);
-
     // Inicializar token JWT no interceptor quando o CareHub for carregado
     initializeAuthToken();
 
@@ -45,37 +40,6 @@ export default function CareHubHomePage() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      {/* Debug Info - Remover depois de testar */}
-      {authStatus === 'unauthenticated' && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            <strong>Debug Info:</strong> Usuário não autenticado. Verifique se fez login corretamente.
-          </Typography>
-          {debugInfo && (
-            <Box sx={{ mt: 1, fontSize: '0.8rem', fontFamily: 'monospace' }}>
-              <div>Token: {debugInfo.token ? 'Encontrado' : 'Não encontrado'}</div>
-              <div>User: {debugInfo.user ? 'Encontrado' : 'Não encontrado'}</div>
-              <Button
-                size="small"
-                onClick={handleManualTokenSetup}
-                sx={{ mt: 1, mr: 1 }}
-                variant="outlined"
-              >
-                Tentar configurar token
-              </Button>
-              <Button
-                size="small"
-                onClick={() => window.open('/carehub/debug', '_blank')}
-                sx={{ mt: 1 }}
-                variant="outlined"
-              >
-                Página de Debug
-              </Button>
-            </Box>
-          )}
-        </Alert>
-      )}
-
       {authStatus === 'authenticated' && userInfo && (
         <Alert severity="success" sx={{ mb: 2 }}>
           <Typography variant="body2">

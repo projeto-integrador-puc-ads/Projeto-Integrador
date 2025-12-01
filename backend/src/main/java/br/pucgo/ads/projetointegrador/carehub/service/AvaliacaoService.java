@@ -12,6 +12,8 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorRepository;
+import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
+import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,29 +32,49 @@ public class AvaliacaoService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private AgendamentoRepository agendamentoRepository;
+
     @Transactional
     public AvaliacaoResponseDTO criarAvaliacao(Long clienteId, AvaliacaoRequestDTO dto) {
-        Cuidador cuidador = cuidadorRepository.findById(java.util.Objects.requireNonNull(dto.getCuidadorId()))
-                .orElseThrow(() -> new RuntimeException("Cuidador não encontrado"));
+        Long agendamentoId = java.util.Objects.requireNonNull(dto.getAgendamentoId(), "Agendamento ID is required");
 
-        Cliente cliente = clienteRepository.findById(java.util.Objects.requireNonNull(clienteId))
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + clienteId));
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
 
-        // Validação: Verificar se já avaliou este cuidador
-        if (avaliacaoRepository.existsByClienteIdAndCuidadorId(clienteId, dto.getCuidadorId())) {
-            throw new RuntimeException("Você já avaliou este cuidador anteriormente");
+        // Validar que o agendamento pertence ao cliente e ao cuidador informado
+        if (!agendamento.getCliente().getId().equals(clienteId)) {
+            throw new RuntimeException("Avaliador não é o cliente do agendamento");
         }
 
-        Avaliacao avaliacao = new Avaliacao();
-        avaliacao.setCuidador(cuidador);
-        avaliacao.setCliente(cliente);
-        avaliacao.setNota(dto.getNota());
-        avaliacao.setComentario(dto.getComentario());
+        if (!agendamento.getCuidador().getId().equals(dto.getCuidadorId())) {
+            throw new RuntimeException("O cuidador informado não corresponde ao agendamento");
+        }
 
-        avaliacao = avaliacaoRepository.save(avaliacao);
+        // Permitir avaliação apenas se o agendamento estiver concluído
+        if (agendamento.getStatus() != Agendamento.StatusAgendamento.CONCLUIDO) {
+            throw new RuntimeException("Somente é possível avaliar após o agendamento ser concluído");
+        }
+
+        // Se já existe avaliação para este agendamento, atualizar (reavaliação)
+        Avaliacao existente = avaliacaoRepository.findByAgendamentoId(agendamentoId);
+        Avaliacao avaliacao;
+        if (existente != null) {
+            existente.setNota(dto.getNota());
+            existente.setComentario(dto.getComentario());
+            avaliacao = avaliacaoRepository.save(existente);
+        } else {
+            avaliacao = new Avaliacao();
+            avaliacao.setCuidador(agendamento.getCuidador());
+            avaliacao.setCliente(agendamento.getCliente());
+            avaliacao.setAgendamento(agendamento);
+            avaliacao.setNota(dto.getNota());
+            avaliacao.setComentario(dto.getComentario());
+            avaliacao = avaliacaoRepository.save(avaliacao);
+        }
 
         // Atualizar média do cuidador
-        atualizarMediaCuidador(cuidador);
+        atualizarMediaCuidador(avaliacao.getCuidador());
 
         return toResponseDTO(avaliacao);
     }
@@ -105,6 +127,9 @@ public class AvaliacaoService {
         dto.setNota(avaliacao.getNota());
         dto.setComentario(avaliacao.getComentario());
         dto.setDataAvaliacao(avaliacao.getDataAvaliacao());
+        if (avaliacao.getAgendamento() != null) {
+            dto.setAgendamentoId(avaliacao.getAgendamento().getId());
+        }
         return dto;
     }
 }

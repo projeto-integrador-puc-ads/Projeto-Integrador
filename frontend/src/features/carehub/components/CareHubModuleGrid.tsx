@@ -1,4 +1,4 @@
-import { Box, Badge, Typography } from '@mui/material';
+import { Box, Badge } from '@mui/material';
 import { AccessibleModuleCard } from './AccessibleModuleCard';
 import {
   Search,
@@ -12,24 +12,78 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import http from '../libHttp';
 import { useMensagensNaoLidas } from '../hooks/useMensagensNaoLidas';
-import { getUserId, getUserRole } from './auth';
+import { getUserId, isCuidador as isRoleCuidador } from './auth';
 
 export function CareHubModuleGrid() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<number | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [detectedCuidador, setDetectedCuidador] = useState<boolean | null>(null);
   const { data: naoLidas = 0 } = useMensagensNaoLidas(userId || 0);
 
   useEffect(() => {
     const id = getUserId();
-    const role = getUserRole();
     console.log('CareHub Debug - User ID:', id);
-    console.log('CareHub Debug - User Role:', role);
     console.log('CareHub Debug - Raw localStorage user:', localStorage.getItem('user'));
     setUserId(id);
-    setUserRole(role);
     }, []);
+
+  // Se a role não indicar explicitamente 'CUIDADOR', tentar validar consultando
+  // o endpoint de cuidadores pelo userId (caso o token/localStorage venha como ROLE_USER)
+  useEffect(() => {
+    let mounted = true;
+    async function detectCuidador() {
+      // se já detectamos explicitamente via role, use isso
+      if (isRoleCuidador()) {
+        if (mounted) setDetectedCuidador(true);
+        return;
+      }
+
+      if (!userId) {
+        if (mounted) setDetectedCuidador(false);
+        return;
+      }
+
+      try {
+        // Primeiro tente consultar o usuário geral (mais robusto): /api/users/{id}
+        // esse endpoint retorna o role do usuário e evita 400 quando o id
+        // existe mas não é um cuidador.
+        const resp = await http.get(`/api/users/${userId}`);
+        const role = resp.data?.role?.name || resp.data?.role?.code || resp.data?.role?.roleName;
+        const roleStr = role ? String(role).toUpperCase() : '';
+        if (mounted && /CUIDADOR/.test(roleStr)) {
+          setDetectedCuidador(true);
+          return;
+        }
+
+        // Se /api/users não indicar cuidador, como fallback tentamos o
+        // endpoint específico de cuidadores — se ele retornar 200, é cuidador.
+        try {
+          await http.get(`/api/carehub/cuidadores/${userId}`);
+          if (mounted) setDetectedCuidador(true);
+          return;
+        } catch (innerErr) {
+          // não é cuidador
+          if (mounted) setDetectedCuidador(false);
+          return;
+        }
+      } catch (err) {
+        // Se a primeira chamada falhar (ex.: não autenticado), tentamos o
+        // endpoint de cuidadores diretamente como última alternativa.
+        try {
+          await http.get(`/api/carehub/cuidadores/${userId}`);
+          if (mounted) setDetectedCuidador(true);
+        } catch (err2) {
+          if (mounted) setDetectedCuidador(false);
+        }
+      }
+    }
+
+    detectCuidador();
+
+    return () => { mounted = false; };
+  }, [userId]);
 
   // Módulos do Cliente (Dona Maria - ID 2)
   const clienteModules = [
@@ -114,29 +168,14 @@ export function CareHubModuleGrid() {
   ];
 
   // Seleciona módulos baseado no ROLE (aceita CUIDADOR, CAREHUB_CUIDADOR, etc.)
-  const isCuidador = userRole?.includes('CUIDADOR') || userRole?.includes('CAREHUB_CUIDADOR');
-  const modules = isCuidador ? cuidadorModules : clienteModules;
+  // Preferência: usar detecção via API quando disponível (covers ROLE_USER case)
+  const isCuidadorFinal = detectedCuidador ?? isRoleCuidador();
+  const modules = isCuidadorFinal ? cuidadorModules : clienteModules;
 
-  // Debug info
-  if (!userId || !userRole) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6" color="error">
-          Erro: Usuário não autenticado
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          User ID: {userId || 'null'}
-        </Typography>
-        <Typography variant="body2">
-          User Role: {userRole || 'null'}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 2, fontSize: '0.8rem', color: 'text.secondary' }}>
-          Verifique se você está logado e se os dados estão no localStorage.
-        </Typography>
-      </Box>
-    );
-  }
-
+  // Se não tivermos userId, ainda renderizamos os módulos (baseado em role token/claims),
+  // mas mostramos uma mensagem discreta para o ambiente de desenvolvimento.
+  // Isso evita bloquear a UI se o usuário estiver autenticado via token mas o userId
+  // não estiver presente no localStorage por alguma razão.
   return (
     <Box>
       <Box

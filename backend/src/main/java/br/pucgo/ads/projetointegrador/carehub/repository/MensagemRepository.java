@@ -10,6 +10,7 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
@@ -69,4 +70,6 @@ public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
            "AND m.remetente.id = :remetenteId " +
            "AND m.lida = false")
     int marcarComoLidas(@Param("usuarioId") Long usuarioId, @Param("remetenteId") Long remetenteId);
+
+       Optional<Mensagem> findByMediaUrl(String mediaUrl);
 }

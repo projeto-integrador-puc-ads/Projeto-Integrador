@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
-import { getUserId, getUserRole } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
 
 interface RegistroAcompanhamento {
   id: number;
@@ -65,9 +65,16 @@ export function HistoricoAtendimentosPage() {
   const [busca, setBusca] = useState('');
   
   const userId = getUserId();
-  const userRole = getUserRole();
-  // Verifica se é cuidador (aceita CUIDADOR ou ROLE_CUIDADOR)
-  const isCuidador = userRole?.includes('CUIDADOR') || false;
+  const isCuidador = isRoleCuidador();
+
+  if (!userId) {
+    return (
+      <Box>
+        <PageHeader title="Histórico de Atendimentos" backTo="/carehub" />
+        <Alert severity="warning">Faça login para ver seu histórico de atendimentos.</Alert>
+      </Box>
+    );
+  }
 
   useEffect(() => {
     if (userId) {
@@ -81,7 +88,6 @@ export function HistoricoAtendimentosPage() {
       
       console.log('🔍 Debug Histórico:');
       console.log('  - userId:', userId);
-      console.log('  - userRole:', userRole);
       console.log('  - isCuidador:', isCuidador);
       
       const endpoint = isCuidador 

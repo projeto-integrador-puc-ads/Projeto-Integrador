@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { mensagensApi } from '../api';
+import http from '../libHttp';
 import { listarContatos, marcarConversaComoLida } from '../api/mensagens';
 import { 
   Box, 
@@ -27,8 +28,9 @@ import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
-import { Chat, Send, Person, Search, FilterList, Close } from '@mui/icons-material';
-import { getUserId } from '../components/auth';
+import { Chat, Send, Person, Search, FilterList, Close, PlayArrow, Pause } from '@mui/icons-material';
+import { Mic } from '@mui/icons-material';
+import { getUserId, isCuidador } from '../components/auth';
 
 // Configurar dayjs para mostrar tempo relativo em português
 dayjs.extend(relativeTime);
@@ -41,8 +43,17 @@ export default function ChatPage() {
   const { enqueueSnackbar } = useSnackbar();
   
   const [userId, setUserId] = useState<number | undefined>(undefined);
+  // role state removed - use helper isCuidador() when needed
   const [contatoSelecionado, setContatoSelecionado] = useState<number | undefined>(undefined);
   const [texto, setTexto] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingIntervalRef = useRef<number | null>(null);
+  const [pendingRecording, setPendingRecording] = useState<null | { file: File; url: string; duration?: number }>(null);
+  const [optimisticMessages, setOptimisticMessages] = useState<any[]>([]);
+  const [sendingMedia, setSendingMedia] = useState(false);
   const [busca, setBusca] = useState(''); // Campo de busca
   const [filtroNaoLidas, setFiltroNaoLidas] = useState(false); // Filtro de não lidas
 
@@ -84,6 +95,131 @@ export default function ChatPage() {
     refetchInterval: 5000, // Auto-refresh a cada 5s
   });
 
+  // Map of messageId -> local object URL for media fetched with auth header
+  const [mediaObjectUrls, setMediaObjectUrls] = useState<Record<number, string>>({});
+  const mediaObjectUrlsRef = useRef<Record<number, string>>({});
+
+  // Fetch media blobs for messages that contain mediaUrl, using X-User-Id header so server can authorize
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!userId) return;
+      for (const m of msgs) {
+        if (m.mediaUrl && !mediaObjectUrlsRef.current[m.id]) {
+          try {
+            // usar axios/http para garantir Authorization header via interceptor
+            const res = await http.get(m.mediaUrl, {
+              responseType: 'blob',
+              headers: { 'X-User-Id': String(userId) },
+            });
+            const blob = res.data as Blob;
+            const url = URL.createObjectURL(blob);
+            if (cancelled) {
+              URL.revokeObjectURL(url);
+              break;
+            }
+            setMediaObjectUrls(prev => {
+              const next = { ...prev, [m.id]: url };
+              mediaObjectUrlsRef.current = next;
+              return next;
+            });
+          } catch (e) {
+            console.warn('Erro ao baixar mídia da mensagem', e);
+          }
+        }
+      }
+    })();
+    // Do not clear mediaObjectUrls here — clearing state in the effect cleanup
+    // caused a re-fetch loop. We only mark cancelled so in-flight fetches stop.
+    return () => { cancelled = true; };
+  }, [msgs, userId]);
+
+  // keep ref in sync with state
+  useEffect(() => {
+    mediaObjectUrlsRef.current = mediaObjectUrls;
+  }, [mediaObjectUrls]);
+
+  // On unmount revoke all created object URLs and clear state
+  useEffect(() => {
+    return () => {
+      try {
+        Object.values(mediaObjectUrlsRef.current).forEach(u => {
+          try { URL.revokeObjectURL(u); } catch { /* ignore */ }
+        });
+      } finally {
+        // best-effort clear
+        mediaObjectUrlsRef.current = {};
+      }
+    };
+  }, []);
+
+  // Small audio player component (inline)
+  function formatTime(seconds: number | undefined | null) {
+    if (!seconds && seconds !== 0) return '--';
+    const s = Math.floor(seconds || 0);
+    const mm = Math.floor(s / 60).toString().padStart(2, '0');
+    const ss = (s % 60).toString().padStart(2, '0');
+    return `${mm}:${ss}`;
+  }
+
+  function AudioPlayer({ src, inverted = false }: { src: string; inverted?: boolean }) {
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [playing, setPlaying] = useState(false);
+    const [current, setCurrent] = useState(0);
+    const [duration, setDuration] = useState<number | null>(null);
+
+    useEffect(() => {
+      const a = new Audio(src);
+      audioRef.current = a;
+      const onTime = () => setCurrent(a.currentTime);
+      const onPlay = () => setPlaying(true);
+      const onPause = () => setPlaying(false);
+      const onLoaded = () => setDuration(a.duration || 0);
+      a.addEventListener('timeupdate', onTime);
+      a.addEventListener('play', onPlay);
+      a.addEventListener('pause', onPause);
+      a.addEventListener('loadedmetadata', onLoaded);
+      return () => {
+        a.pause();
+        a.removeEventListener('timeupdate', onTime);
+        a.removeEventListener('play', onPlay);
+        a.removeEventListener('pause', onPause);
+        a.removeEventListener('loadedmetadata', onLoaded);
+        audioRef.current = null;
+      };
+    }, [src]);
+
+    const toggle = () => {
+      const a = audioRef.current;
+      if (!a) return;
+      if (playing) a.pause(); else a.play();
+    };
+
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <IconButton
+          size="small"
+          onClick={toggle}
+          sx={{
+            bgcolor: inverted ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+            color: inverted ? 'white' : 'inherit',
+            width: 40,
+            height: 40,
+            borderRadius: 1.2
+          }}
+        >
+          {playing ? <Pause /> : <PlayArrow />}
+        </IconButton>
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ height: 8, bgcolor: inverted ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', borderRadius: 1, overflow: 'hidden' }}>
+            <Box sx={{ width: duration ? `${Math.min(100, (current / (duration || 1)) * 100)}%` : '0%', height: '100%', bgcolor: inverted ? 'rgba(255,255,255,0.9)' : 'primary.main' }} />
+          </Box>
+          <Typography variant="caption" color={inverted ? 'rgba(255,255,255,0.9)' : 'text.secondary'}>{duration ? formatTime(duration) : '--'}</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   const enviarMutation = useMutation({
     mutationFn: () => {
       if (!userId || !contatoSelecionado || !texto) throw new Error('Dados incompletos');
@@ -109,6 +245,128 @@ export default function ChatPage() {
     enviarMutation.mutate();
   };
 
+  // Upload de mídia (áudio)
+  const handleFileUpload = async (file?: File) => {
+    if (!userId || !contatoSelecionado || !file) return;
+    try {
+      return await mensagensApi.uploadMedia(userId, contatoSelecionado, file);
+    } catch (err: any) {
+      enqueueSnackbar(err?.message || 'Erro ao enviar mídia', { variant: 'error' });
+      throw err;
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ['mensagens', userId, contatoSelecionado] });
+      queryClient.invalidateQueries({ queryKey: ['contatos', userId] });
+    }
+  };
+
+  // Recording handlers (MediaRecorder)
+  const startRecording = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      enqueueSnackbar('Seu navegador não suporta gravação de áudio.', { variant: 'error' });
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mr = new MediaRecorder(stream);
+      mediaRecorderRef.current = mr;
+      mr.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mr.onstop = async () => {
+        try {
+          const blob = new Blob(audioChunksRef.current, { type: audioChunksRef.current[0]?.type || 'audio/webm' });
+          const filename = `audio-${Date.now()}.webm`;
+          const file = new File([blob], filename, { type: blob.type });
+          const url = URL.createObjectURL(blob);
+
+          // compute duration
+          let duration: number | undefined = undefined;
+          try {
+            const audio = new Audio(url);
+            await new Promise<void>((res) => {
+              audio.addEventListener('loadedmetadata', () => {
+                duration = audio.duration;
+                res();
+              });
+              // fallback timeout
+              setTimeout(() => res(), 1500);
+            });
+          } catch (e) {
+            // ignore
+          }
+
+          setPendingRecording({ file, url, duration });
+        } catch (err) {
+          console.warn('Erro no onstop do MediaRecorder', err);
+        }
+        // stop all tracks
+        stream.getTracks().forEach(t => t.stop());
+        mediaRecorderRef.current = null;
+        setIsRecording(false);
+        // stop timer
+        if (recordingIntervalRef.current) {
+          window.clearInterval(recordingIntervalRef.current);
+          recordingIntervalRef.current = null;
+        }
+        setRecordingTime(0);
+      };
+      mr.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      // start timer
+      recordingIntervalRef.current = window.setInterval(() => {
+        setRecordingTime(t => t + 1);
+      }, 1000);
+    } catch (err: any) {
+      enqueueSnackbar('Permissão de microfone negada ou erro ao acessar microfone.', { variant: 'error' });
+    }
+  };
+
+  const stopRecording = () => {
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== 'inactive') {
+      mr.stop();
+    } else {
+      setIsRecording(false);
+    }
+  };
+
+  const sendPendingRecording = async () => {
+    if (!pendingRecording || !userId || !contatoSelecionado) return;
+    setSendingMedia(true);
+    const tempId = -Date.now();
+    const optimistic = {
+      id: tempId,
+      remetenteId: userId,
+      destinatarioId: contatoSelecionado,
+      mediaUrl: pendingRecording.url,
+      conteudo: null,
+      dataEnvio: new Date().toISOString()
+    };
+    setOptimisticMessages(prev => [...prev, optimistic]);
+    try {
+      await handleFileUpload(pendingRecording.file);
+      // remove optimistic message after upload success
+      setOptimisticMessages(prev => prev.filter(m => m.id !== tempId));
+      setPendingRecording(null);
+      // after upload, queries will be invalidated in handleFileUpload
+      queryClient.invalidateQueries({ queryKey: ['mensagens', userId, contatoSelecionado] });
+    } catch (err: any) {
+      enqueueSnackbar(err?.message || 'Erro ao enviar áudio', { variant: 'error' });
+      setOptimisticMessages(prev => prev.filter(m => m.id !== tempId));
+    } finally {
+      setSendingMedia(false);
+    }
+  };
+
+  const cancelPendingRecording = () => {
+    if (pendingRecording) {
+      URL.revokeObjectURL(pendingRecording.url);
+      setPendingRecording(null);
+    }
+  };
+
   // Filtra e ordena contatos
   const contatosFiltrados = contatos
     .filter(contato => {
@@ -120,17 +378,26 @@ export default function ChatPage() {
       const matchNaoLidas = !filtroNaoLidas || 
         (contato.mensagensNaoLidas && contato.mensagensNaoLidas > 0);
       
-      return matchBusca && matchNaoLidas;
+      // Se o usuário logado for cuidador, escondemos outros cuidadores da lista (mostrar apenas clientes)
+      const isUserCuidador = isCuidador();
+      const perfilLower = (contato.perfil || '').toLowerCase();
+      const hideBecauseRole = isUserCuidador ? perfilLower.includes('cuidador') : false;
+      return matchBusca && matchNaoLidas && !hideBecauseRole;
     });
 
   const contatoAtual = contatos.find(c => c.id === contatoSelecionado);
+
+  // Combine server messages with optimistic local messages and sort by date
+  const displayMessages = [...(msgs || []), ...optimisticMessages]
+    .slice()
+    .sort((a, b) => new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime());
 
   return (
     <Stack gap={3} sx={{ p: 2 }}>
       {/* Header */}
       <PageHeader 
         title="Mensagens"
-        subtitle="Converse com cuidadores e clientes"
+        subtitle={isCuidador() ? 'Converse com seus clientes' : 'Converse com cuidadores e clientes'}
         backTo="/carehub"
       />
 
@@ -409,7 +676,7 @@ export default function ChatPage() {
                       borderRadius: 2
                     }}
                   >
-                    {msgs.map(m => (
+                    {displayMessages.map(m => (
                       <Box 
                         key={m.id} 
                         sx={{ 
@@ -436,21 +703,33 @@ export default function ChatPage() {
                             }
                           }}
                         >
-                          <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                            {m.conteudo}
-                          </Typography>
-                          <Typography 
-                            variant="caption" 
-                            sx={{ 
-                              opacity: 0.7, 
-                              fontSize: 10, 
-                              mt: 0.5, 
-                              display: 'block',
-                              textAlign: 'right'
-                            }}
-                          >
-                            {dayjs(m.dataEnvio).format('DD/MM HH:mm')}
-                          </Typography>
+                          {m.mediaUrl ? (
+                            (() => {
+                              const mediaSrc = m.id < 0 ? m.mediaUrl : mediaObjectUrls[m.id];
+                              return mediaSrc ? (
+                                <AudioPlayer src={mediaSrc} inverted={m.remetenteId === userId} />
+                              ) : (
+                                <Typography variant="caption" color="text.secondary">Carregando mídia...</Typography>
+                              );
+                            })()
+                          ) : null}
+                          {m.conteudo && (
+                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                              {m.conteudo}
+                            </Typography>
+                          )}
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            {m.id < 0 && <CircularProgress size={14} color="inherit" />}
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                opacity: 0.7, 
+                                fontSize: 10
+                              }}
+                            >
+                              {dayjs(m.dataEnvio).format('DD/MM HH:mm')}
+                            </Typography>
+                          </Box>
                         </Paper>
                       </Box>
                     ))}
@@ -461,6 +740,27 @@ export default function ChatPage() {
                 <Card variant="outlined" sx={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.05)' }}>
                   <CardContent>
                     <Stack direction="row" gap={1} alignItems="flex-end">
+                      {/* Pending recording preview */}
+                      {pendingRecording && (
+                        <Paper elevation={0} sx={{ display: 'flex', alignItems: 'center', gap: 2, mr: 1, p: 1.25, borderRadius: 2, bgcolor: 'background.paper' }}>
+                          <Box sx={{ minWidth: 220 }}>
+                            <AudioPlayer src={pendingRecording.url} />
+                            <Typography variant="caption" color="text.secondary">
+                              {pendingRecording.duration ? formatTime(pendingRecording.duration) : `${recordingTime}s`}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Stack direction="row" spacing={1}>
+                              <Button size="small" variant="contained" onClick={sendPendingRecording} disabled={sendingMedia}>
+                                {sendingMedia ? 'Enviando...' : 'Enviar'}
+                              </Button>
+                              <Button size="small" variant="text" onClick={cancelPendingRecording}>
+                                Cancelar
+                              </Button>
+                            </Stack>
+                          </Box>
+                        </Paper>
+                      )}
                       <TextField 
                         fullWidth 
                         size="small" 
@@ -481,21 +781,36 @@ export default function ChatPage() {
                           }
                         }}
                       />
-                      <Button 
-                        variant="contained" 
-                        onClick={enviar} 
-                        disabled={enviarMutation.isPending || !texto.trim()}
-                        endIcon={<Send />}
-                        sx={{ 
-                          minWidth: 110,
-                          borderRadius: 2,
-                          py: 1.2,
-                          textTransform: 'none',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Enviar
-                      </Button>
+                        {/* Attachment removed per UX: only audio messages are supported */}
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <IconButton
+                            title={isRecording ? 'Parar gravação' : 'Gravar áudio'}
+                            color={isRecording ? 'error' : 'default'}
+                            onClick={() => {
+                              if (isRecording) stopRecording(); else startRecording();
+                            }}
+                          >
+                            <Mic />
+                          </IconButton>
+                          {isRecording && (
+                            <Chip label={`${recordingTime}s`} size="small" color="error" sx={{ ml: 1 }} />
+                          )}
+                        </Box>
+                        <Button 
+                          variant="contained" 
+                          onClick={enviar} 
+                          disabled={enviarMutation.isPending || !texto.trim()}
+                          endIcon={<Send />}
+                          sx={{ 
+                            minWidth: 110,
+                            borderRadius: 2,
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Enviar
+                        </Button>
                     </Stack>
                   </CardContent>
                 </Card>

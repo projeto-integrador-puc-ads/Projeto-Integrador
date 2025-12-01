@@ -28,4 +28,10 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
            "AND ag.status = 'CONCLUIDO'")
     boolean existsAgendamentoConcluido(@Param("clienteId") Long clienteId, 
                                        @Param("cuidadorId") Long cuidadorId);
+
+    @Query("SELECT a FROM Avaliacao a WHERE a.agendamento.id = :agendamentoId")
+    Avaliacao findByAgendamentoId(@Param("agendamentoId") Long agendamentoId);
+
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Avaliacao a WHERE a.agendamento.id = :agendamentoId")
+    boolean existsByAgendamentoId(@Param("agendamentoId") Long agendamentoId);
 }

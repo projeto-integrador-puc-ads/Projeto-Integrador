@@ -31,6 +31,13 @@ public class Mensagem {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String conteudo;
 
+    // Campos para mídia (áudio, imagem, etc.)
+    @Column(name = "media_url", length = 1024)
+    private String mediaUrl;
+
+    @Column(name = "media_type", length = 128)
+    private String mediaType;
+
     @CreationTimestamp
     @Column(name = "data_envio", nullable = false, updatable = false)
     private LocalDateTime dataEnvio;

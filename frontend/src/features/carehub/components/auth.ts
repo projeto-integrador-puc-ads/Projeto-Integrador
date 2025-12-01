@@ -40,6 +40,88 @@ export function getUser(): any {
   }
 }
 
+// Normaliza uma role (string ou array) para string maiúscula ou null
+export function normalizeRole(role: any): string | null {
+  if (!role) return null;
+  // Array de strings ou objetos
+  if (Array.isArray(role)) {
+    const first = role[0];
+    if (!first) return null;
+    if (typeof first === 'string') return first.toUpperCase();
+    if (typeof first === 'object') return (first.roleName || first.name || first.code || String(first)).toString().toUpperCase();
+  }
+  if (typeof role === 'object') {
+    // tentar extrair propriedades comuns de um objeto role
+    return (role.roleName || role.name || role.code || role.authority || '').toString().toUpperCase() || null;
+  }
+  return String(role).toUpperCase();
+}
+
+export function isCuidador(role?: any): boolean {
+  // 1) checar explictamente o objeto user salvo
+  const user = getUser();
+  if (user) {
+    // roles como array de strings
+    if (Array.isArray(user.roles)) {
+      const roles = user.roles.map((x: any) => String(x).toUpperCase());
+      if (roles.some((s: string) => s.includes('CUIDADOR') || s.includes('CAREHUB_CUIDADOR'))) return true;
+    }
+    // permissions possivelmente presente
+    if (Array.isArray(user.permissions)) {
+      if (user.permissions.some((p: any) => String(p).toUpperCase().includes('CUIDADOR'))) return true;
+    }
+    // campos diretos
+    if (user.roleName && String(user.roleName).toUpperCase().includes('CUIDADOR')) return true;
+    if (user.roleCode && String(user.roleCode).toUpperCase().includes('CUIDADOR')) return true;
+  }
+
+  // 2) checar token JWT (se presente) por claims comuns
+  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('jwtToken') || localStorage.getItem('authToken');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const claims = JSON.stringify(payload).toUpperCase();
+      if (claims.includes('CUIDADOR') || claims.includes('CAREHUB_CUIDADOR')) return true;
+    } catch (e) {
+      // ignore parse errors
+    }
+  }
+
+  // 3) fallback: checar argumento role passado
+  const r = normalizeRole(role ?? getUserRole());
+  if (!r) return false;
+  return r.includes('CUIDADOR') || r.includes('ROLE_CUIDADOR') || r.includes('CAREHUB_CUIDADOR');
+}
+
+export function isCliente(role?: any): boolean {
+  const user = getUser();
+  if (user) {
+    if (Array.isArray(user.roles)) {
+      const roles = user.roles.map((x: any) => String(x).toUpperCase());
+      if (roles.some((s: string) => s.includes('CLIENTE') || s.includes('CAREHUB_CLIENTE') || s.includes('IDOSO'))) return true;
+    }
+    if (Array.isArray(user.permissions)) {
+      if (user.permissions.some((p: any) => String(p).toUpperCase().includes('CLIENTE'))) return true;
+    }
+    if (user.roleName && String(user.roleName).toUpperCase().includes('CLIENTE')) return true;
+  }
+
+  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('jwtToken') || localStorage.getItem('authToken');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const claims = JSON.stringify(payload).toUpperCase();
+      if (claims.includes('CLIENTE') || claims.includes('CAREHUB_CLIENTE') || claims.includes('IDOSO')) return true;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const r = normalizeRole(role ?? getUserRole());
+  if (!r) return false;
+  return r.includes('CLIENTE') || r.includes('IDOSO') || r.includes('ROLE_CLIENTE') || r.includes('CAREHUB_CLIENTE');
+}
+
 // Função para inicializar o token JWT no interceptor HTTP
 export function initializeAuthToken() {
   try {

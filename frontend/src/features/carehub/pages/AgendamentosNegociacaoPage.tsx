@@ -27,13 +27,12 @@ import {
  * 4. Quando confirmado por ambos, status vira: CONFIRMADO
  */
 
-import { getUserId, getUserRole } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
 
 export default function AgendamentosNegociacaoPage() {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-  const userRole = getUserRole();
-  const isCuidador = userRole?.includes('CUIDADOR') || false;
+  const isCuidador = isRoleCuidador();
   const params = new URLSearchParams(window.location.search);
   const initialCuidador = Number(params.get('cuidadorId') || '') || undefined;
   
@@ -439,7 +438,7 @@ export default function AgendamentosNegociacaoPage() {
                 </Stack>
 
                 {/* Ações */}
-                {isReagendado && (
+                {isReagendado && !isCuidador && (
                   <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
                     <Typography variant="body2" fontWeight="medium" mb={1}>
                       O cuidador propôs uma nova data!
@@ -476,7 +475,7 @@ export default function AgendamentosNegociacaoPage() {
 
                 {/* Botões de ação gerais */}
                 <Stack direction="row" gap={1} mt={2}>
-                  {(isPendente || isReagendado) && (
+                  {(isPendente || isReagendado) && a.clienteId === clienteId && (
                     <Button 
                       size="small" 
                       variant="outlined" 

@@ -18,6 +18,8 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     
     // Platform model uses deletedAt to indicate soft-delete; active users have deletedAt = null
     List<Cuidador> findByDeletedAtIsNull();
+
+    boolean existsByUsername(String username);
     
                 @Query(value = "SELECT c FROM Cuidador c " +
                     "WHERE c.deletedAt IS NULL " +

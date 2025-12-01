@@ -18,4 +18,5 @@ public class AvaliacaoResponseDTO {
     private Integer nota;
     private String comentario;
     private LocalDateTime dataAvaliacao;
+    private Long agendamentoId;
 }
