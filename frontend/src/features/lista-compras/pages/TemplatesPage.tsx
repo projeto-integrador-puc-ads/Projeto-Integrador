@@ -174,7 +174,7 @@ export default function TemplatesPage() {
                     variant="outlined"
                     size="small"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/lista-compras", { replace: true })}
                     sx={{ textTransform: "none", height: 40 }}
                 >
                     Voltar
