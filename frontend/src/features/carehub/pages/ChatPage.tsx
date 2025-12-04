@@ -493,7 +493,7 @@ export default function ChatPage() {
     .sort((a, b) => new Date(a.dataEnvio).getTime() - new Date(b.dataEnvio).getTime());
 
   return (
-    <Stack gap={3} sx={{ p: 2 }}>
+    <Stack gap={{ xs: 1.5, sm: 2, md: 3 }} sx={{ p: { xs: 1, sm: 1.5, md: 2 }, height: '100%' }}>
       {/* Header */}
       <PageHeader 
         title="Mensagens"
@@ -501,15 +501,25 @@ export default function ChatPage() {
         backTo="/carehub"
       />
 
-      <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 250px)' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: { xs: 1, md: 2 }, 
+        height: { xs: 'calc(100vh - 180px)', sm: 'calc(100vh - 200px)', md: 'calc(100vh - 250px)' },
+        minHeight: { xs: 400, sm: 500 }
+      }}>
         {/* Lista de Contatos */}
         <Box sx={{ 
-          width: { xs: '100%', md: '350px' }, 
-          display: { xs: contatoSelecionado ? 'none' : 'block', md: 'block' } 
+          width: { xs: '100%', md: '320px', lg: '350px' }, 
+          minWidth: { md: '280px' },
+          display: { xs: contatoSelecionado ? 'none' : 'flex', md: 'flex' },
+          flexDirection: 'column',
+          height: { xs: '100%', md: 'auto' },
+          maxHeight: { xs: 'none', md: '100%' }
         }}>
-          <Paper variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
-              <Typography variant="h6">Conversas</Typography>
+          <Paper variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'primary.main', color: 'white', flexShrink: 0 }}>
+              <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' } }}>Conversas</Typography>
               <Typography variant="caption">
                 {contatosFiltrados.length} {contatosFiltrados.length === 1 ? 'contato' : 'contatos'}
                 {filtroNaoLidas && ' não lidas'}
@@ -664,9 +674,13 @@ export default function ChatPage() {
         {/* Área de Chat */}
         <Box sx={{ 
           flex: 1, 
-          display: { xs: contatoSelecionado ? 'block' : 'none', md: 'block' } 
+          display: { xs: contatoSelecionado ? 'flex' : 'none', md: 'flex' },
+          flexDirection: 'column',
+          minWidth: 0,
+          height: { xs: '100%', md: 'auto' },
+          overflow: 'hidden'
         }}>
-          <Stack sx={{ height: '100%' }} gap={2}>
+          <Stack sx={{ height: '100%', overflow: 'hidden' }} gap={{ xs: 1, sm: 1.5, md: 2 }}>
             {!contatoSelecionado && (
               <Card 
                 variant="outlined" 
@@ -693,20 +707,27 @@ export default function ChatPage() {
             {contatoSelecionado && (
               <>
                 {/* Header da Conversa */}
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Stack direction="row" alignItems="center" gap={2}>
+                <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2 }, flexShrink: 0 }}>
+                  <Stack direction="row" alignItems="center" gap={{ xs: 1, sm: 2 }}>
                     <Button
                       variant="text"
                       onClick={() => setContatoSelecionado(undefined)}
-                      sx={{ display: { xs: 'block', md: 'none' }, minWidth: 'auto' }}
+                      sx={{ 
+                        display: { xs: 'flex', md: 'none' }, 
+                        minWidth: 'auto',
+                        p: 0.5,
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                      }}
                     >
                       ← Voltar
                     </Button>
-                    <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      <Person />
+                    <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 } }}>
+                      <Person sx={{ fontSize: { xs: 20, sm: 24 } }} />
                     </Avatar>
-                    <Box>
-                      <Typography variant="h6">{contatoAtual?.nome}</Typography>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {contatoAtual?.nome}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {contatoAtual?.perfil}
                       </Typography>
@@ -767,13 +788,14 @@ export default function ChatPage() {
                     sx={{ 
                       flex: 1, 
                       overflowY: 'auto', 
-                      p: 2, 
+                      p: { xs: 1, sm: 1.5, md: 2 }, 
                       display: 'flex', 
                       flexDirection: 'column', 
-                      gap: 1.5,
+                      gap: { xs: 1, sm: 1.5 },
                       bgcolor: 'grey.50',
                       backgroundImage: 'linear-gradient(to bottom, transparent 95%, rgba(0,0,0,0.02) 100%)',
-                      borderRadius: 2
+                      borderRadius: 2,
+                      minHeight: 0
                     }}
                   >
                     {displayMessages.map(m => (
@@ -781,7 +803,7 @@ export default function ChatPage() {
                         key={m.id} 
                         sx={{ 
                           alignSelf: m.remetenteId === userId ? 'flex-end' : 'flex-start', 
-                          maxWidth: '70%',
+                          maxWidth: { xs: '85%', sm: '75%', md: '70%' },
                           animation: 'fadeIn 0.3s ease-in'
                         }}
                       >
@@ -841,30 +863,41 @@ export default function ChatPage() {
                 )}
 
                 {/* Input */}
-                <Card variant="outlined" sx={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.05)' }}>
-                  <CardContent>
-                    <Stack direction="row" gap={1} alignItems="flex-end">
-                      {/* Pending recording preview */}
-                      {pendingRecording && (
-                        <Paper elevation={0} sx={{ display: 'flex', alignItems: 'center', gap: 2, mr: 1, p: 1.25, borderRadius: 2, bgcolor: 'background.paper' }}>
-                          <Box sx={{ minWidth: 220 }}>
-                            <AudioPlayer src={pendingRecording.url} />
-                            <Typography variant="caption" color="text.secondary">
-                              {pendingRecording.duration ? formatTime(pendingRecording.duration) : `${recordingTime}s`}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Stack direction="row" spacing={1}>
-                              <Button size="small" variant="contained" onClick={sendPendingRecording} disabled={sendingMedia}>
-                                {sendingMedia ? 'Enviando...' : 'Enviar'}
-                              </Button>
-                              <Button size="small" variant="text" onClick={cancelPendingRecording}>
-                                Cancelar
-                              </Button>
-                            </Stack>
-                          </Box>
-                        </Paper>
-                      )}
+                <Card variant="outlined" sx={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.05)', flexShrink: 0 }}>
+                  <CardContent sx={{ p: { xs: 1, sm: 1.5, md: 2 }, '&:last-child': { pb: { xs: 1, sm: 1.5, md: 2 } } }}>
+                    {/* Pending recording preview - layout responsivo */}
+                    {pendingRecording && (
+                      <Paper 
+                        elevation={0} 
+                        sx={{ 
+                          display: 'flex', 
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: { xs: 'stretch', sm: 'center' }, 
+                          gap: { xs: 1, sm: 2 }, 
+                          mb: 1.5,
+                          p: { xs: 1, sm: 1.25 }, 
+                          borderRadius: 2, 
+                          bgcolor: 'grey.100'
+                        }}
+                      >
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <AudioPlayer src={pendingRecording.url} />
+                          <Typography variant="caption" color="text.secondary">
+                            {pendingRecording.duration ? formatTime(pendingRecording.duration) : `${recordingTime}s`}
+                          </Typography>
+                        </Box>
+                        <Stack direction="row" spacing={1} justifyContent={{ xs: 'flex-end', sm: 'flex-start' }}>
+                          <Button size="small" variant="contained" onClick={sendPendingRecording} disabled={sendingMedia}>
+                            {sendingMedia ? 'Enviando...' : 'Enviar'}
+                          </Button>
+                          <Button size="small" variant="text" onClick={cancelPendingRecording}>
+                            Cancelar
+                          </Button>
+                        </Stack>
+                      </Paper>
+                    )}
+                    
+                    <Stack direction="row" gap={{ xs: 0.5, sm: 1 }} alignItems="flex-end" flexWrap="nowrap">
                       <TextField 
                         fullWidth 
                         size="small" 
@@ -880,41 +913,58 @@ export default function ChatPage() {
                         multiline
                         maxRows={3}
                         sx={{
+                          flex: 1,
+                          minWidth: 0,
                           '& .MuiOutlinedInput-root': {
-                            borderRadius: 2
+                            borderRadius: 2,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          },
+                          '& .MuiInputBase-input': {
+                            p: { xs: '8px 12px', sm: '8.5px 14px' }
                           }
                         }}
                       />
-                        {/* Attachment removed per UX: only audio messages are supported */}
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <IconButton
-                            title={isRecording ? 'Parar gravação' : 'Gravar áudio'}
-                            color={isRecording ? 'error' : 'default'}
-                            onClick={() => {
-                              if (isRecording) stopRecording(); else startRecording();
-                            }}
-                          >
-                            <Mic />
-                          </IconButton>
-                          {isRecording && (
-                            <Chip label={`${recordingTime}s`} size="small" color="error" sx={{ ml: 1 }} />
-                          )}
-                        </Box>
-                        <Button 
-                          variant="contained" 
-                          onClick={enviar} 
-                          disabled={enviarMutation.isPending || !texto.trim()}
-                          endIcon={<Send />}
-                          sx={{ 
-                            minWidth: 110,
-                            borderRadius: 2,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontWeight: 'bold'
+                      {/* Botões de ação */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, sm: 0.5 }, flexShrink: 0 }}>
+                        <IconButton
+                          title={isRecording ? 'Parar gravação' : 'Gravar áudio'}
+                          color={isRecording ? 'error' : 'default'}
+                          onClick={() => {
+                            if (isRecording) stopRecording(); else startRecording();
                           }}
+                          size="small"
+                          sx={{ p: { xs: 0.75, sm: 1 } }}
                         >
-                          Enviar
-                        </Button>
+                          <Mic sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                        </IconButton>
+                        {isRecording && (
+                          <Chip 
+                            label={`${recordingTime}s`} 
+                            size="small" 
+                            color="error" 
+                            sx={{ display: { xs: 'none', sm: 'flex' } }} 
+                          />
+                        )}
+                      </Box>
+                      <Button 
+                        variant="contained" 
+                        onClick={enviar} 
+                        disabled={enviarMutation.isPending || !texto.trim()}
+                        endIcon={<Send sx={{ fontSize: { xs: 16, sm: 20 }, display: { xs: 'none', sm: 'block' } }} />}
+                        sx={{ 
+                          minWidth: { xs: 'auto', sm: 100, md: 110 },
+                          borderRadius: 2,
+                          py: { xs: 0.8, sm: 1, md: 1.2 },
+                          px: { xs: 1.5, sm: 2, md: 2.5 },
+                          textTransform: 'none',
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.8rem', sm: '0.875rem', md: '0.9375rem' },
+                          flexShrink: 0
+                        }}
+                      >
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Enviar</Box>
+                        <Send sx={{ fontSize: 18, display: { xs: 'block', sm: 'none' } }} />
+                      </Button>
                     </Stack>
                   </CardContent>
                 </Card>
