@@ -15,6 +15,8 @@ import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
 import TemplatesPage from "@/features/lista-compras/pages/TemplatesPage.tsx";
+import EditListaPage from "@/features/lista-compras/pages/EditListaPage";
+
 
 function Home() {
   return (
@@ -53,8 +55,10 @@ export function AppRoutes() {
         <Route path="lista-compras" element={<ListaComprasPage />} />
         <Route path="lista-compras/nova" element={<CreateListaPage />} />
         <Route path="lista-compras/listas" element={<ViewListaPage />} />
-          <Route path="lista-compras/templates" element={<TemplatesPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="lista-compras/templates" element={<TemplatesPage />} />
+        <Route path="/lista-compras/:listaId/editar" element={<EditListaPage />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
 
         {/* Nova rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />

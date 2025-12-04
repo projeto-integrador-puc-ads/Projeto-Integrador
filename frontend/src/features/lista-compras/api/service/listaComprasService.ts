@@ -63,5 +63,18 @@ export const listaComprasService = {
         return data;
     },
 
+    async atualizarLista(
+        listaId: number,
+        payload: ListaDeComprasDTO
+    ): Promise<ListaDeComprasSalva> {
+        // PUT /lista-compras/listas/{id}
+        const { data } = await listaComprasApi.put<ListaDeComprasSalva>(
+            `/listas/${listaId}`,
+            payload
+        );
+
+        return data;
+    },
+
 
 };

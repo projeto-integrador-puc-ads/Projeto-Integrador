@@ -25,6 +25,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -103,13 +104,16 @@ export default function ViewListaPage() {
                            lista,
                            variant,
                            onClick,
+                           onEditLista,
                        }: {
         lista: ListaDTO;
         variant: "template" | "user" | "finalizada";
         onClick?: (lista: ListaDTO) => void;
+        onEditLista?: (lista: ListaDTO) => void;
     }) => {
         const isTemplate = variant === "template";
         const isFinalizada = variant === "finalizada";
+        const isAberta = variant === "user" && lista.status !== "FINALIZADA";
 
         return (
             <Card
@@ -138,11 +142,12 @@ export default function ViewListaPage() {
                 <CardActionArea onClick={() => onClick?.(lista)} sx={{ p: 0 }}>
                     <CardContent sx={{ p: 2 }}>
                         <Stack spacing={1}>
+                            {/* Cabeçalho: ícone + título */}
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <Box
                                     sx={(theme) => ({
-                                        width: 34,
-                                        height: 34,
+                                        width: 30,
+                                        height: 30,
                                         borderRadius: "50%",
                                         display: "grid",
                                         placeItems: "center",
@@ -160,12 +165,17 @@ export default function ViewListaPage() {
                                     )}
                                 </Box>
 
-                                <Typography fontWeight={700} noWrap>
+                                <Typography
+                                    fontWeight={700}
+                                    noWrap
+                                    variant="body2" // menorzinho, deixa mais compacto
+                                >
                                     {lista.titulo}
                                 </Typography>
                             </Stack>
 
-                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {/* Chips */}
+                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                                 {isTemplate ? (
                                     <Chip size="small" label="Template" variant="outlined" />
                                 ) : (
@@ -177,10 +187,7 @@ export default function ViewListaPage() {
                                                 <CheckCircleIcon />
                                             ) : undefined
                                         }
-
-                                        color={
-                                            lista.status === "FINALIZADA" ? "info" : "success"
-                                        } // azul p/ finalizada, verde p/ aberta
+                                        color={lista.status === "FINALIZADA" ? "info" : "success"}
                                         variant="filled"
                                     />
                                 )}
@@ -201,11 +208,40 @@ export default function ViewListaPage() {
                                     />
                                 )}
                             </Stack>
+
+                            {/* Editar itens no final, alinhado à direita */}
+                            {isAberta && (
+                                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <Button
+                                        size="small"
+                                        variant="text"
+                                        startIcon={<EditIcon />}
+                                        sx={{
+                                            textTransform: "none",
+                                            fontWeight: 500,
+                                            fontSize: "0.75rem",
+                                            minWidth: "auto",
+                                            px: 0.5,
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();      // pra não disparar o onClick do card
+                                            onEditLista?.(lista);
+                                        }}
+                                    >
+                                        Editar itens
+                                    </Button>
+                                </Box>
+                            )}
                         </Stack>
                     </CardContent>
                 </CardActionArea>
             </Card>
         );
+    };
+
+
+    const handleIrParaEdicao = (lista: ListaDTO) => {
+        navigate(`/lista-compras/${lista.id}/editar`);
     };
 
     return (
@@ -215,7 +251,7 @@ export default function ViewListaPage() {
                     variant="outlined"
                     size={"small"}
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/lista-compras", { replace: true })}
                     sx={{ textTransform: "none", height: 40 }}
                 >
                     Voltar
@@ -297,6 +333,7 @@ export default function ViewListaPage() {
                                     lista={l}
                                     variant="user"
                                     onClick={handleAbrirLista}
+                                    onEditLista={handleIrParaEdicao}
                                 />
                             ))}
                         </Box>

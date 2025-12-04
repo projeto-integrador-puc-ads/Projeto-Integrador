@@ -35,6 +35,11 @@ export const listaViewService = {
             }
         );
         return mapBackendData(data);
+    },
+    async buscarPorId(id: number): Promise<ListaDTO> {
+        const { data } = await listaComprasApi.get<any>(`/listas/${id}`);
+        // reaproveita o mesmo mapper para manter "qtd" normalizado
+        return mapBackendData([data])[0];
     }
 };
 

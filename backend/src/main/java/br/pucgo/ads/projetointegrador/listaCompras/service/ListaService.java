@@ -160,38 +160,7 @@ public class ListaService {
 
     }
 
-    @Transactional
-    public ListaResponseDTO atualizar(Long id, ListaRequestDTO dto) {
-        Lista lista = listaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Lista não encontrada com ID: " + id));
 
-        // Validação: não permitir atualizar templates
-        if (lista.getTemplate()) {
-            throw new IllegalArgumentException(
-                    "Não é possível atualizar uma lista template");
-        }
-
-        // Validação: não permitir atualizar lista finalizada
-        if (lista.getStatus() == Lista.StatusLista.FINALIZADA) {
-            throw new IllegalArgumentException(
-                    "Não é possível atualizar uma lista finalizada");
-        }
-
-        // Validação: verificar se novo título já existe
-        if (!lista.getTitulo().equalsIgnoreCase(dto.getTitulo())) {
-            if (listaRepository.existsByUsuario_IdAndTituloIgnoreCase(
-                    lista.getUsuario().getId(), dto.getTitulo())) {
-                throw new IllegalArgumentException(
-                        "Já existe outra lista com o título: " + dto.getTitulo());
-            }
-        }
-
-        lista.setTitulo(dto.getTitulo());
-
-        Lista listaAtualizada = listaRepository.save(lista);
-        return toResponseDTO(listaAtualizada);
-    }
 
     @Transactional
     public ListaResponseDTO finalizarLista(Long id) {
@@ -222,47 +191,6 @@ public class ListaService {
         return toResponseDTO(listaFinalizada);
     }
 
-    @Transactional
-    public ListaResponseDTO clonarTemplate(Long templateId, Long userId) {
-        // Buscar template
-        Lista template = listaRepository.findById(templateId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Template não encontrado com ID: " + templateId));
-
-        if (!template.getTemplate()) {
-            throw new IllegalArgumentException(
-                    "Esta lista não é um template");
-        }
-
-        // Buscar usuário
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuário não encontrado com ID: " + userId));
-
-        // Criar nova lista baseada no template
-        Lista novaLista = new Lista();
-        novaLista.setTitulo(template.getTitulo() + " (cópia)");
-        novaLista.setUsuario(user);
-        novaLista.setTemplate(false);
-
-        Lista listaSalva = listaRepository.save(novaLista);
-
-        List<ItemLista> itensTemplate = itemListaRepository.findById_ListaId(templateId);
-
-        for (ItemLista itemTemplate : itensTemplate) {
-            ItemListaId novoId = new ItemListaId(listaSalva.getId(), itemTemplate.getProduto().getId());
-
-            ItemLista novoItem = new ItemLista();
-            novoItem.setId(novoId);
-            novoItem.setLista(listaSalva);
-            novoItem.setProduto(itemTemplate.getProduto());
-            novoItem.setQuantidade(itemTemplate.getQuantidade());
-
-            itemListaRepository.save(novoItem);
-        }
-
-        return toResponseDTO(listaSalva);
-    }
 
     @Transactional
     public void deletar(Long id) {
@@ -289,11 +217,10 @@ public class ListaService {
     }
 
     private ListaResponseDTO toResponseDTO(Lista lista) {
-
         List<ItemListaResponseDTO> itens = itemListaRepository
                 .findById_ListaId(lista.getId())
                 .stream()
-                .map(itemListaService::toResponseDTO) // usa o service que você já tem ✅
+                .map(itemListaService::toResponseDTO)
                 .collect(Collectors.toList());
 
         Long patologiaId = lista.getPatologia() != null
@@ -310,7 +237,95 @@ public class ListaService {
                 lista.getCreatedAt(),
                 lista.getDescricao(),
                 lista.getStatus() != null ? lista.getStatus().name() : null,
-                itens // ✅ AGORA OS ITENS VÃO CORRETOS
+                itens
         );
     }
+
+    @Transactional
+    public ListaResponseDTO atualizarLista(Long id, ListaCreateRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados da lista não informados.");
+        }
+        if (dto.getTitulo() == null || dto.getTitulo().isBlank()) {
+            throw new IllegalArgumentException("Título da lista é obrigatório.");
+        }
+
+        // 1. Buscar lista existente
+        Lista lista = listaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Lista não encontrada para o id " + id));
+
+        Long usuarioId = lista.getUsuario().getId();
+
+        // 2. Regra opcional: impedir título duplicado para o mesmo usuário
+        String novoTitulo = dto.getTitulo().trim();
+        if (!novoTitulo.equalsIgnoreCase(lista.getTitulo())
+                && listaRepository.existsByUsuario_IdAndTituloIgnoreCase(usuarioId, novoTitulo)) {
+            throw new IllegalArgumentException("Já existe uma lista com este título para o usuário.");
+        }
+
+        // 3. Atualizar campos simples
+        lista.setTitulo(novoTitulo);
+
+        if (dto.getIsTemplate() != null) {
+            lista.setTemplate(dto.getIsTemplate());
+        }
+
+        // 4. Atualizar patologia (opcional)
+        if (dto.getPatologiaId() != null) {
+            Patologia patologia = patologiaRepository.findById(dto.getPatologiaId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Patologia não encontrada para o id " + dto.getPatologiaId()
+                    ));
+            lista.setPatologia(patologia);
+        } else {
+            lista.setPatologia(null);
+        }
+
+        // 5. Limpar itens antigos da lista
+        List<ItemLista> itensAntigos = itemListaRepository.findById_ListaId(lista.getId());
+        if (!itensAntigos.isEmpty()) {
+            itemListaRepository.deleteAll(itensAntigos);
+        }
+
+        // 6. Recriar itens a partir do DTO
+        if (dto.getItens() != null) {
+            dto.getItens().forEach(itemDTO -> {
+                if (itemDTO.getProdutoId() == null) {
+                    throw new IllegalArgumentException("ProdutoId é obrigatório nos itens da lista.");
+                }
+
+                // quantidade mínima 1
+                if (itemDTO.getQtd() == null || itemDTO.getQtd().doubleValue() <= 0) {
+                    throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
+                }
+
+                Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Produto não encontrado para o id " + itemDTO.getProdutoId()
+                        ));
+
+                ItemListaId chave = new ItemListaId();
+                chave.setListaId(lista.getId());
+                chave.setProdutoId(produto.getId());
+
+                ItemLista item = new ItemLista();
+                item.setId(chave);
+                item.setLista(lista);
+                item.setProduto(produto);
+
+                // se o campo na entidade for BigDecimal
+                item.setQuantidade(new BigDecimal(itemDTO.getQtd().toString()));
+
+                itemListaRepository.save(item);
+            });
+        }
+
+        // 7. Persistir lista (garante flush de alterações simples)
+        listaRepository.save(lista);
+
+        // 8. Montar DTO de resposta usando o mesmo mapper que você já tem para criação/listagem
+        return toResponseDTO(lista);
+    }
+
+
 }

@@ -88,4 +88,48 @@ public class ListaController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        try {
+            ListaResponseDTO lista = listaService.buscarPorId(id);
+            return ResponseEntity.ok(lista);
+
+        } catch (IllegalArgumentException e) {
+            // quando o service lançar "Lista não encontrada..."
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", e.getMessage()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao buscar lista"));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarLista(
+            @PathVariable Long id,
+            @Valid @RequestBody ListaCreateRequestDTO dto
+    ) {
+        try {
+            ListaResponseDTO resposta = listaService.atualizarLista(id, dto);
+            return ResponseEntity.ok(resposta);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("erro", e.getMessage()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao atualizar a lista"));
+        }
+    }
+
+
+
 }
