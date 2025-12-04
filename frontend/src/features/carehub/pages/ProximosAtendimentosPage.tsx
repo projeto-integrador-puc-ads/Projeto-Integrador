@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,18 +9,20 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Button,
 } from '@mui/material';
 import {
-  AccessTime,
   CalendarToday,
   Person,
   Event,
   CheckCircle,
   Schedule,
+  Star,
 } from '@mui/icons-material';
 import http from '../libHttp';
 import { getUserId } from '../components/auth';
 import { PageHeader } from '../components/PageHeader';
+import { AvaliacaoModal } from '../components/AvaliacaoModal';
 
 interface Agendamento {
   id: number;
@@ -36,6 +39,10 @@ interface Agendamento {
 
 export function ProximosAtendimentosPage() {
   const userId = getUserId();
+  const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
+  const [cuidadorSelecionado, setCuidadorSelecionado] = useState<{id: number, nome: string} | null>(null);
+  const [agendamentoAvaliacao, setAgendamentoAvaliacao] = useState<number | null>(null);
+  
   if (!userId) {
     return (
       <Box p={3}>
@@ -266,6 +273,28 @@ export function ProximosAtendimentosPage() {
                       </Box>
                     )}
                   </Box>
+                  
+                  {/* Botão de Avaliar para atendimentos concluídos */}
+                  {agendamento.status === 'CONCLUIDO' && (
+                    <Box sx={{ p: 2, pt: 0, borderTop: '1px solid #e0e0e0' }}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                        startIcon={<Star />}
+                        onClick={() => {
+                          setCuidadorSelecionado({
+                            id: agendamento.cuidadorId,
+                            nome: agendamento.cuidadorNome
+                          });
+                          setAgendamentoAvaliacao(agendamento.id);
+                          setAvaliacaoModalOpen(true);
+                        }}
+                      >
+                        ⭐ Avaliar Atendimento
+                      </Button>
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -280,6 +309,22 @@ export function ProximosAtendimentosPage() {
             Você não possui atendimentos agendados para os próximos 7 dias.
           </Typography>
         </Alert>
+      )}
+      
+      {/* Modal de Avaliação */}
+      {avaliacaoModalOpen && cuidadorSelecionado && userId && (
+        <AvaliacaoModal
+          open={avaliacaoModalOpen}
+          onClose={() => {
+            setAvaliacaoModalOpen(false);
+            setCuidadorSelecionado(null);
+            setAgendamentoAvaliacao(null);
+          }}
+          cuidadorId={cuidadorSelecionado.id}
+          cuidadorNome={cuidadorSelecionado.nome}
+          clienteId={userId}
+          initialAgendamentoId={agendamentoAvaliacao ?? undefined}
+        />
       )}
     </Box>
   );

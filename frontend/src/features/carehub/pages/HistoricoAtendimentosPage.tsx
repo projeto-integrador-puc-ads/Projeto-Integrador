@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
-import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador, checkAndCacheUserType } from '../components/auth';
 
 interface RegistroAcompanhamento {
   id: number;
@@ -63,34 +63,31 @@ export function HistoricoAtendimentosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  const [isCuidador, setIsCuidador] = useState<boolean>(false);
   
   const userId = getUserId();
-  const isCuidador = isRoleCuidador();
-
-  if (!userId) {
-    return (
-      <Box>
-        <PageHeader title="Histórico de Atendimentos" backTo="/carehub" />
-        <Alert severity="warning">Faça login para ver seu histórico de atendimentos.</Alert>
-      </Box>
-    );
-  }
 
   useEffect(() => {
-    if (userId) {
-      carregarHistorico();
-    }
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      const ehCuidador = isRoleCuidador();
+      setIsCuidador(ehCuidador);
+      if (userId) {
+        carregarHistoricoComTipo(ehCuidador);
+      }
+    };
+    inicializar();
   }, [userId]);
 
-  const carregarHistorico = async () => {
+  const carregarHistoricoComTipo = async (ehCuidador: boolean) => {
     try {
       setLoading(true);
       
       console.log('🔍 Debug Histórico:');
       console.log('  - userId:', userId);
-      console.log('  - isCuidador:', isCuidador);
+      console.log('  - isCuidador:', ehCuidador);
       
-      const endpoint = isCuidador 
+      const endpoint = ehCuidador 
         ? `/api/carehub/registros/cuidador/${userId}`
         : `/api/carehub/registros/cliente/${userId}`;
       
@@ -162,6 +159,15 @@ export function HistoricoAtendimentosPage() {
     );
   }
 
+  if (!userId) {
+    return (
+      <Box>
+        <PageHeader title="Histórico de Atendimentos" backTo="/carehub" />
+        <Alert severity="warning">Faça login para ver seu histórico de atendimentos.</Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <PageHeader 
@@ -181,7 +187,7 @@ export function HistoricoAtendimentosPage() {
         <Button
           variant="outlined"
           startIcon={<Refresh />}
-          onClick={carregarHistorico}
+          onClick={() => carregarHistoricoComTipo(isCuidador)}
           disabled={loading}
         >
           Recarregar

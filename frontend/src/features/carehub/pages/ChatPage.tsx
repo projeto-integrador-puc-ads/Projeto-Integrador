@@ -30,7 +30,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/pt-br';
 import { Chat, Send, Person, Search, FilterList, Close, PlayArrow, Pause } from '@mui/icons-material';
 import { Mic } from '@mui/icons-material';
-import { getUserId, isCuidador } from '../components/auth';
+import { getUserId, isCuidador, checkAndCacheUserType } from '../components/auth';
 
 // Configurar dayjs para mostrar tempo relativo em português
 dayjs.extend(relativeTime);
@@ -57,14 +57,18 @@ export default function ChatPage() {
   const [busca, setBusca] = useState(''); // Campo de busca
   const [filtroNaoLidas, setFiltroNaoLidas] = useState(false); // Filtro de não lidas
 
-  // Carrega o userId do localStorage
+  // Carrega o userId do localStorage e verifica tipo de usuário
   useEffect(() => {
-    const id = getUserId();
-    if (id) {
-      setUserId(id);
-    } else {
-      console.warn('⚠️ No userId found - user may not be logged in');
-    }
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      const id = getUserId();
+      if (id) {
+        setUserId(id);
+      } else {
+        console.warn('⚠️ No userId found - user may not be logged in');
+      }
+    };
+    inicializar();
   }, []);
 
   // Busca lista de contatos (pessoas com quem já trocou mensagens)

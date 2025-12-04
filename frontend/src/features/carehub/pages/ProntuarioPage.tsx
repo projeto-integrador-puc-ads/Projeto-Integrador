@@ -19,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { PageHeader } from '../components/PageHeader';
 import { Save, Lock } from '@mui/icons-material';
-import { getUserId, isCliente } from '../components/auth';
+import { getUserId, isCliente, checkAndCacheUserType } from '../components/auth';
 
 export default function ProntuarioPage() {
   const navigate = useNavigate();
@@ -28,14 +28,21 @@ export default function ProntuarioPage() {
   const [clienteId, setClienteId] = useState<number | undefined>(undefined);
   const [podeEditar, setPodeEditar] = useState(false);
   const [verificandoPermissao, setVerificandoPermissao] = useState(true);
+  const [_ehCliente, setEhCliente] = useState<boolean | null>(null);
 
   // Verificar se é cliente e bloquear acesso (prontuário é para cuidadores)
   useEffect(() => {
-    if (isCliente()) {
-      enqueueSnackbar('Acesso negado: prontuários são exclusivos para cuidadores', { variant: 'error' });
-      navigate('/carehub');
-      return;
-    }
+    const verificarTipo = async () => {
+      await checkAndCacheUserType();
+      const cliente = isCliente();
+      setEhCliente(cliente);
+      if (cliente) {
+        enqueueSnackbar('Acesso negado: prontuários são exclusivos para cuidadores', { variant: 'error' });
+        navigate('/carehub');
+        return;
+      }
+    };
+    verificarTipo();
   }, [navigate, enqueueSnackbar]);
 
   useEffect(() => {

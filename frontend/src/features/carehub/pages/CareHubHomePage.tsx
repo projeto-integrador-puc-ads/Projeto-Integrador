@@ -1,53 +1,84 @@
-import { Box, Typography, Paper, Container, Alert, Button } from '@mui/material';
+import { Box, Typography, Paper, Container, Alert, Button, Card, CardContent, Stack, Chip } from '@mui/material';
 import '../components/carehub-accessibility.css';
 import { CareHubModuleGrid } from '../components/CareHubModuleGrid';
-import { Favorite } from '@mui/icons-material';
+import { Favorite, CheckCircle, Cancel } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
-import { initializeAuthToken, getUser, getUserRole, setTokenManually, isCuidador, isCliente } from '../components/auth';
+import { initializeAuthToken, getUser, getUserRole, isCliente, getUserId, checkAndCacheUserType } from '../components/auth';
+import http from '../libHttp';
+import dayjs from 'dayjs';
 
 export default function CareHubHomePage() {
-  console.log('CareHubHomePage rendered');
-
-  const [authStatus, setAuthStatus] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
+  const [_authStatus, setAuthStatus] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [repropostas, setRepropostas] = useState<any[]>([]);
+  const [_isUserCliente, setIsUserCliente] = useState<boolean>(false);
+  const userId = getUserId();
 
   useEffect(() => {
     // Inicializar token JWT no interceptor quando o CareHub for carregado
     initializeAuthToken();
 
-    // Verificar status da autenticação
-    const user = getUser();
-    const role = getUserRole();
+    const inicializar = async () => {
+      // Verificar tipo de usuário (cuidador/cliente) via API
+      await checkAndCacheUserType();
+      const ehCliente = isCliente();
+      setIsUserCliente(ehCliente);
 
-    if (user && role) {
-      setAuthStatus('authenticated');
-      setUserInfo({ ...user, role });
-    } else {
-      setAuthStatus('unauthenticated');
-    }
+      // Verificar status da autenticação
+      const user = getUser();
+      const role = getUserRole();
+
+      if (user && role) {
+        setAuthStatus('authenticated');
+        setUserInfo({ ...user, role });
+      } else {
+        setAuthStatus('unauthenticated');
+      }
+
+      // Carregar repropostas pendentes se for cliente
+      if (userId && ehCliente) {
+        carregarRepropostas();
+      }
+    };
+    
+    inicializar();
   }, []);
 
-  const handleManualTokenSetup = () => {
-    // Tentar configurar token manualmente se houver algum no localStorage
-    const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
-    if (token) {
-      setTokenManually(token);
-      alert('Token configurado manualmente. Recarregue a página.');
-    } else {
-      alert('Nenhum token encontrado no localStorage. Faça login novamente.');
+  const carregarRepropostas = async () => {
+    try {
+      const response = await http.get(`/api/carehub/agendamentos/cliente/${userId}`);
+      const agendamentosReagendados = response.data.filter(
+        (ag: any) => ag.status === 'REAGENDADO' && ag.proposedDataHoraInicio
+      );
+      setRepropostas(agendamentosReagendados);
+    } catch {
+      // Silenciosamente ignora erro - usuário pode não ter agendamentos ou não ser cliente cadastrado
+      setRepropostas([]);
+    }
+  };
+
+  const aceitarReproposta = async (agendamentoId: number) => {
+    try {
+      await http.post(`/api/carehub/agendamentos/${agendamentoId}/aceitar-contraproposta`);
+      alert('Nova data confirmada com sucesso!');
+      carregarRepropostas();
+    } catch (error: any) {
+      alert(error?.response?.data?.message || 'Erro ao aceitar nova data');
+    }
+  };
+
+  const recusarReproposta = async (agendamentoId: number) => {
+    try {
+      await http.put(`/api/carehub/agendamentos/${agendamentoId}/status?status=CANCELADO`);
+      alert('Agendamento cancelado.');
+      carregarRepropostas();
+    } catch (error) {
+      alert('Erro ao recusar reproposta');
     }
   };
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      {authStatus === 'authenticated' && userInfo && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          <Typography variant="body2">
-            <strong>✅ Autenticado:</strong> {userInfo.name} ({userInfo.role})
-          </Typography>
-        </Alert>
-      )}
-
       <Paper
         elevation={0}
         sx={{
@@ -111,7 +142,7 @@ export default function CareHubHomePage() {
                   textShadow: '0 2px 4px rgba(0,0,0,0.2)'
                 }}
               >
-                Bem-vindo ao CareHub
+                {userInfo ? `Olá, ${userInfo.name}!` : 'Bem-vindo ao CareHub'}
               </Typography>
               <Typography
                 variant="h6"
@@ -138,6 +169,64 @@ export default function CareHubHomePage() {
           </Typography>
         </Box>
       </Paper>
+
+      {/* Notificações de Repropostas de Data */}
+      {repropostas.length > 0 && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            📅 Você tem {repropostas.length} proposta(s) de nova data de atendimento
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            O cuidador propôs uma nova data. Revise e confirme abaixo:
+          </Typography>
+          
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            {repropostas.map((ag) => (
+              <Card key={ag.id} variant="outlined">
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        Cuidador: {ag.cuidadorNome}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                        Data Original: {dayjs(ag.dataHoraInicio).format('DD/MM/YYYY HH:mm')} - {dayjs(ag.dataHoraFim).format('HH:mm')}
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600} color="primary" sx={{ mt: 1 }}>
+                        Nova Data Proposta: {dayjs(ag.proposedDataHoraInicio).format('DD/MM/YYYY HH:mm')} - {dayjs(ag.proposedDataHoraFim).format('HH:mm')}
+                      </Typography>
+                      {ag.tipoAtendimento && (
+                        <Chip label={ag.tipoAtendimento} size="small" sx={{ mt: 1 }} />
+                      )}
+                    </Box>
+                    
+                    <Stack direction="row" gap={1}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        startIcon={<CheckCircle />}
+                        onClick={() => aceitarReproposta(ag.id)}
+                      >
+                        Confirmar
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<Cancel />}
+                        onClick={() => recusarReproposta(ag.id)}
+                      >
+                        Recusar
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        </Alert>
+      )}
 
       <CareHubModuleGrid />
     </Container>

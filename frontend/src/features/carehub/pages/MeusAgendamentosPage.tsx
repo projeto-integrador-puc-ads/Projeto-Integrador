@@ -15,6 +15,7 @@ import {
   Badge,
 } from '@mui/material';
 import { AvaliacaoModal } from '../components/AvaliacaoModal';
+import { RepropostaDataModal } from '../components/RepropostaDataModal';
 import {
   CalendarToday,
   AccessTime,
@@ -24,7 +25,7 @@ import {
   HourglassEmpty,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import { getUserId, isCuidador } from '../components/auth';
+import { getUserId, isCuidador, checkAndCacheUserType } from '../components/auth';
 import http from '../libHttp';
 
 interface Agendamento {
@@ -63,7 +64,7 @@ export function MeusAgendamentosPage() {
   
   // ID do usuário logado e papel
   const currentUserId = getUserId();
-  const isUserCuidador = isCuidador();
+  const [isUserCuidador, setIsUserCuidador] = useState<boolean>(false);
   const cuidadorId = currentUserId; // usado nas chamadas quando usuário for cuidador
   const clienteId = currentUserId;
 
@@ -71,9 +72,17 @@ export function MeusAgendamentosPage() {
   const [avaliacaoCuidadorId, setAvaliacaoCuidadorId] = useState<number | null>(null);
   const [avaliacaoCuidadorNome, setAvaliacaoCuidadorNome] = useState<string | undefined>(undefined);
   const [avaliacaoAgendamentoId, setAvaliacaoAgendamentoId] = useState<number | null>(null);
+  
+  const [repropostaModalOpen, setRepropostaModalOpen] = useState(false);
+  const [agendamentoReproposta, setAgendamentoReproposta] = useState<Agendamento | null>(null);
 
   useEffect(() => {
-    carregarAgendamentos();
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      setIsUserCuidador(isCuidador());
+      carregarAgendamentos();
+    };
+    inicializar();
   }, [cuidadorId]);
 
   const carregarAgendamentos = async () => {
@@ -110,6 +119,45 @@ export function MeusAgendamentosPage() {
 
   const atualizarStatus = async (agendamentoId: number, novoStatus: string) => {
     try {
+      // Se for finalizar, verificar se existe registro completo
+      if (novoStatus === 'CONCLUIDO') {
+        try {
+          const registroResp = await http.get(`/api/carehub/registros/agendamento/${agendamentoId}`);
+          const registros = registroResp.data;
+          
+          if (!registros || registros.length === 0) {
+            alert('❌ Nenhum registro de acompanhamento encontrado!\n\n' +
+                  'Preencha o registro antes de finalizar o atendimento.');
+            navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+            return;
+          }
+          
+          const registro = registros[0]; // Pegar o primeiro registro
+          
+          // Verificar se todos os campos obrigatórios estão preenchidos
+          const camposObrigatorios = [
+            'pressaoArterial', 'glicemia', 'sinaisVitais', 
+            'medicamentosAdministrados', 'alimentacao', 
+            'atividadesRealizadas', 'humorEstado', 
+            'intercorrencias', 'observacoes'
+          ];
+          
+          const camposFaltantes = camposObrigatorios.filter(campo => !registro[campo] || registro[campo].trim() === '');
+          
+          if (camposFaltantes.length > 0) {
+            alert('❌ Antes de finalizar, preencha o registro de acompanhamento completo!\n\n' +
+                  'Campos pendentes: ' + camposFaltantes.join(', '));
+            navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+            return;
+          }
+        } catch (err: any) {
+          alert('❌ Erro ao verificar registro de acompanhamento!\n\n' +
+                'Preencha o registro antes de finalizar o atendimento.');
+          navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+          return;
+        }
+      }
+      
       await http.put(
         `/api/carehub/agendamentos/${agendamentoId}/status?status=${novoStatus}`
       );
@@ -117,6 +165,10 @@ export function MeusAgendamentosPage() {
       // ✅ Se iniciou o atendimento, redireciona para registro de acompanhamento
       if (novoStatus === 'EM_ANDAMENTO') {
         navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+      } else if (novoStatus === 'CONCLUIDO' && isUserCuidador) {
+        // Cuidador finalizou - recarregar lista e mostrar sucesso
+        alert('✅ Atendimento finalizado com sucesso!\n\nO cliente poderá avaliar o atendimento agora.');
+        carregarAgendamentos();
       } else {
         carregarAgendamentos(); // Recarrega a lista para outros status
       }
@@ -389,10 +441,21 @@ export function MeusAgendamentosPage() {
                           <Button
                             fullWidth
                             variant="outlined"
+                            color="warning"
+                            onClick={() => {
+                              setAgendamentoReproposta(agendamento);
+                              setRepropostaModalOpen(true);
+                            }}
+                          >
+                            📅 Propor Outro Horário
+                          </Button>
+                          <Button
+                            fullWidth
+                            variant="outlined"
                             color="error"
                             onClick={() => atualizarStatus(agendamento.id, 'CANCELADO')}
                           >
-                            ✕ Recusar Agendamento
+                            ✕ Cancelar Definitivamente
                           </Button>
                         </>
                       ) : (
@@ -518,6 +581,21 @@ export function MeusAgendamentosPage() {
           cuidadorNome={avaliacaoCuidadorNome || ''}
           clienteId={clienteId}
           initialAgendamentoId={avaliacaoAgendamentoId ?? undefined}
+        />
+      )}
+      
+      {/* Modal de Reproposta de Data */}
+      {repropostaModalOpen && agendamentoReproposta && (
+        <RepropostaDataModal
+          open={repropostaModalOpen}
+          onClose={() => {
+            setRepropostaModalOpen(false);
+            setAgendamentoReproposta(null);
+          }}
+          agendamentoId={agendamentoReproposta.id}
+          clienteNome={agendamentoReproposta.clienteNome}
+          dataOriginal={agendamentoReproposta.dataHoraInicio}
+          onSuccess={carregarAgendamentos}
         />
       )}
     </Box>

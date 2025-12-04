@@ -58,7 +58,12 @@ export function normalizeRole(role: any): string | null {
 }
 
 export function isCuidador(role?: any): boolean {
-  // 1) checar explictamente o objeto user salvo
+  // 1) checar cache específico de cuidador
+  const isCuidadorCached = localStorage.getItem('carehub_is_cuidador');
+  if (isCuidadorCached === 'true') return true;
+  if (isCuidadorCached === 'false') return false;
+
+  // 2) checar explictamente o objeto user salvo
   const user = getUser();
   if (user) {
     // roles como array de strings
@@ -94,6 +99,12 @@ export function isCuidador(role?: any): boolean {
 }
 
 export function isCliente(role?: any): boolean {
+  // 1) checar cache específico de cliente
+  const isClienteCached = localStorage.getItem('carehub_is_cliente');
+  if (isClienteCached === 'true') return true;
+  if (isClienteCached === 'false') return false;
+
+  // 2) checar objeto user salvo
   const user = getUser();
   if (user) {
     if (Array.isArray(user.roles)) {
@@ -146,6 +157,43 @@ export function initializeAuthToken() {
   }
 }
 
+// Função para verificar se usuário é cuidador via localStorage (roleName) e cachear resultado
+export async function checkAndCacheUserType() {
+  const userId = getUserId();
+  if (!userId) return;
+
+  try {
+    // Verificar pelo roleName no localStorage (mais confiável e sem chamadas API)
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      const roleName = (user.roleName || user.roleCode || '').toUpperCase();
+      
+      // Verificar se é cuidador
+      if (roleName.includes('CUIDADOR') || roleName.includes('CAREHUB_CUIDADOR')) {
+        localStorage.setItem('carehub_is_cuidador', 'true');
+        localStorage.setItem('carehub_is_cliente', 'false');
+        return;
+      }
+      
+      // Verificar se é cliente/idoso
+      if (roleName.includes('IDOSO') || roleName.includes('CLIENTE') || roleName.includes('FAMILIAR') || roleName.includes('CAREHUB_CLIENTE')) {
+        localStorage.setItem('carehub_is_cuidador', 'false');
+        localStorage.setItem('carehub_is_cliente', 'true');
+        return;
+      }
+      
+      // Role padrão (ROLE_USER) - assumir como cliente
+      localStorage.setItem('carehub_is_cuidador', 'false');
+      localStorage.setItem('carehub_is_cliente', 'true');
+    }
+  } catch {
+    // Fallback: assumir como cliente
+    localStorage.setItem('carehub_is_cuidador', 'false');
+    localStorage.setItem('carehub_is_cliente', 'true');
+  }
+}
+
 // Função utilitária para salvar token (pode ser chamada do LoginForm)
 export function saveAuthToken(token: string) {
   try {
@@ -154,6 +202,8 @@ export function saveAuthToken(token: string) {
     import('../libHttp').then(({ setAuthToken: setToken }) => {
       setToken(token);
       console.debug('CareHub: Token salvo e inicializado');
+      // Verificar tipo de usuário após salvar token
+      checkAndCacheUserType();
     });
   } catch (error) {
     console.error('CareHub: Erro ao salvar token:', error);
@@ -194,6 +244,5 @@ export function debugAuthStorage() {
     }
   });
 
-  console.log('CareHub Debug - localStorage auth keys:', results);
   return results;
 }

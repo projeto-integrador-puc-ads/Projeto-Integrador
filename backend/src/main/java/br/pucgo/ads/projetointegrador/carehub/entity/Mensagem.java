@@ -28,7 +28,7 @@ public class Mensagem {
     @JoinColumn(name = "destinatario_id", nullable = false)
     private User destinatario;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String conteudo;
 
     // Campos para mídia (áudio, imagem, etc.)

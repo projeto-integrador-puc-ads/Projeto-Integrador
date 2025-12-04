@@ -8,14 +8,14 @@ import { PageHeader } from '../components/PageHeader';
 import dayjs from 'dayjs';
 import { CalendarMonth, Schedule, CheckCircle, Cancel, AccessTime, Person, LocationOn } from '@mui/icons-material';
 
-import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador, checkAndCacheUserType } from '../components/auth';
 
 export default function AgendamentosPage() {
   // feature-level accessibility styles
   import('../components/carehub-accessibility.css');
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-  const isCuidador = isRoleCuidador();
+  const [isCuidador, setIsCuidador] = useState<boolean>(false);
   const params = new URLSearchParams(window.location.search);
   const initialCuidador = Number(params.get('cuidadorId') || '') || undefined;
   
@@ -24,16 +24,27 @@ export default function AgendamentosPage() {
   const [inicio, setInicio] = useState<string>(dayjs().add(1, 'day').hour(9).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
   const [fim, setFim] = useState<string>(dayjs().add(1, 'day').hour(11).minute(0).second(0).millisecond(0).format('YYYY-MM-DDTHH:mm'));
   const [tipo, setTipo] = useState<string>('DOMICILIO'); // ✅ Corrigido de DOMICILIAR para DOMICILIO
+  
+  // Filtros de visualização
+  const [filtroData, setFiltroData] = useState<string>('');
+  const [filtroStatus, setFiltroStatus] = useState<string>('TODOS');
+  const [filtroTipo, setFiltroTipo] = useState<string>('TODOS');
 
-  // Fetch cliente ID - preferir ID do usuário autenticado
+  // Inicialização: cache do tipo de usuário e fetch cliente ID
   useEffect(() => {
-    const uid = getUserId();
-    if (uid) {
-      setClienteId(uid);
-      return;
-    }
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      setIsCuidador(isRoleCuidador());
+      
+      const uid = getUserId();
+      if (uid) {
+        setClienteId(uid);
+        return;
+      }
 
-    clientesApi.listarTodos().then((arr) => setClienteId(arr[0]?.id));
+      clientesApi.listarTodos().then((arr) => setClienteId(arr[0]?.id));
+    };
+    inicializar();
   }, []);
 
   // Fetch cuidadores list
@@ -205,6 +216,74 @@ export default function AgendamentosPage() {
         </Alert>
       )}
 
+      {/* Filtros de Visualização */}
+      {lista.length > 0 && (
+        <Card variant="outlined" sx={{ bgcolor: 'background.default', mb: 3 }}>
+          <CardContent>
+            <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+              Filtros
+            </Typography>
+            <Stack direction={{ xs: 'column', md: 'row' }} gap={2}>
+              <TextField
+                label="Filtrar por Data"
+                type="date"
+                size="small"
+                value={filtroData}
+                onChange={(e) => setFiltroData(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ minWidth: 200 }}
+                helperText="Deixe vazio para ver todos"
+              />
+              
+              <TextField
+                select
+                label="Status"
+                size="small"
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                sx={{ minWidth: 180 }}
+              >
+                <MenuItem value="TODOS">Todos os status</MenuItem>
+                <MenuItem value="PENDENTE">Pendente</MenuItem>
+                <MenuItem value="CONFIRMADO">Confirmado</MenuItem>
+                <MenuItem value="EM_ANDAMENTO">Em Andamento</MenuItem>
+                <MenuItem value="CONCLUIDO">Concluído</MenuItem>
+                <MenuItem value="CANCELADO">Cancelado</MenuItem>
+                <MenuItem value="REAGENDADO">Reagendado</MenuItem>
+              </TextField>
+              
+              <TextField
+                select
+                label="Tipo de Atendimento"
+                size="small"
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="TODOS">Todos os tipos</MenuItem>
+                <MenuItem value="DOMICILIO">Domiciliar</MenuItem>
+                <MenuItem value="PRESENCIAL">Presencial</MenuItem>
+                <MenuItem value="ACOMPANHAMENTO">Acompanhamento</MenuItem>
+              </TextField>
+
+              {(filtroData || filtroStatus !== 'TODOS' || filtroTipo !== 'TODOS') && (
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setFiltroData('');
+                    setFiltroStatus('TODOS');
+                    setFiltroTipo('TODOS');
+                  }}
+                  size="small"
+                >
+                  Limpar Filtros
+                </Button>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lista de Agendamentos */}
       {isLoading && (
         <Stack alignItems="center" py={4}>
@@ -233,7 +312,27 @@ export default function AgendamentosPage() {
       )}
 
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={3}>
-        {lista.map((a) => {
+        {lista
+          .filter((a) => {
+            // Filtro por data
+            if (filtroData) {
+              const dataAgendamento = dayjs(a.dataHoraInicio).format('YYYY-MM-DD');
+              if (dataAgendamento !== filtroData) return false;
+            }
+            
+            // Filtro por status
+            if (filtroStatus !== 'TODOS' && a.status !== filtroStatus) {
+              return false;
+            }
+            
+            // Filtro por tipo
+            if (filtroTipo !== 'TODOS' && a.tipoAtendimento !== filtroTipo) {
+              return false;
+            }
+            
+            return true;
+          })
+          .map((a) => {
           const isPast = dayjs(a.dataHoraFim).isBefore(dayjs());
           const isNow = dayjs().isAfter(dayjs(a.dataHoraInicio)) && dayjs().isBefore(dayjs(a.dataHoraFim));
           

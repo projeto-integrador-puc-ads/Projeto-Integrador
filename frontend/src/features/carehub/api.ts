@@ -2,6 +2,7 @@ import http from './libHttp';
 import type {
   CuidadorBuscarParams,
   CuidadorResponseDTO,
+  ClienteResponseDTO,
   Page,
   AgendamentoRequestDTO,
   AgendamentoResponseDTO,
@@ -16,6 +17,10 @@ import type {
 export const clientesApi = {
   listarTodos: async (): Promise<Array<{ id: number; nome: string }>> => {
     const { data } = await http.get('/api/carehub/clientes');
+    return data;
+  },
+  buscarPorId: async (id: number): Promise<ClienteResponseDTO> => {
+    const { data } = await http.get(`/api/carehub/clientes/${id}`);
     return data;
   },
 };

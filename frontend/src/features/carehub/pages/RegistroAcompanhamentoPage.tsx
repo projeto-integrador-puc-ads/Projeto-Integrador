@@ -20,7 +20,7 @@ import { Save, CheckCircle } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
 import { useSnackbar } from 'notistack';
-import { getUserId, isCuidador } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador, checkAndCacheUserType } from '../components/auth';
 
 interface Agendamento {
   id: number;
@@ -34,9 +34,9 @@ export function RegistroAcompanhamentoPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [ehCuidador, setEhCuidador] = useState<boolean>(false);
   
   const cuidadorId = getUserId(); // Cuidador logado
-  const ehCuidador = isCuidador();
 
   const [formData, setFormData] = useState({
     pressaoArterial: '',
@@ -50,13 +50,19 @@ export function RegistroAcompanhamentoPage() {
     sinaisVitais: '',
   });
 
-  // ✅ Captura agendamentoId da URL se vier de "Iniciar Atendimento"
+  // ✅ Captura agendamentoId da URL se vier de "Iniciar Atendimento" e inicializa cache
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const agendamentoId = params.get('agendamentoId');
-    if (agendamentoId) {
-      setAgendamentoSelecionado(agendamentoId);
-    }
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      setEhCuidador(isRoleCuidador());
+      
+      const params = new URLSearchParams(window.location.search);
+      const agendamentoId = params.get('agendamentoId');
+      if (agendamentoId) {
+        setAgendamentoSelecionado(agendamentoId);
+      }
+    };
+    inicializar();
   }, []);
 
   useEffect(() => {
@@ -77,10 +83,8 @@ export function RegistroAcompanhamentoPage() {
         (ag: Agendamento) => ag.status === 'EM_ANDAMENTO'
       );
       setAgendamentos(agendamentosAtivos);
-    } catch (error) {
-        console.error('Erro ao carregar agendamentos:', error);
-        const msg = (error as any)?.message || 'Erro ao carregar agendamentos';
-        enqueueSnackbar(msg, { variant: 'error' });
+    } catch {
+        enqueueSnackbar('Erro ao carregar agendamentos', { variant: 'error' });
     }
   };
 
@@ -112,11 +116,6 @@ export function RegistroAcompanhamentoPage() {
     try {
       setLoading(true);
       
-      console.log('💾 Salvando registro:');
-      console.log('  - cuidadorId:', cuidadorId);
-      console.log('  - agendamentoId:', parseInt(agendamentoSelecionado));
-      console.log('  - formData:', formData);
-      
       const response = await http.post(
         '/api/carehub/registros',
         {
@@ -130,7 +129,6 @@ export function RegistroAcompanhamentoPage() {
         }
       );
 
-      console.log('✅ Registro salvo! Response:', response.data);
       enqueueSnackbar('Registro salvo com sucesso!', { variant: 'success' });
       
       // Limpar formulário
@@ -148,10 +146,8 @@ export function RegistroAcompanhamentoPage() {
       setAgendamentoSelecionado('');
       
       carregarAgendamentos();
-    } catch (error) {
-      console.error('Erro ao salvar registro:', error);
-      const msg = (error as any)?.message || 'Erro ao salvar registro';
-      enqueueSnackbar(msg, { variant: 'error' });
+    } catch {
+      enqueueSnackbar('Erro ao salvar registro', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -213,23 +209,25 @@ export function RegistroAcompanhamentoPage() {
               </Typography>
               <Stack spacing={2} sx={{ mt: 2 }}>
                 <TextField
-                  label="Pressão Arterial"
+                  label="Pressão Arterial *"
                   name="pressaoArterial"
                   value={formData.pressaoArterial}
                   onChange={handleChange}
                   placeholder="Ex: 120/80 mmHg"
                   fullWidth
+                  required
                 />
                 <TextField
-                  label="Glicemia"
+                  label="Glicemia *"
                   name="glicemia"
                   value={formData.glicemia}
                   onChange={handleChange}
                   placeholder="Ex: 95 mg/dL"
                   fullWidth
+                  required
                 />
                 <TextField
-                  label="Outros Sinais Vitais"
+                  label="Outros Sinais Vitais *"
                   name="sinaisVitais"
                   value={formData.sinaisVitais}
                   onChange={handleChange}
@@ -237,25 +235,27 @@ export function RegistroAcompanhamentoPage() {
                   fullWidth
                   multiline
                   rows={2}
+                  required
                 />
               </Stack>
             </Paper>
 
             {/* Medicamentos */}
             <TextField
-              label="Medicamentos Administrados"
+              label="Medicamentos Administrados *"
               name="medicamentosAdministrados"
               value={formData.medicamentosAdministrados}
               onChange={handleChange}
-              placeholder="Ex: Losartana 50mg às 9h, Metformina 850mg às 9h"
+              placeholder="Ex: Losartana 50mg às 9h, Metformina 850mg às 9h (ou 'Nenhum' se não houver)"
               fullWidth
               multiline
               rows={3}
+              required
             />
 
             {/* Alimentação */}
             <TextField
-              label="Alimentação"
+              label="Alimentação *"
               name="alimentacao"
               value={formData.alimentacao}
               onChange={handleChange}
@@ -263,11 +263,12 @@ export function RegistroAcompanhamentoPage() {
               fullWidth
               multiline
               rows={3}
+              required
             />
 
             {/* Atividades */}
             <TextField
-              label="Atividades Realizadas"
+              label="Atividades Realizadas *"
               name="atividadesRealizadas"
               value={formData.atividadesRealizadas}
               onChange={handleChange}
@@ -275,21 +276,23 @@ export function RegistroAcompanhamentoPage() {
               fullWidth
               multiline
               rows={3}
+              required
             />
 
             {/* Humor e Estado */}
             <TextField
-              label="Humor e Estado Emocional"
+              label="Humor e Estado Emocional *"
               name="humorEstado"
               value={formData.humorEstado}
               onChange={handleChange}
               placeholder="Ex: Alegre e comunicativo, Sonolento mas tranquilo"
               fullWidth
+              required
             />
 
             {/* Intercorrências */}
             <TextField
-              label="Intercorrências"
+              label="Intercorrências *"
               name="intercorrencias"
               value={formData.intercorrencias}
               onChange={handleChange}
@@ -297,6 +300,7 @@ export function RegistroAcompanhamentoPage() {
               fullWidth
               multiline
               rows={3}
+              required
             />
 
             {/* Observações Gerais */}

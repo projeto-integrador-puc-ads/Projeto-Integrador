@@ -1,4 +1,15 @@
 // DTO types aligned with backend CareHub controllers/DTOs
+export interface ClienteResponseDTO {
+  id: number;
+  nome: string;
+  email: string;
+  telefone?: string;
+  necessidades?: string;
+  endereco?: string;
+  contatoEmergencia?: string;
+  tipoCliente?: string;
+}
+
 export interface CuidadorResponseDTO {
   id: number;
   nome: string;

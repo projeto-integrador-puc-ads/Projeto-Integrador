@@ -10,6 +10,7 @@ import {
   Chip,
   Stack,
   Divider,
+  TextField,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -23,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
-import { getUserId, isCuidador as isRoleCuidador } from '../components/auth';
+import { getUserId, isCuidador as isRoleCuidador, checkAndCacheUserType } from '../components/auth';
 
 interface Prontuario {
   id: number;
@@ -49,24 +50,28 @@ export function ProntuariosClientesPage() {
   const [prontuarios, setProntuarios] = useState<Prontuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isCuidador, setIsCuidador] = useState(false);
   const cuidadorId = getUserId();
-  const isCuidador = isRoleCuidador();
-
-  if (!isCuidador) {
-    return (
-      <Box>
-        <PageHeader title="Prontuários dos Clientes" />
-        <Alert severity="warning">
-          Esta página é acessível apenas para cuidadores. Faça login com uma conta de cuidador para visualizar os prontuários dos seus clientes.
-        </Alert>
-      </Box>
-    );
-  }
 
   useEffect(() => {
-    if (cuidadorId) {
-      carregarProntuarios();
-    }
+    const verificarECarregar = async () => {
+      // Verificar tipo de usuário via API
+      await checkAndCacheUserType();
+      
+      const ehCuidador = isRoleCuidador();
+      setIsCuidador(ehCuidador);
+      setAuthChecked(true);
+      
+      if (cuidadorId && ehCuidador) {
+        carregarProntuarios();
+      } else {
+        setLoading(false);
+      }
+    };
+    
+    verificarECarregar();
   }, [cuidadorId]);
 
   const carregarProntuarios = async () => {
@@ -106,8 +111,7 @@ export function ProntuariosClientesPage() {
       
       setProntuarios(prontuariosValidos);
       setError(null);
-    } catch (err) {
-      console.error('Erro ao carregar prontuários:', err);
+    } catch {
       setError('Erro ao carregar prontuários dos clientes');
     } finally {
       setLoading(false);
@@ -133,6 +137,18 @@ export function ProntuariosClientesPage() {
     return data.toLocaleDateString('pt-BR');
   };
 
+  // Verificar autorização após checagem inicial
+  if (authChecked && !isCuidador) {
+    return (
+      <Box>
+        <PageHeader title="Prontuários dos Clientes" />
+        <Alert severity="warning">
+          Esta página é acessível apenas para cuidadores. Faça login com uma conta de cuidador para visualizar os prontuários dos seus clientes.
+        </Alert>
+      </Box>
+    );
+  }
+
   if (loading) {
     return (
       <Box>
@@ -143,6 +159,19 @@ export function ProntuariosClientesPage() {
       </Box>
     );
   }
+
+  // Filtrar prontuários pela pesquisa
+  const prontuariosFiltrados = prontuarios.filter(prontuario => {
+    if (!searchTerm) return true;
+    const termo = searchTerm.toLowerCase();
+    return (
+      prontuario.clienteNome.toLowerCase().includes(termo) ||
+      prontuario.tipoSanguineo?.toLowerCase().includes(termo) ||
+      prontuario.historicoMedico?.toLowerCase().includes(termo) ||
+      prontuario.medicamentosUso?.toLowerCase().includes(termo) ||
+      prontuario.alergias?.toLowerCase().includes(termo)
+    );
+  });
 
   return (
     <Box>
@@ -158,13 +187,27 @@ export function ProntuariosClientesPage() {
         </Alert>
       )}
 
-      {prontuarios.length === 0 ? (
+      {/* Campo de Pesquisa */}
+      {prontuarios.length > 0 && (
+        <TextField
+          fullWidth
+          placeholder="Pesquisar por nome do cliente, tipo sanguíneo, histórico, medicamentos ou alergias..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 3 }}
+          InputProps={{
+            startAdornment: <Person sx={{ mr: 1, color: 'text.secondary' }} />,
+          }}
+        />
+      )}
+
+      {prontuariosFiltrados.length === 0 ? (
         <Alert severity="info">
-          Nenhum prontuário disponível.
+          {searchTerm ? 'Nenhum prontuário encontrado com o termo de busca.' : 'Nenhum prontuário disponível.'}
         </Alert>
       ) : (
         <Stack spacing={2}>
-          {prontuarios.map((prontuario) => (
+          {prontuariosFiltrados.map((prontuario) => (
             <Accordion key={prontuario.id} elevation={2}>
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>

@@ -90,6 +90,7 @@ public class MensagemController {
     }
 
     @GetMapping("/media/{filename:.+}")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Resource> serveMedia(@RequestHeader("X-User-Id") Long usuarioId, @PathVariable String filename) throws Exception {
         // Look up media in DB by storageKey
         br.pucgo.ads.projetointegrador.carehub.entity.MessageMedia mm = messageMediaRepository.findByStorageKey(filename);

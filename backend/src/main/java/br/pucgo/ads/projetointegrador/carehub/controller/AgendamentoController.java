@@ -116,4 +116,14 @@ public class AgendamentoController {
         Map<String, Object> resultado = agendamentoService.verificarPodeIniciar(id);
         return ResponseEntity.ok(resultado);
     }
+    
+    @PostMapping("/{id}/aceitar-contraproposta")
+    public ResponseEntity<AgendamentoResponseDTO> aceitarContraproposta(
+            @PathVariable Long id,
+            Principal principal
+    ) {
+        log.info("Cliente aceitando contraproposta: agendamentoId={}, actor={}", id, principal == null ? "anonymous" : principal.getName());
+        AgendamentoResponseDTO agendamento = agendamentoService.aceitarContraproposta(id, principal);
+        return ResponseEntity.ok(agendamento);
+    }
 }

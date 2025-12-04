@@ -15,8 +15,6 @@ import {
 } from '../index';
 
 export function CareHubRoutes() {
-  console.log('CareHubRoutes rendered');
-
   return (
     <Routes>
       {/* Página inicial do CareHub (rota relativa) */}

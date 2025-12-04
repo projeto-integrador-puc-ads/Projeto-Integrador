@@ -16,6 +16,17 @@ export { ProximosAtendimentosPage } from './pages/ProximosAtendimentosPage';
 export { HistoricoAtendimentosPage } from './pages/HistoricoAtendimentosPage';
 
 // Utilitários de autenticação
-export { initializeAuthToken, saveAuthToken, setTokenManually, debugAuthStorage } from './components/auth';
+export { 
+  initializeAuthToken, 
+  saveAuthToken, 
+  setTokenManually, 
+  debugAuthStorage,
+  checkAndCacheUserType,
+  isCuidador,
+  isCliente,
+  getUserId,
+  getUser,
+  getUserRole
+} from './components/auth';
 
 export {};

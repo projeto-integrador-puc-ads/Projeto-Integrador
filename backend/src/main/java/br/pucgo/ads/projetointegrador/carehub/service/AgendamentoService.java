@@ -199,6 +199,42 @@ public class AgendamentoService {
         agendamento = agendamentoRepository.save(agendamento);
         return toResponseDTO(agendamento);
     }
+
+    @Transactional
+    public AgendamentoResponseDTO aceitarContraproposta(Long id, java.security.Principal principal) {
+        Objects.requireNonNull(id, "Agendamento ID cannot be null");
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
+
+        if (principal == null) {
+            throw new OperacaoNaoPermitidaException("Operação não autorizada: usuário não autenticado");
+        }
+
+        Long callerId = getUserIdByUsernameOrEmail(principal.getName());
+
+        // Somente o cliente pode aceitar contraproposta
+        if (!callerId.equals(agendamento.getCliente().getId())) {
+            throw new OperacaoNaoPermitidaException("Apenas o cliente pode aceitar a contraproposta");
+        }
+
+        if (agendamento.getStatus() != Agendamento.StatusAgendamento.REAGENDADO) {
+            throw new RuntimeException("Não há contraproposta pendente para este agendamento");
+        }
+
+        if (agendamento.getProposedDataHoraInicio() == null || agendamento.getProposedDataHoraFim() == null) {
+            throw new RuntimeException("Dados da contraproposta inválidos");
+        }
+
+        // Aplicar a nova data
+        agendamento.setDataHoraInicio(agendamento.getProposedDataHoraInicio());
+        agendamento.setDataHoraFim(agendamento.getProposedDataHoraFim());
+        agendamento.setProposedDataHoraInicio(null);
+        agendamento.setProposedDataHoraFim(null);
+        agendamento.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
+
+        agendamento = agendamentoRepository.save(agendamento);
+        return toResponseDTO(agendamento);
+    }
     
     /**
      * Valida se o atendimento pode ser iniciado baseado na data/hora atual.

@@ -12,7 +12,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import http from '../libHttp';
 import { useMensagensNaoLidas } from '../hooks/useMensagensNaoLidas';
 import { getUserId, isCuidador as isRoleCuidador } from './auth';
 
@@ -24,65 +23,35 @@ export function CareHubModuleGrid() {
 
   useEffect(() => {
     const id = getUserId();
-    console.log('CareHub Debug - User ID:', id);
-    console.log('CareHub Debug - Raw localStorage user:', localStorage.getItem('user'));
     setUserId(id);
-    }, []);
+  }, []);
 
-  // Se a role não indicar explicitamente 'CUIDADOR', tentar validar consultando
-  // o endpoint de cuidadores pelo userId (caso o token/localStorage venha como ROLE_USER)
+  // Se a role não indicar explicitamente 'CUIDADOR', tentar validar usando localStorage
   useEffect(() => {
-    let mounted = true;
-    async function detectCuidador() {
-      // se já detectamos explicitamente via role, use isso
-      if (isRoleCuidador()) {
-        if (mounted) setDetectedCuidador(true);
-        return;
-      }
+    // Verificar diretamente pela role armazenada no localStorage
+    // Sem fazer chamadas API que podem falhar por falta de permissão
+    if (isRoleCuidador()) {
+      setDetectedCuidador(true);
+      return;
+    }
 
-      if (!userId) {
-        if (mounted) setDetectedCuidador(false);
-        return;
-      }
-
+    // Tentar verificar pelo objeto user no localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
       try {
-        // Primeiro tente consultar o usuário geral (mais robusto): /api/users/{id}
-        // esse endpoint retorna o role do usuário e evita 400 quando o id
-        // existe mas não é um cuidador.
-        const resp = await http.get(`/api/users/${userId}`);
-        const role = resp.data?.role?.name || resp.data?.role?.code || resp.data?.role?.roleName;
-        const roleStr = role ? String(role).toUpperCase() : '';
-        if (mounted && /CUIDADOR/.test(roleStr)) {
+        const user = JSON.parse(userStr);
+        const roleName = (user.roleName || user.roleCode || '').toUpperCase();
+        if (roleName.includes('CUIDADOR') || roleName.includes('CAREHUB_CUIDADOR')) {
           setDetectedCuidador(true);
           return;
         }
-
-        // Se /api/users não indicar cuidador, como fallback tentamos o
-        // endpoint específico de cuidadores — se ele retornar 200, é cuidador.
-        try {
-          await http.get(`/api/carehub/cuidadores/${userId}`);
-          if (mounted) setDetectedCuidador(true);
-          return;
-        } catch (innerErr) {
-          // não é cuidador
-          if (mounted) setDetectedCuidador(false);
-          return;
-        }
-      } catch (err) {
-        // Se a primeira chamada falhar (ex.: não autenticado), tentamos o
-        // endpoint de cuidadores diretamente como última alternativa.
-        try {
-          await http.get(`/api/carehub/cuidadores/${userId}`);
-          if (mounted) setDetectedCuidador(true);
-        } catch (err2) {
-          if (mounted) setDetectedCuidador(false);
-        }
+      } catch {
+        // Erro ao parsear localStorage
       }
     }
 
-    detectCuidador();
-
-    return () => { mounted = false; };
+    // Não é cuidador
+    setDetectedCuidador(false);
   }, [userId]);
 
   // Módulos do Cliente (Dona Maria - ID 2)

@@ -1,71 +1,64 @@
 import { useMemo, useState, useEffect } from 'react';
-import { getUserId, isCuidador } from '../components/auth';
+import { isCuidador, checkAndCacheUserType } from '../components/auth';
 import { useNavigate } from 'react-router-dom';
 import '../components/carehub-accessibility.css';
-import { Box, Button, Card, CardContent, Chip, FormControlLabel, Pagination, Stack, Switch, TextField, Typography, CircularProgress, Rating, Avatar, Divider, Paper } from '@mui/material';
+import { 
+  Box, Button, Card, CardContent, Chip, FormControlLabel, Pagination, Stack, 
+  Switch, Typography, CircularProgress, Rating, Avatar, Divider, 
+  Paper, TextField,
+  Alert
+} from '@mui/material';
 import { cuidadoresApi } from '../api';
 import type { CuidadorResponseDTO, Page } from '../types';
 import { useQuery } from '@tanstack/react-query';
-import { LocationOn, PersonSearch, Star, Chat } from '@mui/icons-material';
+import { LocationOn, PersonSearch, Search, Clear, Schedule, Visibility } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
-import { AvaliacaoModal } from '../components/AvaliacaoModal';
 
 export default function CuidadoresPage() {
-  const [q, setQ] = useState('');
-  const [especialidade, setEspecialidade] = useState('');
-  const [disp, setDisp] = useState<boolean | undefined>(undefined);
+  const [cidade, setCidade] = useState('');
+  const [disp, setDisp] = useState<boolean | undefined>(true); // Por padrão, mostrar apenas disponíveis
   const [page, setPage] = useState(1);
-  const [clienteId, setClienteId] = useState<number | undefined>(undefined);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [cuidadorSelecionado, setCuidadorSelecionado] = useState<{ id: number; nome: string } | null>(null);
-  
-
-  // Recuperar clienteId do cabeçalho (simulado - em produção viria do contexto de auth)
-  useEffect(() => {
-    const userId = getUserId();
-    if (userId) setClienteId(userId);
-  }, []);
-
-  // Redirecionar cuidadores para a área de prontuários (não devem acessar busca de cuidadores)
   const navigate = useNavigate();
+
+  // Verificar tipo de usuário e redirecionar se necessário
   useEffect(() => {
-    if (isCuidador()) {
+    const inicializar = async () => {
+      await checkAndCacheUserType();
+      
       // Se for cuidador, redireciona para a lista de prontuários dos seus clientes
-      navigate('/carehub/cuidador/prontuarios', { replace: true });
-    }
+      if (isCuidador()) {
+        navigate('/carehub/cuidador/prontuarios', { replace: true });
+        return;
+      }
+    };
+    inicializar();
   }, [navigate]);
 
   const params = useMemo(() => ({
-    localizacao: q || undefined,
-    especialidade: especialidade || undefined,
+    localizacao: cidade.trim() || undefined,
     disponibilidade: disp,
     page: page - 1,
     size: 6,
     sortBy: 'avaliacaoMedia',
     direction: 'DESC' as const,
-  }), [q, especialidade, disp, page]);
+  }), [cidade, disp, page]);
 
-  const { data, isFetching, isError } = useQuery<Page<CuidadorResponseDTO>>({
+  const { data, isFetching, isError, refetch } = useQuery<Page<CuidadorResponseDTO>>({
     queryKey: ['cuidadores', params],
     queryFn: () => cuidadoresApi.buscar(params),
-    staleTime: 10000, // Cache por 10 segundos para evitar refetch excessivo
+    staleTime: 10000,
     retry: 2,
   });
 
-  const handleAvaliarClick = (cuidadorId: number, cuidadorNome: string) => {
-    if (!clienteId) {
-      alert('Você precisa estar logado para avaliar um cuidador.');
-      return;
-    }
-    
-    setCuidadorSelecionado({ id: cuidadorId, nome: cuidadorNome });
-    setModalOpen(true);
+  // Limpar todos os filtros
+  const limparFiltros = () => {
+    setCidade('');
+    setDisp(true);
+    setPage(1);
   };
 
-  const handleModalClose = () => {
-    setModalOpen(false);
-    setCuidadorSelecionado(null);
-  };
+  // Verificar se há filtros ativos
+  const hasFilters = cidade.trim() !== '' || disp === undefined;
 
   return (
     <Stack gap={3} sx={{ p: 2 }}>
@@ -76,73 +69,182 @@ export default function CuidadoresPage() {
         backTo="/carehub"
       />
 
-      {/* Filtros */}
+      {/* Dica para o usuário */}
+      <Alert severity="info" sx={{ borderRadius: 2 }}>
+        <Typography variant="body2">
+          💡 <strong>Dica:</strong> Os cuidadores são ordenados pela melhor avaliação. 
+          Use o filtro abaixo para ver apenas os disponíveis agora.
+        </Typography>
+      </Alert>
+
+      {/* Filtro Simples - Cidade e Disponibilidade */}
       <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
-        <CardContent>
-          <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} alignItems="center">
-            <TextField 
-              label="Localização (Cidade-UF)" 
-              value={q} 
-              onChange={(e) => setQ(e.target.value)} 
-              size="small"
-              placeholder="Ex: Goiânia-GO"
-              sx={{ minWidth: 250 }}
-            />
-            <TextField
-              label="Especialidade"
-              value={especialidade}
-              onChange={(e) => setEspecialidade(e.target.value)}
-              size="small"
-              placeholder="Ex: Enfermagem"
-              sx={{ minWidth: 200 }}
-            />
-            <FormControlLabel 
-              control={
-                <Switch 
-                  checked={!!disp} 
-                  onChange={(e) => setDisp(e.target.checked ? true : undefined)} 
+        <CardContent sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            {/* Linha 1: Campo de Cidade + Switch Disponibilidade (compacto) */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} alignItems={{ sm: 'center' }}>
+              {/* Campo de Cidade */}
+              <TextField
+                label="Cidade"
+                placeholder="Ex: Goiânia"
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                size="small"
+                sx={{ 
+                  flex: 1,
+                  minWidth: { xs: '100%', sm: 180 },
+                  '& .MuiInputBase-root': { borderRadius: 2 }
+                }}
+                slotProps={{
+                  input: {
+                    startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
+                  }
+                }}
+              />
+
+              {/* Switch Disponibilidade */}
+              <Box 
+                sx={{ 
+                  px: 2, 
+                  py: 1,
+                  bgcolor: disp ? 'success.50' : 'grey.100', 
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: disp ? 'success.main' : 'grey.300',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <FormControlLabel 
+                  control={
+                    <Switch 
+                      checked={!!disp} 
+                      onChange={(e) => setDisp(e.target.checked ? true : undefined)}
+                      color="success"
+                      size="small"
+                    />
+                  } 
+                  label={
+                    <Typography variant="body2" fontWeight={disp ? 'bold' : 'normal'}>
+                      Disponíveis agora
+                    </Typography>
+                  }
+                  sx={{ m: 0 }}
                 />
-              } 
-              label="Apenas disponíveis" 
-            />
-            <Button 
-              variant="contained" 
-              onClick={() => { setPage(1); }}
-              disabled={isFetching}
-            >
-              {isFetching ? 'Buscando...' : 'Buscar'}
-            </Button>
+              </Box>
+            </Stack>
+
+            {/* Linha 2: Botões de Ação */}
+            <Stack direction="row" gap={1}>
+              <Button 
+                variant="contained" 
+                size="medium"
+                onClick={() => { setPage(1); refetch(); }}
+                disabled={isFetching}
+                startIcon={<Search />}
+                sx={{ 
+                  flex: 1,
+                  py: 1,
+                  borderRadius: 2
+                }}
+              >
+                {isFetching ? 'Buscando...' : 'Buscar'}
+              </Button>
+              
+              {hasFilters && (
+                <Button 
+                  variant="outlined" 
+                  size="medium"
+                  onClick={limparFiltros}
+                  startIcon={<Clear />}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Limpar
+                </Button>
+              )}
+            </Stack>
           </Stack>
         </CardContent>
       </Card>
 
+      {/* Resumo dos filtros ativos */}
+      {(disp || cidade.trim()) && (
+        <Paper variant="outlined" sx={{ p: 1.5, bgcolor: 'grey.50' }}>
+          <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
+            <Typography variant="body2" color="text.secondary" fontWeight="medium">
+              Filtros:
+            </Typography>
+            {cidade.trim() && (
+              <Chip 
+                icon={<LocationOn fontSize="small" />}
+                label={cidade} 
+                size="small" 
+                color="primary"
+                variant="outlined"
+                onDelete={() => setCidade('')} 
+              />
+            )}
+            {disp && (
+              <Chip 
+                label="Disponíveis" 
+                size="small" 
+                color="success"
+                variant="outlined"
+                onDelete={() => setDisp(undefined)} 
+              />
+            )}
+          </Stack>
+        </Paper>
+      )}
+
       {/* Loading */}
       {isFetching && (
-        <Stack alignItems="center" py={4}>
-          <CircularProgress />
-          <Typography variant="body2" color="text.secondary" mt={2}>
-            Carregando cuidadores...
+        <Stack alignItems="center" py={6}>
+          <CircularProgress size={60} />
+          <Typography variant="h6" color="text.secondary" mt={3}>
+            🔍 Buscando cuidadores...
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mt={1}>
+            Aguarde um momento
           </Typography>
         </Stack>
       )}
 
       {/* Error */}
       {isError && (
-        <Card sx={{ bgcolor: 'error.light', color: 'error.contrastText' }}>
-          <CardContent>
-            <Typography>Erro ao carregar cuidadores. Verifique sua conexão.</Typography>
-          </CardContent>
-        </Card>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          <Typography variant="body1">
+            ❌ Erro ao carregar cuidadores. Verifique sua conexão com a internet e tente novamente.
+          </Typography>
+          <Button variant="outlined" color="error" sx={{ mt: 2 }} onClick={() => refetch()}>
+            Tentar Novamente
+          </Button>
+        </Alert>
       )}
 
       {/* Empty */}
       {!isFetching && data && data.content.length === 0 && (
-        <Card variant="outlined" sx={{ py: 6, textAlign: 'center' }}>
-          <PersonSearch sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography color="text.secondary">
-            Nenhum cuidador encontrado.
+        <Card variant="outlined" sx={{ py: 8, textAlign: 'center' }}>
+          <PersonSearch sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" mb={2}>
+            Nenhum cuidador encontrado
           </Typography>
+          <Typography variant="body1" color="text.secondary" mb={3}>
+            Tente mudar os filtros de busca ou limpar a pesquisa
+          </Typography>
+          <Button variant="contained" onClick={limparFiltros} startIcon={<Clear />}>
+            Limpar Filtros e Ver Todos
+          </Button>
         </Card>
+      )}
+
+      {/* Contador de Resultados */}
+      {!isFetching && data && data.content.length > 0 && (
+        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'success.50', borderColor: 'success.main' }}>
+          <Typography variant="h6" color="success.dark" textAlign="center">
+            ✅ Encontramos {data.totalElements} cuidador{data.totalElements !== 1 ? 'es' : ''} para você!
+          </Typography>
+        </Paper>
       )}
 
       {/* Lista */}
@@ -275,18 +377,21 @@ export default function CuidadoresPage() {
                     </Box>
                   )}
                   
-                  {/* Botões de ação */}
-                  <Stack direction="row" gap={1} mt={3}>
+                  {/* Botões de ação - Maiores e mais acessíveis */}
+                  <Stack gap={1.5} mt={3}>
+                    {/* Botão Principal - Agendar */}
                     <Button 
                       variant="contained" 
-                      size="medium" 
+                      size="large" 
                       fullWidth
                       onClick={() => navigate(`/carehub/agendamentos?cuidadorId=${c.id}`)}
+                      startIcon={<Schedule />}
                       sx={{ 
                         borderRadius: 2,
                         textTransform: 'none',
                         fontWeight: 'bold',
-                        py: 1.2,
+                        py: 1.5,
+                        fontSize: '1.1rem',
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         '&:hover': {
                           background: 'linear-gradient(135deg, #667eea 20%, #764ba2 120%)',
@@ -296,53 +401,27 @@ export default function CuidadoresPage() {
                         transition: 'all 0.3s'
                       }}
                     >
-                      Agendar Consulta
+                      📅 Agendar Atendimento
                     </Button>
-                  </Stack>
-                  
-                  <Stack direction="row" gap={1} mt={1.5}>
+
+                    {/* Link para ver avaliações */}
                     <Button 
-                      size="small" 
-                      onClick={() => navigate('/carehub/chat')}
+                      size="large" 
+                      href={`/carehub/avaliacoes/${c.id}`}
                       variant="outlined"
-                      startIcon={<Chat />}
+                      fullWidth
+                      startIcon={<Visibility />}
                       sx={{ 
-                        flex: 1,
-                        borderRadius: 2,
-                        textTransform: 'none'
-                      }}
-                    >
-                      Chat
-                    </Button>
-                    <Button 
-                      size="small" 
-                      onClick={() => handleAvaliarClick(c.id, c.nome)}
-                      variant="outlined"
-                      color="warning"
-                      disabled={!clienteId}
-                      startIcon={<Star />}
-                      sx={{ 
-                        flex: 1,
                         borderRadius: 2,
                         textTransform: 'none',
-                        fontWeight: 'medium'
+                        py: 1.2,
+                        fontSize: '1rem',
+                        '&:hover': {
+                          bgcolor: 'grey.100'
+                        }
                       }}
-                      title={!clienteId ? "Faça login para avaliar" : "Avaliar cuidador"}
                     >
-                      Avaliar
-                    </Button>
-                    <Button 
-                      size="small" 
-                      href={`/carehub/avaliacoes/${c.id}`}
-                      variant="text"
-                      sx={{ 
-                        minWidth: 48,
-                        borderRadius: 2,
-                        color: 'warning.main'
-                      }}
-                      title="Ver todas as avaliações"
-                    >
-                      Ver {c.totalAvaliacoes || 0}
+                      👁️ Ver {c.totalAvaliacoes || 0} avaliações de outros clientes
                     </Button>
                   </Stack>
                 </CardContent>
@@ -350,29 +429,32 @@ export default function CuidadoresPage() {
             ))}
           </Box>
 
-          <Stack alignItems="center" mt={2}>
+          {/* Paginação Melhorada */}
+          <Stack alignItems="center" mt={4} gap={2}>
+            <Typography variant="body1" color="text.secondary">
+              Página {page} de {data.totalPages}
+            </Typography>
             <Pagination 
               page={page} 
               onChange={(_, p) => setPage(p)} 
               count={data.totalPages}
               color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontSize: '1.1rem',
+                  minWidth: 40,
+                  height: 40
+                }
+              }}
             />
-            <Typography variant="caption" color="text.secondary" mt={1}>
-              Total: {data.totalElements} cuidador(es)
+            <Typography variant="body2" color="text.secondary">
+              Mostrando {(page - 1) * 6 + 1} - {Math.min(page * 6, data.totalElements)} de {data.totalElements} cuidador{data.totalElements !== 1 ? 'es' : ''}
             </Typography>
           </Stack>
         </>
-      )}
-
-      {/* Modal de Avaliação */}
-      {modalOpen && cuidadorSelecionado && clienteId && (
-        <AvaliacaoModal
-          open={modalOpen}
-          onClose={handleModalClose}
-          cuidadorId={cuidadorSelecionado.id}
-          cuidadorNome={cuidadorSelecionado.nome}
-          clienteId={clienteId}
-        />
       )}
     </Stack>
   );

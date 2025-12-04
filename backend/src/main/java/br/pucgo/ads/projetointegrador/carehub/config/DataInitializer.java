@@ -46,10 +46,11 @@ public class DataInitializer {
 									  RoleRepository roleRepo,
 									  PasswordEncoder encoder) {
 		return args -> {
-			if (clienteRepo.count() > 0) {
-				return;
-			}
-
+			// =======================================================
+			// IMPORTANTE: Criar roles ANTES de verificar se há dados
+			// Isso garante que os roles existam mesmo com dados antigos
+			// =======================================================
+			
 			// Ensure a default role exists in plataforma
 			Role defaultRole = roleRepo.findByName("ROLE_USER").orElseGet(() -> {
 				Role r = new Role();
@@ -57,9 +58,30 @@ public class DataInitializer {
 				return roleRepo.save(r);
 			});
 
-			// Use platform roles for carehub users. Prefer explicit CareHub roles if present.
-			Role cuidadorRole = roleRepo.findByName("CAREHUB_CUIDADOR").orElse(defaultRole);
-			Role clienteRole = roleRepo.findByName("CAREHUB_CLIENTE").orElse(defaultRole);
+			// Create CareHub-specific roles if they don't exist
+			Role cuidadorRole = roleRepo.findByName("CAREHUB_CUIDADOR").orElseGet(() -> {
+				Role r = new Role();
+				r.setName("CAREHUB_CUIDADOR");
+				r.setCode("CAREHUB_CUIDADOR");
+				return roleRepo.save(r);
+			});
+			
+			Role clienteRole = roleRepo.findByName("CAREHUB_CLIENTE").orElseGet(() -> {
+				Role r = new Role();
+				r.setName("CAREHUB_CLIENTE");
+				r.setCode("CAREHUB_CLIENTE");
+				return roleRepo.save(r);
+			});
+			
+			// Atualizar endereços de clientes existentes que estão vazios
+			atualizarEnderecosClientesExistentes(clienteRepo);
+			
+			// Atualizar roles de usuários existentes que estão com role errada
+			atualizarRolesUsuariosExistentes(cuidadorRepo, clienteRepo, cuidadorRole, clienteRole);
+			
+			if (clienteRepo.count() > 0) {
+				return;
+			}
 
 			// Cliente - usando campos da tabela users
 			Cliente cliente = new Cliente();
@@ -72,7 +94,7 @@ public class DataInitializer {
 			cliente.setRole(clienteRole);
 			cliente.setTelefone("62999990000");
 			cliente.setAtivo(true);
-			cliente.setEndereco("Rua A, 123, Goiania-GO");
+			cliente.setEndereco("Rua A, 123, Setor Central, Goiânia-GO");
 			cliente.setContatoEmergencia("Filho: 62988887777");
 			cliente.setTipoCliente("IDOSO");
 			cliente = clienteRepo.save(cliente);
@@ -148,6 +170,22 @@ public class DataInitializer {
 		 	 }
 
 			 // Criar múltiplos idosos (clientes) para popular o sistema
+			 // Endereços de Goiânia e região para os idosos
+			 String[] enderecosIdosos = new String[] {
+				 "Rua 10, 456, Setor Oeste, Goiânia-GO",
+				 "Av. T-63, 789, Setor Bueno, Goiânia-GO",
+				 "Rua das Flores, 123, Centro, Anápolis-GO",
+				 "Av. Brasil, 321, Setor Central, Aparecida de Goiânia-GO",
+				 "Rua 5, 654, Jardim América, Goiânia-GO"
+			 };
+			 String[] contatosEmergencia = new String[] {
+				 "Filho(a): 62988881111",
+				 "Filha: 62988882222",
+				 "Neto: 62988883333",
+				 "Sobrinha: 62988884444",
+				 "Vizinha: 62988885555"
+			 };
+			 
 			 for (int i = 1; i <= 5; i++) {
 				 String username = "idoso" + i;
 				 if (!clienteRepo.existsByUsername(username)) {
@@ -160,6 +198,10 @@ public class DataInitializer {
 					 c.setRole(clienteRole);
 					 c.setTelefone("62990000" + (100 + i));
 					 c.setAtivo(true);
+					 c.setEndereco(enderecosIdosos[i - 1]);
+					 c.setContatoEmergencia(contatosEmergencia[i - 1]);
+					 c.setTipoCliente("IDOSO");
+					 c.setNecessidades("Acompanhamento diário e auxílio com medicação");
 					 clienteRepo.save(c);
 				 }
 			 }
@@ -479,5 +521,76 @@ public class DataInitializer {
 				// Se alguma operação falhar aqui, não interrompemos o seeding
 			}
 		};
+	}
+	
+	/**
+	 * Atualiza os endereços dos clientes existentes que estão vazios ou nulos.
+	 * Isso garante que clientes já cadastrados tenham um endereço para a funcionalidade de busca por proximidade.
+	 */
+	private void atualizarEnderecosClientesExistentes(ClienteRepository clienteRepo) {
+		// Endereços de Goiânia e região para distribuir entre os clientes
+		String[] enderecosPadrao = new String[] {
+			"Rua A, 123, Setor Central, Goiânia-GO",
+			"Rua 10, 456, Setor Oeste, Goiânia-GO",
+			"Av. T-63, 789, Setor Bueno, Goiânia-GO",
+			"Rua das Flores, 123, Centro, Anápolis-GO",
+			"Av. Brasil, 321, Setor Central, Aparecida de Goiânia-GO",
+			"Rua 5, 654, Jardim América, Goiânia-GO"
+		};
+		
+		try {
+			var clientes = clienteRepo.findAll();
+			int index = 0;
+			for (var cliente : clientes) {
+				if (cliente.getEndereco() == null || cliente.getEndereco().isBlank()) {
+					cliente.setEndereco(enderecosPadrao[index % enderecosPadrao.length]);
+					cliente.setTipoCliente("IDOSO");
+					if (cliente.getContatoEmergencia() == null || cliente.getContatoEmergencia().isBlank()) {
+						cliente.setContatoEmergencia("Familiar: 62988880000");
+					}
+					clienteRepo.save(cliente);
+					index++;
+				}
+			}
+		} catch (Exception ex) {
+			// Log silenciosamente para não interromper a inicialização
+			System.err.println("Aviso: Erro ao atualizar endereços de clientes existentes: " + ex.getMessage());
+		}
+	}
+	
+	/**
+	 * Atualiza os roles dos usuários CareHub existentes que estão com role incorreta (ex: ROLE_USER).
+	 * Cuidadores devem ter o role CAREHUB_CUIDADOR e Clientes devem ter o role CAREHUB_CLIENTE.
+	 */
+	private void atualizarRolesUsuariosExistentes(CuidadorRepository cuidadorRepo, 
+												   ClienteRepository clienteRepo,
+												   Role cuidadorRole, 
+												   Role clienteRole) {
+		try {
+			// Atualizar roles dos cuidadores
+			var cuidadores = cuidadorRepo.findAll();
+			for (var cuidador : cuidadores) {
+				if (cuidador.getRole() == null || 
+					!"CAREHUB_CUIDADOR".equals(cuidador.getRole().getName())) {
+					cuidador.setRole(cuidadorRole);
+					cuidadorRepo.save(cuidador);
+					System.out.println("Role do cuidador '" + cuidador.getUsername() + "' atualizado para CAREHUB_CUIDADOR");
+				}
+			}
+			
+			// Atualizar roles dos clientes
+			var clientes = clienteRepo.findAll();
+			for (var cliente : clientes) {
+				if (cliente.getRole() == null || 
+					!"CAREHUB_CLIENTE".equals(cliente.getRole().getName())) {
+					cliente.setRole(clienteRole);
+					clienteRepo.save(cliente);
+					System.out.println("Role do cliente '" + cliente.getUsername() + "' atualizado para CAREHUB_CLIENTE");
+				}
+			}
+		} catch (Exception ex) {
+			// Log silenciosamente para não interromper a inicialização
+			System.err.println("Aviso: Erro ao atualizar roles de usuários existentes: " + ex.getMessage());
+		}
 	}
 }
