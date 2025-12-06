@@ -18,8 +18,6 @@ public class ListaCreateRequestDTO {
     @Size(max = 150, message = "O título da lista deve ter no máximo 150 caracteres")
     private String titulo;
 
-    @NotNull(message = "A lista de itens é obrigatória")
-    @Size(min = 1, message = "A lista deve possuir ao menos um item")
     private List<ListaItemCreateDTO> itens;
     private Boolean isTemplate;
     private Long patologiaId;

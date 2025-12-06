@@ -13,6 +13,7 @@ export type ListaDTO = {
     userId: number;
     userName?: string;
     patologiaId?: number | null;
+    isTemplate?: boolean | null;
     template: boolean;
     createdAt: string;
     status?: 'ABERTA' | 'FINALIZADA';

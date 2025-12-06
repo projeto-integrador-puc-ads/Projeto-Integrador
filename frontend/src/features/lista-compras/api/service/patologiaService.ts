@@ -1,7 +1,7 @@
 // src/features/lista-compras/api/service/patologiasService.ts
 
 
-import type { Patologia} from '@/features/lista-compras/types.ts';
+import type { Patologia, PatologiaItemResponseDTO} from '@/features/lista-compras/types.ts';
 import { listaComprasApi } from '@/features/lista-compras/api/http.ts';
 
 
@@ -30,9 +30,11 @@ export const patologiasService = {
         const { data } = await listaComprasApi.get<Patologia>(`/patologias/${id}`);
         return data;
     },
-    async getItensDaPatologia(patologiaId: number): Promise<{ produto: { id: number } }[]> {
-        // Retornamos um array de objetos que tenha pelo menos a estrutura do produto
-        const { data } = await listaComprasApi.get(`/patologia-itens/patologia/${patologiaId}`);
-        return data; // O backend retorna PatologiaItemResponseDTO[]
+
+    async getItensDaPatologia(patologiaId: number): Promise<PatologiaItemResponseDTO[]> {
+        const { data } = await listaComprasApi.get<PatologiaItemResponseDTO[]>(
+            `/patologia-itens/patologia/${patologiaId}`
+        );
+        return data;
     },
 };

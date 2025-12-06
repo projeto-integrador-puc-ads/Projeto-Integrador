@@ -52,10 +52,17 @@ public class ListaService {
                     "Já existe uma lista com o título: " + dto.getTitulo());
         }
 
+        boolean isTemplate = Boolean.TRUE.equals(dto.getIsTemplate());
+        if (!isTemplate) {
+            if (dto.getItens() == null || dto.getItens().isEmpty()) {
+                throw new IllegalArgumentException("A lista deve possuir ao menos um item");
+            }
+        }
+
         Lista lista = new Lista();
         lista.setTitulo(dto.getTitulo());
         lista.setUsuario(user);
-        lista.setTemplate(Boolean.TRUE.equals(dto.getIsTemplate()));
+        lista.setTemplate(isTemplate);
 
         if (dto.getPatologiaId() != null) {
             Patologia patologia = patologiaRepository.findById(dto.getPatologiaId())
@@ -168,11 +175,6 @@ public class ListaService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Lista não encontrada com ID: " + id));
 
-        // Validação: não permitir finalizar templates
-        if (lista.getTemplate()) {
-            throw new IllegalArgumentException(
-                    "Não é possível finalizar uma lista template");
-        }
 
         // Validação: verificar se já está finalizada
         if (lista.getStatus() == Lista.StatusLista.FINALIZADA) {
@@ -184,9 +186,6 @@ public class ListaService {
         lista.setStatus(Lista.StatusLista.FINALIZADA);
 
         Lista listaFinalizada = listaRepository.save(lista);
-
-        // TODO: Chamar o sistema de recomendação quando implementado
-        // recomendacaoService.processarListaFinalizada(listaFinalizada);
 
         return toResponseDTO(listaFinalizada);
     }

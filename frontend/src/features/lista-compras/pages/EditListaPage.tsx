@@ -25,7 +25,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { alpha } from "@mui/material/styles";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import type {
     Produto,
@@ -47,6 +47,8 @@ const userIdTemp = 1; // TODO: trocar pelo ID do usuário logado
 export default function EditListaPage() {
     const navigate = useNavigate();
     const { listaId } = useParams<{ listaId: string }>();
+    const [searchParams] = useSearchParams();
+
 
     const [catalogo, setCatalogo] = useState<Produto[]>([]);
     const [listaItens, setListaItens] = useState<ListaItemVM[]>([]);
@@ -78,6 +80,10 @@ export default function EditListaPage() {
 
     const [successOpen, setSuccessOpen] = useState(false);
 
+    const [isTemplate, setIsTemplate] = useState(false);
+    const [patologiaTemplateId, setPatologiaTemplateId] = useState<number | null>(null);
+
+
     const showError = (msg: string) => {
         setErrorMsg(msg);
         setErrorOpen(true);
@@ -95,19 +101,35 @@ export default function EditListaPage() {
             try {
                 setLoadingInicial(true);
 
-                // Patologias do usuário
-                const pats = await patologiasService.getPatologiasDoUsuario(userIdTemp);
-                setPatologias(pats);
-
-                // Buscar detalhes da lista pelo ID
-                // TODO: trocar pelo método correto se o nome for diferente
-                const lista: ListaDTO = await listaViewService.buscarPorId(
-                    Number(listaId)
-                );
+                // 1) Buscar detalhes da lista pelo ID
+                const lista: ListaDTO = await listaViewService.buscarPorId(Number(listaId));
 
                 setTituloLista(lista.titulo ?? "");
 
-                // Montar ListaItemVM a partir da ListaDTO
+                // Definir se é template
+                const templateFlag = !!lista.template || !!lista.isTemplate;
+                setIsTemplate(templateFlag);
+
+                // Patologia vinda do back ou da query
+                const patologiaIdFromQuery = searchParams.get("patologiaId");
+                const patologiaIdEfetiva =
+                    (lista.patologiaId as number | null) ??
+                    (patologiaIdFromQuery ? Number(patologiaIdFromQuery) : null);
+
+                setPatologiaTemplateId(patologiaIdEfetiva);
+
+                // 2) Patologias pra exibição
+                if (templateFlag && patologiaIdEfetiva) {
+                    // Template: exibe só a patologia alvo do template
+                    const pat = await patologiasService.getPatologiaById(patologiaIdEfetiva);
+                    setPatologias([pat]);
+                } else {
+                    // Lista normal: patologias do usuário
+                    const pats = await patologiasService.getPatologiasDoUsuario(userIdTemp);
+                    setPatologias(pats);
+                }
+
+                // 3) Montar ListaItemVM a partir da ListaDTO
                 const itensVM: ListaItemVM[] =
                     lista.itens?.map((it) => {
                         const pApi = it.produto;
@@ -130,7 +152,7 @@ export default function EditListaPage() {
 
                 setListaItens(itensVM);
 
-                // Preencher catálogo com os produtos já presentes na lista
+                // 4) Catálogo inicial
                 const catalogoInicial: Produto[] = [];
                 const ids = new Set<number>();
                 itensVM.forEach((li) => {
@@ -149,7 +171,7 @@ export default function EditListaPage() {
         };
 
         carregar();
-    }, [listaId]);
+    }, [listaId, searchParams]);
 
     // Autocomplete: buscar produtos pelo nome
     useEffect(() => {
@@ -221,10 +243,19 @@ export default function EditListaPage() {
 
         if (p.id > 0) {
             try {
-                const substituiveis = await produtoService.listarSubstituiveis(
-                    p.id,
-                    userIdTemp
-                );
+                let substituiveis: ProdutoSubstituivel[] = [];
+
+                if (isTemplate && patologiaTemplateId) {
+                    substituiveis = await produtoService.listarSubstituiveisPorPatologia(
+                        p.id,
+                        patologiaTemplateId
+                    );
+                } else {
+                    substituiveis = await produtoService.listarSubstituiveis(
+                        p.id,
+                        userIdTemp
+                    );
+                }
 
                 if (substituiveis.length > 0) {
                     setRiscosPorProduto((prev) => ({
@@ -235,6 +266,7 @@ export default function EditListaPage() {
                     const nomesPats = Array.from(
                         new Set(substituiveis.map((s) => s.patologia.nome))
                     ).join(", ");
+
                     setWarnMsg(
                         `Atenção: "${p.nome}" pode não ser adequado para: ${nomesPats}. ` +
                         `Veja as sugestões na lista.`
@@ -327,7 +359,7 @@ export default function EditListaPage() {
 
             setSuccessOpen(true);
 
-            navigate("/lista-compras/listas");
+            navigate(isTemplate ? "/lista-compras/templates" : "/lista-compras/listas");
         } catch (e) {
             console.error(e);
             showError("Erro ao salvar alterações da lista. Tente novamente.");
@@ -357,11 +389,16 @@ export default function EditListaPage() {
                     variant="outlined"
                     size="small"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate("/lista-compras/listas", { replace: true })}
+                    onClick={() =>
+                        navigate(isTemplate ? "/lista-compras/templates" : "/lista-compras/listas", {
+                            replace: true,
+                        })
+                    }
                     sx={{ textTransform: "none", height: 40 }}
                 >
                     Voltar
                 </Button>
+
             </Stack>
 
             <Stack
@@ -372,7 +409,7 @@ export default function EditListaPage() {
             >
                 <Box sx={{ flex: 1 }}>
                     <Typography variant="h4" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                        Editar lista de compras
+                        {isTemplate ? "Editar template de compras" : "Editar lista de compras"}
                     </Typography>
 
                     <Typography color="text.secondary" sx={{ mt: 1 }}>
@@ -383,7 +420,9 @@ export default function EditListaPage() {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => navigate("/lista-compras/listas")}
+                    onClick={() =>
+                        navigate(isTemplate ? "/lista-compras/templates" : "/lista-compras/listas")
+                    }
                     sx={{
                         textTransform: "none",
                         fontWeight: 700,
@@ -393,7 +432,7 @@ export default function EditListaPage() {
                         mt: { xs: 2, sm: 0 },
                     }}
                 >
-                    Minhas listas
+                    {isTemplate ? "Meus templates" : "Minhas listas"}
                 </Button>
             </Stack>
 
@@ -724,7 +763,9 @@ export default function EditListaPage() {
                 <Button
                     variant="outlined"
                     color="error"
-                    onClick={() => navigate("/lista-compras/listas")}
+                    onClick={() =>
+                        navigate(isTemplate ? "/lista-compras/templates" : "/lista-compras/listas")
+                    }
                     disabled={saving}
                     sx={{ textTransform: "none" }}
                 >

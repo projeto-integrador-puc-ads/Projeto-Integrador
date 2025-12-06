@@ -144,4 +144,15 @@ public class PatologiaItemService {
                         : null  // ProdutoResponseDTO ou null
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoSubstituivelResponseDTO> listarProdutosSubstituiveisPorPatologia(
+            Long patologiaId,
+            Long produtoId
+    ) {
+        return patologiaItemRepository
+                .findProdutosSubstituiveisPorPatologia(patologiaId, produtoId).stream()
+                .map(this::toSubstituivelResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

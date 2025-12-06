@@ -69,7 +69,18 @@ public class ProdutoController {
      */
     @GetMapping("/buscar")
     public ResponseEntity<List<ProdutoResponseDTO>> buscarProdutos(@RequestParam String param) {
+        System.out.println("AQUIIIIIII");
         List<ProdutoResponseDTO> produtos = produtoService.buscarPorNome(param);
         return ResponseEntity.ok(produtos);
+    }
+
+    @GetMapping("/{id}/substituiveis-por-patologia")
+    public ResponseEntity<List<ProdutoSubstituivelResponseDTO>> listarProdutosSubstituiveisPorPatologia(
+            @PathVariable Long id,
+            @RequestParam Long patologiaId) {
+
+        List<ProdutoSubstituivelResponseDTO> substituiveis =
+                patologiaItemService.listarProdutosSubstituiveisPorPatologia(patologiaId, id);
+        return ResponseEntity.ok(substituiveis);
     }
 }

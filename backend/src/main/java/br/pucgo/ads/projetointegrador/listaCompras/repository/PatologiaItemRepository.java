@@ -52,4 +52,15 @@ public interface PatologiaItemRepository extends JpaRepository<PatologiaItem, Lo
     List<PatologiaItem> findProdutosSubstituiveis(
             @Param("usuarioId") Long usuarioId,
             @Param("produtoId") Long produtoId);
+
+    @Query("""
+        SELECT pi
+        FROM PatologiaItem pi
+        WHERE pi.patologia.id = :patologiaId
+          AND pi.produto.id = :produtoId
+    """)
+    List<PatologiaItem> findProdutosSubstituiveisPorPatologia(
+            @Param("patologiaId") Long patologiaId,
+            @Param("produtoId") Long produtoId
+    );
 }

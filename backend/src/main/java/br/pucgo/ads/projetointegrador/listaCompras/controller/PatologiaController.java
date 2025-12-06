@@ -34,4 +34,19 @@ public class PatologiaController {
                     .body(Map.of("erro", "Erro interno ao listar patologias"));
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        try {
+            PatologiaResponseDTO dto = patologiaService.buscarPorId(id);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao buscar patologia"));
+        }
+    }
 }
