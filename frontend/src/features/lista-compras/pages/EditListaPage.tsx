@@ -49,7 +49,6 @@ export default function EditListaPage() {
     const { listaId } = useParams<{ listaId: string }>();
     const [searchParams] = useSearchParams();
 
-
     const [catalogo, setCatalogo] = useState<Produto[]>([]);
     const [listaItens, setListaItens] = useState<ListaItemVM[]>([]);
 
@@ -80,9 +79,9 @@ export default function EditListaPage() {
 
     const [successOpen, setSuccessOpen] = useState(false);
 
+    // 🔹 Agora isTemplate e patologiaTemplateId são só estados, sem duplicar com const
     const [isTemplate, setIsTemplate] = useState(false);
     const [patologiaTemplateId, setPatologiaTemplateId] = useState<number | null>(null);
-
 
     const showError = (msg: string) => {
         setErrorMsg(msg);
@@ -106,8 +105,8 @@ export default function EditListaPage() {
 
                 setTituloLista(lista.titulo ?? "");
 
-                // Definir se é template
-                const templateFlag = !!lista.template || !!lista.isTemplate;
+                // Definir se é template (vem do back)
+                const templateFlag = !!(lista as any).template || !!(lista as any).isTemplate;
                 setIsTemplate(templateFlag);
 
                 // Patologia vinda do back ou da query
@@ -116,15 +115,21 @@ export default function EditListaPage() {
                     (lista.patologiaId as number | null) ??
                     (patologiaIdFromQuery ? Number(patologiaIdFromQuery) : null);
 
-                setPatologiaTemplateId(patologiaIdEfetiva);
+                setPatologiaTemplateId(patologiaIdEfetiva ?? null);
 
-                // 2) Patologias pra exibição
-                if (templateFlag && patologiaIdEfetiva) {
-                    // Template: exibe só a patologia alvo do template
-                    const pat = await patologiasService.getPatologiaById(patologiaIdEfetiva);
-                    setPatologias([pat]);
+                // 2) Patologias para exibição
+                if (templateFlag) {
+                    // 🔸 Template:
+                    // - Se tiver patologia → mostra só ela
+                    // - Se NÃO tiver → não mostra nada (sem validação)
+                    if (patologiaIdEfetiva) {
+                        const pat = await patologiasService.getPatologiaById(patologiaIdEfetiva);
+                        setPatologias([pat]);
+                    } else {
+                        setPatologias([]);
+                    }
                 } else {
-                    // Lista normal: patologias do usuário
+                    // 🔸 Lista normal: patologias do usuário
                     const pats = await patologiasService.getPatologiasDoUsuario(userIdTemp);
                     setPatologias(pats);
                 }
@@ -241,20 +246,26 @@ export default function EditListaPage() {
         setProdutoSelecionado(null);
         setInputValue("");
 
+        // 🔹 Validação de substituíveis
         if (p.id > 0) {
             try {
                 let substituiveis: ProdutoSubstituivel[] = [];
 
-                if (isTemplate && patologiaTemplateId) {
+                if (!isTemplate) {
+                    // LISTA NORMAL → valida pelas patologias do usuário
+                    substituiveis = await produtoService.listarSubstituiveis(
+                        p.id,
+                        userIdTemp
+                    );
+                } else if (isTemplate && patologiaTemplateId) {
+                    // TEMPLATE COM patologia vinculada → valida só por ela
                     substituiveis = await produtoService.listarSubstituiveisPorPatologia(
                         p.id,
                         patologiaTemplateId
                     );
                 } else {
-                    substituiveis = await produtoService.listarSubstituiveis(
-                        p.id,
-                        userIdTemp
-                    );
+                    // TEMPLATE SEM patologia → sem validação
+                    substituiveis = [];
                 }
 
                 if (substituiveis.length > 0) {
@@ -398,7 +409,6 @@ export default function EditListaPage() {
                 >
                     Voltar
                 </Button>
-
             </Stack>
 
             <Stack
@@ -445,7 +455,7 @@ export default function EditListaPage() {
                 onChange={(e) => setTituloLista(e.target.value)}
             />
 
-            {/* Patologias do usuário */}
+            {/* Patologias do usuário / do template */}
             <Stack
                 direction="row"
                 alignItems="center"
@@ -454,7 +464,9 @@ export default function EditListaPage() {
             >
                 {patologias.length === 0 ? (
                     <Typography color="text.secondary">
-                        Nenhuma condição carregada ainda.
+                        {isTemplate
+                            ? "Este template não possui patologia associada."
+                            : "Nenhuma condição carregada ainda."}
                     </Typography>
                 ) : (
                     <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
