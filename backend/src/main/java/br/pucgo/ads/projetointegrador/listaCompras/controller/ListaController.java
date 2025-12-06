@@ -130,6 +130,22 @@ public class ListaController {
         }
     }
 
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<?> finalizarLista(@PathVariable Long id) {
+        try {
+            ListaResponseDTO resposta = listaService.finalizarLista(id);
+            return ResponseEntity.ok(resposta);
 
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("erro", e.getMessage()));
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao finalizar a lista"));
+        }
+    }
 }
