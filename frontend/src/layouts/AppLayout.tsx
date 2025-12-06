@@ -3,7 +3,6 @@ import {
   Avatar,
   Box,
   Container,
-  Modal,
   Toolbar,
   Typography,
   Button,
@@ -12,18 +11,25 @@ import {
   InputAdornment,
   IconButton,
   Switch,
-  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { deepPurple } from '@mui/material/colors';
-import { Outlet, Link as RouterLink } from 'react-router-dom';
+import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import logo_unati_horizontal from '../assets/logo_unati_horizontal.png';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSnackbar } from 'notistack';
 import { adminUsersApi, type UpdateUserPayload } from '../features/admin/api/users';
+import { setAuthToken } from '@/lib/http';
 
 export default function AppLayout() {
+  const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [userInfo, setUserInfo] = useState<{ id: number | null; name: string; username: string }>({
@@ -31,6 +37,7 @@ export default function AppLayout() {
     name: '',
     username: '',
   });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [form, setForm] = useState<UpdateUserPayload>({
     name: '',
@@ -131,6 +138,24 @@ export default function AppLayout() {
     }
   }
 
+  function handleOpenMenu(e: React.MouseEvent<HTMLElement>) {
+    setAnchorEl(e.currentTarget);
+  }
+  function handleCloseMenu() {
+    setAnchorEl(null);
+  }
+  function handleEditProfile() {
+    handleCloseMenu();
+    setOpenProfile(true);
+  }
+  function handleLogout() {
+    handleCloseMenu();
+    setAuthToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/', { replace: true });
+  }
+
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default' }}>
       <AppBar
@@ -164,10 +189,14 @@ export default function AppLayout() {
               bgcolor: deepPurple[500],
               cursor: 'pointer',
             }}
-            onClick={() => setOpenProfile(true)}
+            onClick={handleOpenMenu}
           >
             {userInitial}
           </Avatar>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} keepMounted>
+            <MenuItem onClick={handleEditProfile}>Editar perfil</MenuItem>
+            <MenuItem onClick={handleLogout}>Sair</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 
@@ -177,29 +206,15 @@ export default function AppLayout() {
         <Outlet />
       </Container>
 
-      <Modal open={openProfile} onClose={() => setOpenProfile(false)}>
-        <Box
-          onClick={(e) => e.stopPropagation()}
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'background.paper',
-            p: { xs: 3, sm: 4 },
-            borderRadius: 3,
-            boxShadow: 24,
-            width: { xs: '92vw', sm: 520, md: 640 },
-            maxWidth: '92vw',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-          }}
-        >
-          <Typography variant="h5" fontWeight={700} mb={2}>
-            Meu Perfil
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Box component="form" onSubmit={handleSave} noValidate>
+      <Dialog
+        open={openProfile}
+        onClose={() => setOpenProfile(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Meu Perfil</DialogTitle>
+        <Box component="form" onSubmit={handleSave} noValidate>
+          <DialogContent dividers>
             <Stack spacing={2}>
               <TextField
                 label="Nome"
@@ -305,19 +320,20 @@ export default function AppLayout() {
                   />
                 </>
               )}
-
-              <Stack direction="row" spacing={1}>
-                <Button variant="outlined" onClick={() => setOpenProfile(false)} fullWidth disabled={loadingProfile}>
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="contained" fullWidth disabled={loadingProfile}>
-                  {loadingProfile ? 'Salvando...' : 'Salvar'}
-                </Button>
-              </Stack>
             </Stack>
-          </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Stack direction="row" spacing={1} width="100%">
+              <Button variant="outlined" onClick={() => setOpenProfile(false)} fullWidth disabled={loadingProfile}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="contained" fullWidth disabled={loadingProfile}>
+                {loadingProfile ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </Stack>
+          </DialogActions>
         </Box>
-      </Modal>
+      </Dialog>
     </Box>
   );
 }

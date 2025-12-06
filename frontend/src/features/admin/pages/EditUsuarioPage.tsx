@@ -91,10 +91,23 @@ export default function EditUsuarioPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  const selectedRole = roles.find((role) => role.id === form.roleId);
+  const roleCode = (selectedRole?.code || selectedRole?.name || '').toUpperCase();
+  const isMedico = roleCode.includes('ROLE_MEDICO') || roleCode === 'MEDICO';
+  const isCuidador = roleCode.includes('ROLE_CUIDADOR') || roleCode === 'CUIDADOR';
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.roleId) {
       enqueueSnackbar('Selecione um perfil (role).', { variant: 'warning' });
+      return;
+    }
+    if (isMedico && !form.crm) {
+      enqueueSnackbar('Informe o CRM para medicos.', { variant: 'warning' });
+      return;
+    }
+    if (isCuidador && (!form.certificacao || !form.experiencia)) {
+      enqueueSnackbar('Informe certificacao e experiencia para cuidadores.', { variant: 'warning' });
       return;
     }
     if (changePassword) {
@@ -112,6 +125,9 @@ export default function EditUsuarioPage() {
       const payload: UpdateUserPayload = {
         ...form,
         roleId: form.roleId,
+        crm: isMedico ? form.crm : undefined,
+        certificacao: isCuidador ? form.certificacao : undefined,
+        experiencia: isCuidador ? form.experiencia : undefined,
       };
       if (changePassword) {
         payload.password = password;
@@ -142,7 +158,16 @@ export default function EditUsuarioPage() {
             select
             label="Perfil (role)"
             value={form.roleId ?? ''}
-            onChange={(e) => handleChange('roleId', e.target.value ? Number(e.target.value) : undefined)}
+            onChange={(e) => {
+              const roleId = e.target.value ? Number(e.target.value) : undefined;
+              setForm((prev) => ({
+                ...prev,
+                roleId,
+                crm: '',
+                certificacao: '',
+                experiencia: '',
+              }));
+            }}
             required
             disabled={loading}
           >
@@ -178,27 +203,36 @@ export default function EditUsuarioPage() {
             disabled={loading}
           />
 
-          <TextField
-            label="CRM (medico)"
-            value={form.crm}
-            onChange={(e) => handleChange('crm', e.target.value)}
-            fullWidth
-            disabled={loading}
-          />
-          <TextField
-            label="Certificacao (cuidador)"
-            value={form.certificacao}
-            onChange={(e) => handleChange('certificacao', e.target.value)}
-            fullWidth
-            disabled={loading}
-          />
-          <TextField
-            label="Experiencia (cuidador)"
-            value={form.experiencia}
-            onChange={(e) => handleChange('experiencia', e.target.value)}
-            fullWidth
-            disabled={loading}
-          />
+          {isMedico && (
+            <TextField
+              label="CRM (medico)"
+              value={form.crm}
+              onChange={(e) => handleChange('crm', e.target.value)}
+              required
+              fullWidth
+              disabled={loading}
+            />
+          )}
+          {isCuidador && (
+            <>
+              <TextField
+                label="Certificacao (cuidador)"
+                value={form.certificacao}
+                onChange={(e) => handleChange('certificacao', e.target.value)}
+                required
+                fullWidth
+                disabled={loading}
+              />
+              <TextField
+                label="Experiencia (cuidador)"
+                value={form.experiencia}
+                onChange={(e) => handleChange('experiencia', e.target.value)}
+                required
+                fullWidth
+                disabled={loading}
+              />
+            </>
+          )}
 
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Switch

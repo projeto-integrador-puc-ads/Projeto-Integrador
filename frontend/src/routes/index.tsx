@@ -8,6 +8,7 @@ import EditUsuarioPage from '@/features/admin/pages/EditUsuarioPage';
 import EditMedicoPage from '@/features/admin/pages/EditMedicoPage';
 import EditCuidadorPage from '@/features/admin/pages/EditCuidadorPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
+import AdminPermissoesPage from '@/features/admin/pages/AdminPermissoesPage';
 import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AdminUsuarioCreatePage from '@/features/admin/pages/AdminUsuarioCreatePage';
@@ -41,6 +42,7 @@ export function AppRoutes() {
         <Route path="admin" element={<AdminPage />} />
         <Route path="admin/usuarios" element={<AdminUsuariosPage />} />
         <Route path="admin/usuarios/novo" element={<AdminUsuarioCreatePage />} />
+        <Route path="admin/permissoes" element={<AdminPermissoesPage />} />
         <Route path="admin/medicos" element={<AdminMedicosPage />} />
         <Route path="admin/cuidadores" element={<AdminCuidadoresPage />} />
         <Route path="admin/usuarios/:id/edit" element={<EditUsuarioPage />} />
