@@ -63,7 +63,7 @@ public class CuidadorService {
         return list.stream().map(c -> toResponseDTO(c, map.getOrDefault(c.getId(), new ArrayList<>()))).collect(Collectors.toList());
     }
 
-    public Page<CuidadorResponseDTO> buscarComFiltros(String localizacao, String especialidade,
+    public Page<CuidadorResponseDTO> buscarComFiltros(String nome, String localizacao, String especialidade,
                                                        Boolean disponibilidade,
                                                        Pageable pageable) {
         // Detect column types first; if columns are binary (bytea) JPQL LIKE will fail — skip JPQL
@@ -72,26 +72,26 @@ public class CuidadorService {
             // prefer native convert_from path
             Pageable pageableNoSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
             try {
-                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNative(localizacao, especialidade, disponibilidade, pageableNoSort);
+                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNative(nome, localizacao, especialidade, disponibilidade, pageableNoSort);
                 return mapProjectionPageWithEspecialidades(proj, pageableNoSort);
             } catch (org.springframework.dao.InvalidDataAccessResourceUsageException ex) {
                 LOG.warn("Native convert_from query failed, falling back to simple native ILIKE", ex);
-                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNativeSimple(localizacao, especialidade, disponibilidade, pageableNoSort);
+                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNativeSimple(nome, localizacao, especialidade, disponibilidade, pageableNoSort);
                 return mapProjectionPageWithEspecialidades(proj, pageableNoSort);
             }
         }
         // preferConvertFrom == false (text columns) — try JPQL first and fallback to native ILIKE if JPQL fails
         try {
-            Page<Cuidador> page = cuidadorRepository.buscarComFiltros(localizacao, especialidade, disponibilidade, pageable);
+            Page<Cuidador> page = cuidadorRepository.buscarComFiltros(nome, localizacao, especialidade, disponibilidade, pageable);
             return mapPageWithEspecialidades(page, pageable);
         } catch (org.springframework.dao.InvalidDataAccessResourceUsageException ex) {
             Pageable pageableNoSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
             try {
-                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNativeSimple(localizacao, especialidade, disponibilidade, pageableNoSort);
+                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNativeSimple(nome, localizacao, especialidade, disponibilidade, pageableNoSort);
                 return mapProjectionPageWithEspecialidades(proj, pageableNoSort);
             } catch (org.springframework.dao.InvalidDataAccessResourceUsageException ex2) {
                 LOG.warn("Native ILIKE query failed, trying convert_from native as last resort", ex2);
-                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNative(localizacao, especialidade, disponibilidade, pageableNoSort);
+                org.springframework.data.domain.Page<CuidadorProjection> proj = cuidadorRepository.buscarProjectionNative(nome, localizacao, especialidade, disponibilidade, pageableNoSort);
                 return mapProjectionPageWithEspecialidades(proj, pageableNoSort);
             }
         }

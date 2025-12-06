@@ -29,6 +29,7 @@ export interface CuidadorResponseDTO {
 }
 
 export interface CuidadorBuscarParams {
+  nome?: string; // Busca por nome do cuidador
   localizacao?: string; // "Cidade-UF"
   especialidade?: string;
   disponibilidade?: boolean;

@@ -15,6 +15,7 @@ import { LocationOn, PersonSearch, Search, Clear, Schedule, Visibility } from '@
 import { PageHeader } from '../components/PageHeader';
 
 export default function CuidadoresPage() {
+  const [nome, setNome] = useState('');
   const [cidade, setCidade] = useState('');
   const [disp, setDisp] = useState<boolean | undefined>(true); // Por padrão, mostrar apenas disponíveis
   const [page, setPage] = useState(1);
@@ -35,13 +36,14 @@ export default function CuidadoresPage() {
   }, [navigate]);
 
   const params = useMemo(() => ({
+    nome: nome.trim() || undefined,
     localizacao: cidade.trim() || undefined,
     disponibilidade: disp,
     page: page - 1,
     size: 6,
     sortBy: 'avaliacaoMedia',
     direction: 'DESC' as const,
-  }), [cidade, disp, page]);
+  }), [nome, cidade, disp, page]);
 
   const { data, isFetching, isError, refetch } = useQuery<Page<CuidadorResponseDTO>>({
     queryKey: ['cuidadores', params],
@@ -52,13 +54,14 @@ export default function CuidadoresPage() {
 
   // Limpar todos os filtros
   const limparFiltros = () => {
+    setNome('');
     setCidade('');
     setDisp(true);
     setPage(1);
   };
 
   // Verificar se há filtros ativos
-  const hasFilters = cidade.trim() !== '' || disp === undefined;
+  const hasFilters = nome.trim() !== '' || cidade.trim() !== '' || disp === undefined;
 
   return (
     <Stack gap={3} sx={{ p: 2 }}>
@@ -77,12 +80,31 @@ export default function CuidadoresPage() {
         </Typography>
       </Alert>
 
-      {/* Filtro Simples - Cidade e Disponibilidade */}
+      {/* Filtro - Nome, Cidade e Disponibilidade */}
       <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
         <CardContent sx={{ p: 2 }}>
           <Stack spacing={2}>
-            {/* Linha 1: Campo de Cidade + Switch Disponibilidade (compacto) */}
+            {/* Linha 1: Campos de busca */}
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} alignItems={{ sm: 'center' }}>
+              {/* Campo de Nome */}
+              <TextField
+                label="Nome do Cuidador"
+                placeholder="Ex: João, Maria..."
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                size="small"
+                sx={{ 
+                  flex: 1,
+                  minWidth: { xs: '100%', sm: 180 },
+                  '& .MuiInputBase-root': { borderRadius: 2 }
+                }}
+                slotProps={{
+                  input: {
+                    startAdornment: <PersonSearch sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />
+                  }
+                }}
+              />
+
               {/* Campo de Cidade */}
               <TextField
                 label="Cidade"
@@ -112,7 +134,8 @@ export default function CuidadoresPage() {
                   border: '1px solid',
                   borderColor: disp ? 'success.main' : 'grey.300',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  flexShrink: 0
                 }}
               >
                 <FormControlLabel 
@@ -168,12 +191,22 @@ export default function CuidadoresPage() {
       </Card>
 
       {/* Resumo dos filtros ativos */}
-      {(disp || cidade.trim()) && (
+      {(disp || cidade.trim() || nome.trim()) && (
         <Paper variant="outlined" sx={{ p: 1.5, bgcolor: 'grey.50' }}>
           <Stack direction="row" alignItems="center" gap={1} flexWrap="wrap">
             <Typography variant="body2" color="text.secondary" fontWeight="medium">
               Filtros:
             </Typography>
+            {nome.trim() && (
+              <Chip 
+                icon={<PersonSearch fontSize="small" />}
+                label={nome} 
+                size="small" 
+                color="secondary"
+                variant="outlined"
+                onDelete={() => setNome('')} 
+              />
+            )}
             {cidade.trim() && (
               <Chip 
                 icon={<LocationOn fontSize="small" />}

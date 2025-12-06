@@ -23,10 +23,12 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
     
                 @Query(value = "SELECT c FROM Cuidador c " +
                     "WHERE c.deletedAt IS NULL " +
+                    "AND (:nome IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%',:nome,'%'))) " +
                     "AND (:localizacao IS NULL OR c.cidade LIKE CONCAT('%',:localizacao,'%') OR c.estado = :localizacao) " +
                     "AND (:especialidade IS NULL OR EXISTS (SELECT 1 FROM c.especialidades se WHERE se.nome LIKE CONCAT('%',:especialidade,'%'))) " +
                     "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)")
             Page<Cuidador> buscarComFiltros(
+                @Param("nome") String nome,
                 @Param("localizacao") String localizacao,
                 @Param("especialidade") String especialidade,
                 @Param("disponibilidade") Boolean disponibilidade,
@@ -38,6 +40,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
+                    "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
                     "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) ",
@@ -45,11 +48,13 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                         "WHERE u.deleted_at IS NULL " +
+                        "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                         "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                         "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
                         "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
                     nativeQuery = true)
-                Page<Cuidador> buscarComFiltrosNative(@Param("localizacao") String localizacao,
+                Page<Cuidador> buscarComFiltrosNative(@Param("nome") String nome,
+                                  @Param("localizacao") String localizacao,
                                   @Param("especialidade") String especialidade,
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);
@@ -59,6 +64,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
+                    "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
                     "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
@@ -66,11 +72,13 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                         "WHERE u.deleted_at IS NULL " +
+                        "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                         "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                         "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
                         "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
                     nativeQuery = true)
-                Page<Cuidador> buscarComFiltrosNativeSimple(@Param("localizacao") String localizacao,
+                Page<Cuidador> buscarComFiltrosNativeSimple(@Param("nome") String nome,
+                                  @Param("localizacao") String localizacao,
                                   @Param("especialidade") String especialidade,
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);
@@ -81,6 +89,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
+                    "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
                     "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
@@ -88,11 +97,13 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                         "WHERE u.deleted_at IS NULL " +
+                        "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                         "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                         "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
                         "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
                     nativeQuery = true)
-                Page<CuidadorProjection> buscarProjectionNative(@Param("localizacao") String localizacao,
+                Page<CuidadorProjection> buscarProjectionNative(@Param("nome") String nome,
+                                  @Param("localizacao") String localizacao,
                                   @Param("especialidade") String especialidade,
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);
@@ -102,6 +113,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
+                    "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
                     "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
@@ -109,11 +121,13 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                         "WHERE u.deleted_at IS NULL " +
+                        "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                         "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                         "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
                         "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
                     nativeQuery = true)
-                Page<CuidadorProjection> buscarProjectionNativeSimple(@Param("localizacao") String localizacao,
+                Page<CuidadorProjection> buscarProjectionNativeSimple(@Param("nome") String nome,
+                                  @Param("localizacao") String localizacao,
                                   @Param("especialidade") String especialidade,
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);

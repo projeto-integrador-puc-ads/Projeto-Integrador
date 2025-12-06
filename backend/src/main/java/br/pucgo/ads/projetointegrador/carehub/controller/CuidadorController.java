@@ -31,6 +31,7 @@ public class CuidadorController {
 
     @GetMapping("/buscar")
     public ResponseEntity<PageResponseDTO<CuidadorResponseDTO>> buscarComFiltros(
+            @RequestParam(required = false) String nome,
             @RequestParam(required = false) String localizacao,
             @RequestParam(required = false) String especialidade,
             @RequestParam(required = false) Boolean disponibilidade,
@@ -57,7 +58,7 @@ public class CuidadorController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(dir, property));
 
         Page<CuidadorResponseDTO> cuidadores = cuidadorService.buscarComFiltros(
-            localizacao, especialidade, disponibilidade, pageable);
+            nome, localizacao, especialidade, disponibilidade, pageable);
         
         return ResponseEntity.ok(new PageResponseDTO<>(cuidadores));
     }
