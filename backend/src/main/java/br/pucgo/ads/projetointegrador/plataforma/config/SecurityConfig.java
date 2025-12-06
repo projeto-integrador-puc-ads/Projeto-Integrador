@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -25,27 +26,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAuthenticationFilter authenticationFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos de autenticação
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                
-                // Endpoints dos outros grupos (protegidos)
-                .requestMatchers("/api/grupo1/**").authenticated()
-                .requestMatchers("/api/grupo2/**").authenticated()
-                .requestMatchers("/api/grupo3/**").authenticated()
-                .requestMatchers("/api/grupo4/**").authenticated()
-                .requestMatchers("/api/grupo5/**").authenticated()
-                .requestMatchers("/api/grupo6/**").authenticated()
-                
-                // Endpoints de gerenciamento de usuários
-                .requestMatchers("/api/users/**").authenticated()
-                
-                // Qualquer outra requisição precisa autenticação
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
