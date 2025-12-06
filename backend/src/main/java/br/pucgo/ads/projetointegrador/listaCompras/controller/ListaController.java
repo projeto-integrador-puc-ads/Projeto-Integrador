@@ -148,4 +148,23 @@ public class ListaController {
                     .body(Map.of("erro", "Erro interno ao finalizar a lista"));
         }
     }
+
+    @PutMapping("/{id}/reabrir")
+    public ResponseEntity<?> reabrirLista(@PathVariable Long id) {
+        try {
+            ListaResponseDTO resposta = listaService.reabrirLista(id);
+            return ResponseEntity.ok(resposta);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("erro", e.getMessage()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro interno ao reabrir a lista"));
+        }
+    }
 }

@@ -16,7 +16,6 @@ import {
     DialogActions,
     Snackbar,
     Alert,
-    Divider,
     List,
     ListItem,
     ListItemText,
@@ -29,18 +28,23 @@ import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useSnackbar } from "notistack";
 
 import { listaViewService, type ListaDTO } from "../api/service/listaViewService.ts";
+import { listaComprasService } from "../api/service/listaComprasService.ts";
 
 export default function ViewListaPage() {
     const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
 
     // mock: trocar depois por auth real
     const userId = 1;
 
     const [listasUsuario, setListasUsuario] = useState<ListaDTO[]>([]);
-    const [templates, setTemplates] = useState<ListaDTO[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // filtro de status: abertas | finalizadas | todas
+    const [filtroStatus, setFiltroStatus] = useState<"abertas" | "finalizadas" | "todas">("abertas");
 
     // snackbar genérico de erro
     const [snackErroOpen, setSnackErroOpen] = useState(false);
@@ -62,13 +66,8 @@ export default function ViewListaPage() {
     const carregarListas = async () => {
         setLoading(true);
         try {
-            const [userLists, tplLists] = await Promise.all([
-                listaViewService.listarDoUsuario(userId),
-                listaViewService.listarTemplates(userId),
-            ]);
-
+            const userLists = await listaViewService.listarDoUsuario(userId);
             setListasUsuario(userLists);
-            setTemplates(tplLists);
         } catch {
             setSnackErroMsg("Erro ao carregar listas. Tente novamente.");
             setSnackErroOpen(true);
@@ -81,15 +80,19 @@ export default function ViewListaPage() {
         carregarListas();
     }, []);
 
-    const listasAbertas = useMemo(
-        () => listasUsuario.filter((l) => l.status !== "FINALIZADA"),
-        [listasUsuario]
-    );
+    // aplica o filtro de status em cima de todas as listas do usuário
+    const listasFiltradas = useMemo(() => {
+        let base = [...listasUsuario];
 
-    const listasFinalizadas = useMemo(
-        () => listasUsuario.filter((l) => l.status === "FINALIZADA"),
-        [listasUsuario]
-    );
+        if (filtroStatus === "abertas") {
+            base = base.filter((l) => l.status !== "FINALIZADA");
+        } else if (filtroStatus === "finalizadas") {
+            base = base.filter((l) => l.status === "FINALIZADA");
+        }
+        // "todas" => não filtra
+
+        return base;
+    }, [listasUsuario, filtroStatus]);
 
     const formatDate = (iso: string) => {
         try {
@@ -168,7 +171,7 @@ export default function ViewListaPage() {
                                 <Typography
                                     fontWeight={700}
                                     noWrap
-                                    variant="body2" // menorzinho, deixa mais compacto
+                                    variant="body2"
                                 >
                                     {lista.titulo}
                                 </Typography>
@@ -176,21 +179,17 @@ export default function ViewListaPage() {
 
                             {/* Chips */}
                             <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                                {isTemplate ? (
-                                    <Chip size="small" label="Template" variant="outlined" />
-                                ) : (
-                                    <Chip
-                                        size="small"
-                                        label={lista.status === "FINALIZADA" ? "Finalizada" : "Aberta"}
-                                        icon={
-                                            lista.status === "FINALIZADA" ? (
-                                                <CheckCircleIcon />
-                                            ) : undefined
-                                        }
-                                        color={lista.status === "FINALIZADA" ? "info" : "success"}
-                                        variant="filled"
-                                    />
-                                )}
+                                <Chip
+                                    size="small"
+                                    label={lista.status === "FINALIZADA" ? "Finalizada" : "Aberta"}
+                                    icon={
+                                        lista.status === "FINALIZADA" ? (
+                                            <CheckCircleIcon />
+                                        ) : undefined
+                                    }
+                                    color={lista.status === "FINALIZADA" ? "info" : "success"}
+                                    variant="filled"
+                                />
 
                                 {!!lista.createdAt && (
                                     <Chip
@@ -209,7 +208,7 @@ export default function ViewListaPage() {
                                 )}
                             </Stack>
 
-                            {/* Editar itens no final, alinhado à direita */}
+                            {/* Editar itens no final, alinhado à direita (apenas se aberta) */}
                             {isAberta && (
                                 <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                     <Button
@@ -238,7 +237,6 @@ export default function ViewListaPage() {
             </Card>
         );
     };
-
 
     const handleIrParaEdicao = (lista: ListaDTO) => {
         navigate(`/lista-compras/${lista.id}/editar`);
@@ -288,113 +286,79 @@ export default function ViewListaPage() {
                     backgroundColor: "#fff",
                 }}
             >
-                {/* LISTAS ABERTAS */}
-                <Stack spacing={1}>
-                    <Typography variant="subtitle2" fontWeight={800} color="text.secondary">
-                        Listas abertas
-                    </Typography>
-
-                    {loading ? (
-                        <Box
-                            sx={{
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <Skeleton key={i} height={90} sx={{ borderRadius: 3 }} />
-                            ))}
-                        </Box>
-                    ) : listasAbertas.length === 0 ? (
-                        <Typography color="text.secondary" sx={{ py: 1 }}>
-                            Você não tem listas abertas no momento.
-                        </Typography>
-                    ) : (
-                        <Box
-                            sx={{
-                                mt: 1,
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {listasAbertas.map((l) => (
-                                <ListaCard
-                                    key={l.id}
-                                    lista={l}
-                                    variant="user"
-                                    onClick={handleAbrirLista}
-                                    onEditLista={handleIrParaEdicao}
-                                />
-                            ))}
-                        </Box>
-                    )}
+                {/* Filtros de status */}
+                <Stack direction="row" spacing={1.5} sx={{ mb: 2 }}>
+                    <Chip
+                        label="Abertas"
+                        clickable
+                        color={filtroStatus === "abertas" ? "primary" : "default"}
+                        variant={filtroStatus === "abertas" ? "filled" : "outlined"}
+                        onClick={() => setFiltroStatus("abertas")}
+                    />
+                    <Chip
+                        label="Finalizadas"
+                        clickable
+                        color={filtroStatus === "finalizadas" ? "primary" : "default"}
+                        variant={filtroStatus === "finalizadas" ? "filled" : "outlined"}
+                        onClick={() => setFiltroStatus("finalizadas")}
+                    />
+                    <Chip
+                        label="Todas"
+                        clickable
+                        color={filtroStatus === "todas" ? "primary" : "default"}
+                        variant={filtroStatus === "todas" ? "filled" : "outlined"}
+                        onClick={() => setFiltroStatus("todas")}
+                    />
                 </Stack>
 
-                {/* DIVISOR */}
-                <Divider sx={{ my: 3 }} />
-
-                {/* LISTAS FINALIZADAS */}
-                <Stack spacing={1}>
-                    <Typography variant="subtitle2" fontWeight={800} color="text.secondary">
-                        Listas finalizadas
+                {/* GRID ÚNICO DE LISTAS (respeitando o filtro) */}
+                {loading ? (
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(3, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <Skeleton key={i} height={90} sx={{ borderRadius: 3 }} />
+                        ))}
+                    </Box>
+                ) : listasFiltradas.length === 0 ? (
+                    <Typography color="text.secondary" sx={{ py: 1 }}>
+                        Nenhuma lista encontrada para esse filtro.
                     </Typography>
-
-                    {loading ? (
-                        <Box
-                            sx={{
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <Skeleton key={i} height={90} sx={{ borderRadius: 3 }} />
-                            ))}
-                        </Box>
-                    ) : listasFinalizadas.length === 0 ? (
-                        <Typography color="text.secondary" sx={{ py: 1 }}>
-                            Você ainda não tem listas finalizadas.
-                        </Typography>
-                    ) : (
-                        <Box
-                            sx={{
-                                mt: 1,
-                                display: "grid",
-                                gridTemplateColumns: {
-                                    xs: "1fr",
-                                    sm: "repeat(2, 1fr)",
-                                    md: "repeat(3, 1fr)",
-                                },
-                                gap: 2,
-                            }}
-                        >
-                            {listasFinalizadas.map((l) => (
-                                <ListaCard
-                                    key={l.id}
-                                    lista={l}
-                                    variant="finalizada"
-                                    onClick={handleAbrirLista}
-                                />
-                            ))}
-                        </Box>
-                    )}
-                </Stack>
+                ) : (
+                    <Box
+                        sx={{
+                            mt: 1,
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(3, 1fr)",
+                            },
+                            gap: 2,
+                        }}
+                    >
+                        {listasFiltradas.map((l) => (
+                            <ListaCard
+                                key={l.id}
+                                lista={l}
+                                variant={l.status === "FINALIZADA" ? "finalizada" : "user"}
+                                onClick={handleAbrirLista}
+                                onEditLista={handleIrParaEdicao}
+                            />
+                        ))}
+                    </Box>
+                )}
             </Paper>
 
+            {/* MODAL DETALHES + ARQUIVAR */}
             <Dialog open={modalOpen} onClose={handleFecharModal} fullWidth maxWidth="sm">
                 <DialogTitle>
                     {listaSelecionada?.titulo ?? "Itens da lista"}
@@ -441,6 +405,58 @@ export default function ViewListaPage() {
                 </DialogContent>
 
                 <DialogActions>
+                    {/* Arquivar lista (finalizar) – só se ainda não estiver finalizada */}
+                    {listaSelecionada && listaSelecionada.status !== "FINALIZADA" && (
+                        <Button
+                            color="error"
+                            onClick={async () => {
+                                try {
+                                    await listaComprasService.finalizarLista(listaSelecionada.id);
+                                    enqueueSnackbar("Lista arquivada com sucesso.", {
+                                        variant: "success",
+                                    });
+                                    handleFecharModal();
+                                    await carregarListas(); // recarrega para refletir o novo status
+                                } catch (e: any) {
+                                    console.error(e);
+                                    const msg =
+                                        e.response?.data?.erro ||
+                                        "Erro ao arquivar lista.";
+                                    enqueueSnackbar(msg, { variant: "error" });
+                                }
+                            }}
+                        >
+                            Arquivar lista
+                        </Button>
+                    )}
+
+                    {/* Reabrir lista – só se estiver finalizada */}
+                    {listaSelecionada && listaSelecionada.status === "FINALIZADA" && (
+                        <Button
+                            color="primary"
+                            onClick={async () => {
+                                try {
+                                    await listaComprasService.reabrirLista(listaSelecionada.id);
+                                    enqueueSnackbar("Lista reaberta com sucesso.", {
+                                        variant: "success",
+                                    });
+                                    handleFecharModal();
+                                    await carregarListas();           // recarrega dados
+                                    // opcional: já ajustar filtro pra "abertas"
+                                    // setFiltroStatus("abertas");
+                                } catch (e: any) {
+                                    console.error(e);
+                                    const msg =
+                                        e.response?.data?.erro ||
+                                        "Erro ao reabrir lista.";
+                                    enqueueSnackbar(msg, { variant: "error" });
+                                }
+                            }}
+                        >
+                            Reabrir lista
+                        </Button>
+                    )}
+
                     <Button onClick={handleFecharModal}>Fechar</Button>
                 </DialogActions>
             </Dialog>

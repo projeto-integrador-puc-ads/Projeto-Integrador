@@ -467,18 +467,25 @@ export default function TemplatesPage() {
                     </List>
                 </DialogContent>
                 <DialogActions>
-                    {templateSelecionado && (
+                    {/* Arquivar template – só se ainda não estiver finalizado */}
+                    {templateSelecionado && templateSelecionado.status !== "FINALIZADA" && (
                         <Button
                             color="error"
                             onClick={async () => {
                                 try {
                                     await listaComprasService.finalizarLista(templateSelecionado.id);
-                                    enqueueSnackbar("Template arquivado com sucesso.", { variant: "success" });
+                                    enqueueSnackbar("Template arquivado com sucesso.", {
+                                        variant: "success",
+                                    });
                                     setModalDetalhesOpen(false);
-                                    await carregarDados(true);
+                                    await carregarDados(true);          // recarrega a lista de templates
+                                    // opcional: já jogar o filtro de status pra "arquivadas"
+                                    // setFiltroStatus("arquivadas");
                                 } catch (e: any) {
                                     console.error(e);
-                                    const msg = e.response?.data?.erro || "Erro ao arquivar template.";
+                                    const msg =
+                                        e.response?.data?.erro ||
+                                        "Erro ao arquivar template.";
                                     enqueueSnackbar(msg, { variant: "error" });
                                 }
                             }}
@@ -486,9 +493,38 @@ export default function TemplatesPage() {
                             Arquivar template
                         </Button>
                     )}
+
+                    {/* Reabrir template – só se estiver FINALIZADA */}
+                    {templateSelecionado && templateSelecionado.status === "FINALIZADA" && (
+                        <Button
+                            color="primary"
+                            onClick={async () => {
+                                try {
+                                    await listaComprasService.reabrirLista(templateSelecionado.id);
+                                    enqueueSnackbar("Template reaberto com sucesso.", {
+                                        variant: "success",
+                                    });
+                                    setModalDetalhesOpen(false);
+                                    await carregarDados(true);          // recarrega a lista
+                                    // opcional: já mudar filtro pra "abertas":
+                                    // setFiltroStatus("abertas");
+                                } catch (e: any) {
+                                    console.error(e);
+                                    const msg =
+                                        e.response?.data?.erro ||
+                                        "Erro ao reabrir template.";
+                                    enqueueSnackbar(msg, { variant: "error" });
+                                }
+                            }}
+                        >
+                            Reabrir template
+                        </Button>
+                    )}
+
                     <Button onClick={() => setModalDetalhesOpen(false)}>
                         Fechar
                     </Button>
+
                     <Button
                         variant="contained"
                         onClick={() => navigate("/lista-compras/nova")}

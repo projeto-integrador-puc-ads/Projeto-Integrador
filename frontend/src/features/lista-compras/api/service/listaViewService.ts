@@ -22,7 +22,7 @@ export type ListaDTO = {
 
 export const listaViewService = {
     async listarDoUsuario(userId: number): Promise<ListaDTO[]> {
-        const { data } = await listaComprasApi.get<any[]>( // Tipamos como any[] temporariamente para receber o dado bruto
+        const { data } = await listaComprasApi.get<any[]>(
             `/listas/usuario/${userId}`
         );
         return mapBackendData(data);

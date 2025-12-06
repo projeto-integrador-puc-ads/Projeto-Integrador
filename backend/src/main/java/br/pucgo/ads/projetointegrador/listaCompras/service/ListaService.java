@@ -326,5 +326,26 @@ public class ListaService {
         return toResponseDTO(lista);
     }
 
+    @Transactional
+    public ListaResponseDTO reabrirLista(Long id) {
+        Lista lista = listaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Lista não encontrada com ID: " + id));
+
+
+
+        // Só faz sentido reabrir se estiver finalizada
+        if (lista.getStatus() != Lista.StatusLista.FINALIZADA) {
+            throw new IllegalArgumentException(
+                    "Só é possível reabrir listas que estejam finalizadas");
+        }
+
+        // Considerando que seu enum tem ABERTA / FINALIZADA
+        lista.setStatus(Lista.StatusLista.ABERTA);
+
+        Lista listaReaberta = listaRepository.save(lista);
+        return toResponseDTO(listaReaberta);
+    }
+
 
 }

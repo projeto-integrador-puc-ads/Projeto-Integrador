@@ -75,13 +75,15 @@ export const listaComprasService = {
 
         return data;
     },
-
     async finalizarLista(listaId: number): Promise<ListaDeComprasSalva> {
         const { data } = await listaComprasApi.put<ListaDeComprasSalva>(
             `/listas/${listaId}/finalizar`
         );
         return data;
-    }
+    },
+    async reabrirLista(id: number): Promise<void> {
+        await listaComprasApi.put(`/listas/${id}/reabrir`);
+    },
 
 
 };
