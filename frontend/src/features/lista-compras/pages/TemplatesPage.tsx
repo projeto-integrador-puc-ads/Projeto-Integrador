@@ -52,7 +52,7 @@ export default function TemplatesPage() {
 
     // Estados de Filtro e Seleção
     const [filtroPatologia, setFiltroPatologia] = useState<number | "Todas">("Todas");
-    // 🔹 NOVO: filtro de status (abertas / arquivadas / todas)
+    // filtro de status (abertas / arquivadas / todas)
     const [filtroStatus, setFiltroStatus] = useState<"abertas" | "arquivadas" | "todas">("abertas");
     const [templateSelecionado, setTemplateSelecionado] = useState<ListaDTO | null>(null);
     const [modalDetalhesOpen, setModalDetalhesOpen] = useState(false);
@@ -64,22 +64,25 @@ export default function TemplatesPage() {
     const [criandoTemplate, setCriandoTemplate] = useState(false);
 
     // --- Função de Carga de Dados (Memoizada) ---
-    const carregarDados = useCallback(async (isReload = false) => {
-        if (!isReload) setLoading(true);
-        try {
-            const [tpls, pats] = await Promise.all([
-                listaViewService.listarTemplates(userId),
-                patologiasService.getPatologiasDoUsuario(userId),
-            ]);
-            setTemplates(tpls);
-            setPatologias(pats);
-        } catch (error) {
-            console.error("Erro ao carregar dados", error);
-            enqueueSnackbar("Erro ao carregar templates.", { variant: "error" });
-        } finally {
-            setLoading(false);
-        }
-    }, [userId, enqueueSnackbar]);
+    const carregarDados = useCallback(
+        async (isReload = false) => {
+            if (!isReload) setLoading(true);
+            try {
+                const [tpls, pats] = await Promise.all([
+                    listaViewService.listarTemplates(userId),
+                    patologiasService.getPatologiasDoUsuario(userId),
+                ]);
+                setTemplates(tpls);
+                setPatologias(pats);
+            } catch (error) {
+                console.error("Erro ao carregar dados", error);
+                enqueueSnackbar("Erro ao carregar templates.", { variant: "error" });
+            } finally {
+                setLoading(false);
+            }
+        },
+        [userId, enqueueSnackbar]
+    );
 
     // --- Carga Inicial ---
     useEffect(() => {
@@ -97,12 +100,10 @@ export default function TemplatesPage() {
 
         // 2) Filtro por status
         if (filtroStatus === "abertas") {
-            // Considera "aberta" quando status !== FINALIZADA (inclui null)
             lista = lista.filter((t) => t.status !== "FINALIZADA");
         } else if (filtroStatus === "arquivadas") {
             lista = lista.filter((t) => t.status === "FINALIZADA");
         }
-        // se "todas": não filtra nada
 
         return lista;
     }, [templates, filtroPatologia, filtroStatus]);
@@ -113,7 +114,7 @@ export default function TemplatesPage() {
         setModalDetalhesOpen(true);
     };
 
-    /** 🔥 Novo fluxo: cria template vazio e navega para EditListaPage */
+    /** Cria template vazio e navega para EditListaPage */
     const handleCriarTemplate = async () => {
         const titulo = novoTemplateTitulo.trim();
         if (!titulo) return;
@@ -203,7 +204,13 @@ export default function TemplatesPage() {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={() => setModalCriarOpen(true)}
-                    sx={{ borderRadius: 2, textTransform: "none", fontWeight: 700 }}
+                    sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        width: { xs: "100%", sm: "auto" },      // 🔹 full-width no mobile
+                        alignSelf: { xs: "stretch", sm: "auto" }, // acompanha a largura no xs
+                    }}
                 >
                     Novo Template
                 </Button>
@@ -211,9 +218,18 @@ export default function TemplatesPage() {
 
             {/* Área de Filtros */}
             <Paper sx={{ p: 2, mb: 3, borderRadius: 3, backgroundColor: "#fff" }} elevation={0}>
-                <Stack direction={{ xs: "column", sm: "row" }} alignItems="center" spacing={2}>
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    alignItems={{ xs: "stretch", sm: "center" }}  // 🔹 no mobile os filtros ocupam 100%
+                    spacing={2}
+                >
                     {/* Filtro por Patologia */}
-                    <FormControl size="small" sx={{ minWidth: 220 }}>
+                    <FormControl
+                        size="small"
+                        sx={{
+                            width: { xs: "100%", sm: 220 }, // xs: ocupa tudo, sm+: largura fixa
+                        }}
+                    >
                         <InputLabel>Filtrar por Patologia</InputLabel>
                         <Select
                             value={filtroPatologia}
@@ -231,14 +247,21 @@ export default function TemplatesPage() {
                         </Select>
                     </FormControl>
 
-                    {/* 🔹 NOVO: Filtro por Status */}
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                    {/* Filtro por Status */}
+                    <FormControl
+                        size="small"
+                        sx={{
+                            width: { xs: "100%", sm: 180 }, // xs: ocupa tudo, sm+: largura fixa
+                        }}
+                    >
                         <InputLabel>Status</InputLabel>
                         <Select
                             value={filtroStatus}
                             label="Status"
                             onChange={(e) =>
-                                setFiltroStatus(e.target.value as "abertas" | "arquivadas" | "todas")
+                                setFiltroStatus(
+                                    e.target.value as "abertas" | "arquivadas" | "todas"
+                                )
                             }
                         >
                             <MenuItem value="abertas">Abertas</MenuItem>
@@ -275,11 +298,7 @@ export default function TemplatesPage() {
                     }}
                 >
                     {[1, 2, 3].map((i) => (
-                        <Skeleton
-                            key={i}
-                            height={120}
-                            sx={{ borderRadius: 3, transform: "none" }}
-                        />
+                        <Skeleton key={i} height={120} sx={{ borderRadius: 3, transform: "none" }} />
                     ))}
                 </Box>
             ) : templatesFiltrados.length === 0 ? (
@@ -399,10 +418,7 @@ export default function TemplatesPage() {
                                             </Typography>
                                         </Box>
 
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                        >
+                                        <Typography variant="body2" color="text.secondary">
                                             {tpl.itens?.length || 0} itens cadastrados
                                         </Typography>
                                     </Stack>
@@ -428,10 +444,7 @@ export default function TemplatesPage() {
                     }}
                 >
                     {templateSelecionado?.titulo}
-                    <IconButton
-                        onClick={() => setModalDetalhesOpen(false)}
-                        size="small"
-                    >
+                    <IconButton onClick={() => setModalDetalhesOpen(false)} size="small">
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
@@ -456,11 +469,7 @@ export default function TemplatesPage() {
                         ))}
                         {(!templateSelecionado?.itens ||
                             templateSelecionado.itens.length === 0) && (
-                            <Typography
-                                color="text.secondary"
-                                align="center"
-                                py={2}
-                            >
+                            <Typography color="text.secondary" align="center" py={2}>
                                 Este template está vazio.
                             </Typography>
                         )}
@@ -473,14 +482,14 @@ export default function TemplatesPage() {
                             color="error"
                             onClick={async () => {
                                 try {
-                                    await listaComprasService.finalizarLista(templateSelecionado.id);
+                                    await listaComprasService.finalizarLista(
+                                        templateSelecionado.id
+                                    );
                                     enqueueSnackbar("Template arquivado com sucesso.", {
                                         variant: "success",
                                     });
                                     setModalDetalhesOpen(false);
-                                    await carregarDados(true);          // recarrega a lista de templates
-                                    // opcional: já jogar o filtro de status pra "arquivadas"
-                                    // setFiltroStatus("arquivadas");
+                                    await carregarDados(true);
                                 } catch (e: any) {
                                     console.error(e);
                                     const msg =
@@ -500,14 +509,14 @@ export default function TemplatesPage() {
                             color="primary"
                             onClick={async () => {
                                 try {
-                                    await listaComprasService.reabrirLista(templateSelecionado.id);
+                                    await listaComprasService.reabrirLista(
+                                        templateSelecionado.id
+                                    );
                                     enqueueSnackbar("Template reaberto com sucesso.", {
                                         variant: "success",
                                     });
                                     setModalDetalhesOpen(false);
-                                    await carregarDados(true);          // recarrega a lista
-                                    // opcional: já mudar filtro pra "abertas":
-                                    // setFiltroStatus("abertas");
+                                    await carregarDados(true);
                                 } catch (e: any) {
                                     console.error(e);
                                     const msg =
@@ -521,14 +530,9 @@ export default function TemplatesPage() {
                         </Button>
                     )}
 
-                    <Button onClick={() => setModalDetalhesOpen(false)}>
-                        Fechar
-                    </Button>
+                    <Button onClick={() => setModalDetalhesOpen(false)}>Fechar</Button>
 
-                    <Button
-                        variant="contained"
-                        onClick={() => navigate("/lista-compras/nova")}
-                    >
+                    <Button variant="contained" onClick={() => navigate("/lista-compras/nova")}>
                         Usar Template
                     </Button>
                 </DialogActions>
