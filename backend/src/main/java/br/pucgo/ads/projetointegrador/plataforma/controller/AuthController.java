@@ -4,6 +4,7 @@ import br.pucgo.ads.projetointegrador.plataforma.dto.JwtAuthResponse;
 import br.pucgo.ads.projetointegrador.plataforma.dto.LoginDto;
 import br.pucgo.ads.projetointegrador.plataforma.dto.SignupDto;
 import br.pucgo.ads.projetointegrador.plataforma.service.AuthService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,20 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
-
     // Login/Signin endpoint
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto) {
-        String token = authService.login(loginDto);
-        JwtAuthResponse response = new JwtAuthResponse();
-        response.setAccessToken(token);
+        JwtAuthResponse response = authService.login(loginDto);
         return ResponseEntity.ok(response);
     }
 
