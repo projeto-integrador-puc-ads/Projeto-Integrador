@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
@@ -13,4 +14,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findByDeletedAtIsNull();
 
     boolean existsByUsername(String username);
+    
+    Optional<Cliente> findByUsername(String username);
 }

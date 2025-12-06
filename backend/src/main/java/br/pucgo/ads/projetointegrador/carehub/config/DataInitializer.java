@@ -5,6 +5,7 @@ import br.pucgo.ads.projetointegrador.carehub.entity.Agendamento;
 import br.pucgo.ads.projetointegrador.carehub.entity.Avaliacao;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cliente;
 import br.pucgo.ads.projetointegrador.carehub.entity.Cuidador;
+import br.pucgo.ads.projetointegrador.carehub.entity.Especialidade;
 import br.pucgo.ads.projetointegrador.carehub.entity.Mensagem;
 import br.pucgo.ads.projetointegrador.carehub.entity.Prontuario;
 import br.pucgo.ads.projetointegrador.carehub.entity.RegistroAcompanhamento;
@@ -13,6 +14,7 @@ import br.pucgo.ads.projetointegrador.carehub.repository.AgendamentoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.AvaliacaoRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ClienteRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.CuidadorRepository;
+import br.pucgo.ads.projetointegrador.carehub.repository.EspecialidadeRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.MensagemRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.ProntuarioRepository;
 import br.pucgo.ads.projetointegrador.carehub.repository.RegistroAcompanhamentoRepository;
@@ -28,6 +30,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Configuration("carehubConfig")
@@ -43,6 +47,7 @@ public class DataInitializer {
 									  AvaliacaoRepository avaliacaoRepo,
 									  MensagemRepository mensagemRepo,
 									  RegistroAcompanhamentoRepository registroRepo,
+									  EspecialidadeRepository especialidadeRepo,
 									  RoleRepository roleRepo,
 									  PasswordEncoder encoder) {
 		return args -> {
@@ -73,13 +78,26 @@ public class DataInitializer {
 				return roleRepo.save(r);
 			});
 			
+			// =======================================================
+			// Criar especialidades de cuidadores
+			// =======================================================
+			List<Especialidade> especialidades = criarEspecialidades(especialidadeRepo);
+			
 			// Atualizar endereços de clientes existentes que estão vazios
 			atualizarEnderecosClientesExistentes(clienteRepo);
 			
 			// Atualizar roles de usuários existentes que estão com role errada
 			atualizarRolesUsuariosExistentes(cuidadorRepo, clienteRepo, cuidadorRole, clienteRole);
 			
+			// Atualizar especialidades dos cuidadores existentes
+			atualizarEspecialidadesCuidadores(cuidadorRepo, especialidades);
+			
+			// Popular avaliações variadas para os cuidadores
+			popularAvaliacoesVariadas(cuidadorRepo, clienteRepo, agendamentoRepo, avaliacaoRepo);
+			
 			if (clienteRepo.count() > 0) {
+				// Mesmo com dados existentes, garantir que o agendamento da apresentação existe
+				criarAgendamentoApresentacao(clienteRepo, cuidadorRepo, agendamentoRepo);
 				return;
 			}
 
@@ -120,54 +138,87 @@ public class DataInitializer {
 			cuidador.setRole(cuidadorRole);
 			cuidador.setTelefone("62911112222");
 			cuidador.setAtivo(true);
-			cuidador.setExperiencia("5 anos com idosos acamados");
+			cuidador.setExperiencia("5 anos com idosos acamados e dependentes");
 			cuidador.setCidade("Goiania");
 			cuidador.setEstado("GO");
 			cuidador.setDisponibilidade(true);
 			cuidador.setTaxaHora(new BigDecimal("35.00"));
+			cuidador.setBiografia("Profissional experiente com formação em enfermagem geriátrica. Trabalho com dedicação e carinho, sempre priorizando o bem-estar dos idosos.");
+			// Adicionar especialidades ao João
+			Set<Especialidade> espJoao = new HashSet<>();
+			espJoao.add(especialidades.get(0)); // Cuidados Domiciliares
+			espJoao.add(especialidades.get(4)); // Enfermagem Geriátrica
+			espJoao.add(especialidades.get(9)); // Auxílio à Mobilidade
+			cuidador.setEspecialidades(espJoao);
 			cuidador = cuidadorRepo.save(cuidador);
 
-			 // Adicionar mais cuidadores de teste, incluindo 'Gildenor Cuidador'
-			 if (!cuidadorRepo.existsByUsername("gildenor")) {
-				 Cuidador gildenor = new Cuidador();
-				 gildenor.setName("Gildenor Cuidador");
-				 gildenor.setUsername("gildenor");
-				 gildenor.setEmail("gildenor@example.com");
-				 gildenor.setPassword(encoder.encode("123456"));
-				 gildenor.setRoles(Set.of("CAREHUB_CUIDADOR"));
-				 gildenor.setRole(cuidadorRole);
-				 gildenor.setTelefone("62933334444");
-				 gildenor.setAtivo(true);
-				 gildenor.setExperiencia("10 anos com cuidados domiciliares");
-				 gildenor.setCidade("Goiânia");
-				 gildenor.setEstado("GO");
-				 gildenor.setDisponibilidade(true);
-				 gildenor.setTaxaHora(new BigDecimal("40.00"));
-				 cuidadorRepo.save(gildenor);
-			 }
+			// Gildenor - cuidador principal para a apresentação
+			Cuidador gildenor = new Cuidador();
+			gildenor.setName("Gildenor Silva");
+			gildenor.setUsername("gildenor");
+			gildenor.setEmail("gildenor@example.com");
+			gildenor.setPassword(encoder.encode("123456"));
+			gildenor.setRoles(Set.of("CAREHUB_CUIDADOR"));
+			gildenor.setRole(cuidadorRole);
+			gildenor.setTelefone("62933334444");
+			gildenor.setAtivo(true);
+			gildenor.setExperiencia("10 anos com cuidados domiciliares e acompanhamento hospitalar");
+			gildenor.setCidade("Goiânia");
+			gildenor.setEstado("GO");
+			gildenor.setDisponibilidade(true);
+			gildenor.setTaxaHora(new BigDecimal("45.00"));
+			gildenor.setBiografia("Sou Gildenor, cuidador certificado com mais de 10 anos de experiência em cuidados geriátricos. Formado em técnico de enfermagem pela PUC Goiás, com especialização em cuidados paliativos e Alzheimer. Minha missão é proporcionar bem-estar e qualidade de vida para os idosos e tranquilidade para suas famílias. Trabalho com amor, paciência e dedicação total.");
+			// Adicionar especialidades ao Gildenor
+			Set<Especialidade> espGildenor = new HashSet<>();
+			espGildenor.add(especialidades.get(0)); // Cuidados Domiciliares
+			espGildenor.add(especialidades.get(1)); // Acompanhamento Hospitalar
+			espGildenor.add(especialidades.get(2)); // Cuidados Paliativos
+			espGildenor.add(especialidades.get(5)); // Alzheimer e Demência
+			gildenor.setEspecialidades(espGildenor);
+			gildenor = cuidadorRepo.save(gildenor);
 
-		 	 // Adicionar vários cuidadores de teste com endereços/cidades distintas
-		 	 String[] cidades = new String[] {"Goiânia", "Anápolis", "Trindade", "Rio Verde", "Catalão"};
-		 	 for (int i = 0; i < cidades.length; i++) {
-		 	 	 String uname = "cuidador_teste" + (i + 1);
-		 	 	 if (!cuidadorRepo.existsByUsername(uname)) {
-		 	 	 	 Cuidador ct = new Cuidador();
-		 	 	 	 ct.setName("Cuidador Teste " + (i + 1));
-		 	 	 	 ct.setUsername(uname);
-		 	 	 	 ct.setEmail(uname + "@example.com");
-		 	 	 	 ct.setPassword(encoder.encode("123456"));
-		 	 	 	 ct.setRoles(Set.of("CAREHUB_CUIDADOR"));
-		 	 	 	 ct.setRole(cuidadorRole);
-		 	 	 	 ct.setTelefone("62970000" + (10 + i));
-		 	 	 	 ct.setAtivo(true);
-		 	 	 	 ct.setExperiencia((2 + i) + " anos de experiência");
-		 	 	 	 ct.setCidade(cidades[i]);
-		 	 	 	 ct.setEstado("GO");
-		 	 	 	 ct.setDisponibilidade(i % 2 == 0);
-		 	 	 	 ct.setTaxaHora(new BigDecimal(30 + i * 5));
-		 	 	 	 cuidadorRepo.save(ct);
-		 	 	 }
-		 	 }
+		 	// Adicionar vários cuidadores de teste com endereços/cidades distintas
+		 	String[] cidades = new String[] {"Goiânia", "Anápolis", "Trindade", "Rio Verde", "Catalão"};
+		 	String[] experienciasCuidadores = new String[] {
+		 		"6 anos de experiência em cuidados domiciliares com idosos",
+		 		"8 anos trabalhando em hospitais e casas de repouso",
+		 		"4 anos especializados em cuidados paliativos",
+		 		"7 anos de experiência com pacientes com Alzheimer",
+		 		"5 anos em atendimento domiciliar e fisioterapia geriátrica"
+		 	};
+		 	String[] biografiasCuidadores = new String[] {
+		 		"Profissional dedicado com vasta experiência em cuidados geriátricos. Formação em enfermagem com especialização em saúde do idoso.",
+		 		"Cuidador certificado com experiência em hospitais e domicílios. Especialista em Alzheimer e demência.",
+		 		"Técnico de enfermagem apaixonado por ajudar idosos. Experiência em cuidados paliativos e acompanhamento hospitalar.",
+		 		"Profissional atencioso e paciente. Formação em gerontologia com experiência em reabilitação física.",
+		 		"Cuidador experiente em atendimento domiciliar. Conhecimento em primeiros socorros e emergências geriátricas."
+		 	};
+		 	
+		 	for (int i = 0; i < cidades.length; i++) {
+		 		String uname = "cuidador_teste" + (i + 1);
+		 		Cuidador ct = new Cuidador();
+		 		ct.setName("Cuidador Teste " + (i + 1));
+		 		ct.setUsername(uname);
+		 		ct.setEmail(uname + "@example.com");
+		 		ct.setPassword(encoder.encode("123456"));
+		 		ct.setRoles(Set.of("CAREHUB_CUIDADOR"));
+		 		ct.setRole(cuidadorRole);
+		 		ct.setTelefone("62970000" + (10 + i));
+		 		ct.setAtivo(true);
+		 		ct.setExperiencia(experienciasCuidadores[i]);
+		 		ct.setBiografia(biografiasCuidadores[i]);
+		 		ct.setCidade(cidades[i]);
+		 		ct.setEstado("GO");
+		 		ct.setDisponibilidade(i % 2 == 0);
+		 		ct.setTaxaHora(new BigDecimal(30 + i * 5));
+		 		// Adicionar especialidades variadas
+		 		Set<Especialidade> espCt = new HashSet<>();
+		 		espCt.add(especialidades.get(i % especialidades.size()));
+		 		espCt.add(especialidades.get((i + 3) % especialidades.size()));
+		 		espCt.add(especialidades.get((i + 7) % especialidades.size()));
+		 		ct.setEspecialidades(espCt);
+		 		cuidadorRepo.save(ct);
+		 	}
 
 			 // Criar múltiplos idosos (clientes) para popular o sistema
 			 // Endereços de Goiânia e região para os idosos
@@ -515,7 +566,7 @@ public class DataInitializer {
 				int novoTotal = prevTotal + 1; // adicionamos a avaliacao aval2 acima
 				double novoAvg = (prevAvg * prevTotal + aval2.getNota()) / novoTotal;
 				cuidador.setTotalAvaliacoes(novoTotal);
-				cuidador.setAvaliacaoMedia(new BigDecimal(String.format("%.2f", novoAvg)));
+				cuidador.setAvaliacaoMedia(new BigDecimal(String.format(java.util.Locale.US, "%.2f", novoAvg)));
 				cuidadorRepo.save(cuidador);
 			} catch (Exception ex) {
 				// Se alguma operação falhar aqui, não interrompemos o seeding
@@ -591,6 +642,364 @@ public class DataInitializer {
 		} catch (Exception ex) {
 			// Log silenciosamente para não interromper a inicialização
 			System.err.println("Aviso: Erro ao atualizar roles de usuários existentes: " + ex.getMessage());
+		}
+	}
+	
+	/**
+	 * Cria as especialidades padrão para cuidadores se não existirem.
+	 * Retorna a lista de especialidades criadas/existentes.
+	 */
+	private List<Especialidade> criarEspecialidades(EspecialidadeRepository especialidadeRepo) {
+		String[] nomesEspecialidades = {
+			"Cuidados Domiciliares",
+			"Acompanhamento Hospitalar",
+			"Cuidados Paliativos",
+			"Fisioterapia Geriátrica",
+			"Enfermagem Geriátrica",
+			"Alzheimer e Demência",
+			"Parkinson",
+			"Cuidados Pós-Operatórios",
+			"Acompanhamento Noturno",
+			"Auxílio à Mobilidade",
+			"Cuidados com Diabetes",
+			"Cuidados com Hipertensão",
+			"Nutrição e Alimentação",
+			"Higiene Pessoal",
+			"Atividades Recreativas"
+		};
+		
+		List<Especialidade> especialidades = new java.util.ArrayList<>();
+		
+		for (String nome : nomesEspecialidades) {
+			Especialidade esp = especialidadeRepo.findByNomeIgnoreCase(nome).orElseGet(() -> {
+				Especialidade nova = new Especialidade();
+				nova.setNome(nome);
+				return especialidadeRepo.save(nova);
+			});
+			especialidades.add(esp);
+		}
+		
+		System.out.println("Especialidades criadas/verificadas: " + especialidades.size());
+		return especialidades;
+	}
+	
+	/**
+	 * Atualiza os cuidadores existentes adicionando especialidades variadas.
+	 * Cada cuidador receberá de 2 a 4 especialidades diferentes.
+	 * Também atualiza biografias e experiências vazias.
+	 */
+	private void atualizarEspecialidadesCuidadores(CuidadorRepository cuidadorRepo, List<Especialidade> especialidades) {
+		if (especialidades == null || especialidades.isEmpty()) {
+			System.out.println("Nenhuma especialidade disponível para associar aos cuidadores.");
+			return;
+		}
+		
+		try {
+			// Usar query específica para evitar LazyInitializationException
+			var cuidadoresSemEspecialidades = cuidadorRepo.findCuidadoresSemEspecialidades();
+			int index = 0;
+			
+			// Biografias para enriquecer os perfis dos cuidadores
+			String[] biografias = {
+				"Profissional dedicado com vasta experiência em cuidados geriátricos. Formação em enfermagem com especialização em saúde do idoso. Trabalho com amor e carinho.",
+				"Cuidador certificado com experiência em hospitais e domicílios. Especialista em Alzheimer e demência, com formação continuada na área.",
+				"Técnico de enfermagem apaixonado por ajudar idosos. Experiência em cuidados paliativos e acompanhamento hospitalar.",
+				"Profissional atencioso e paciente. Formação em gerontologia com experiência em reabilitação física e acompanhamento diário.",
+				"Cuidador experiente em atendimento domiciliar. Conhecimento em primeiros socorros e manejo de emergências geriátricas.",
+				"Enfermeiro especializado em cuidados com idosos dependentes. Experiência em administração de medicamentos e monitoramento de sinais vitais.",
+				"Profissional com formação em fisioterapia e cuidados geriátricos. Especialista em exercícios de mobilidade e prevenção de quedas.",
+				"Cuidador dedicado com experiência em acompanhamento de idosos com doenças crônicas. Certificação em cuidados com diabetes e hipertensão."
+			};
+			
+			// Experiências variadas para enriquecer os perfis
+			String[] experiencias = {
+				"5 anos de experiência em cuidados domiciliares com idosos",
+				"8 anos trabalhando em hospitais e casas de repouso",
+				"3 anos especializados em cuidados paliativos",
+				"10 anos de experiência com pacientes com Alzheimer",
+				"6 anos em atendimento domiciliar e acompanhamento hospitalar",
+				"7 anos com idosos acamados e dependentes",
+				"4 anos em fisioterapia e reabilitação geriátrica",
+				"9 anos de experiência com pacientes diabéticos e hipertensos"
+			};
+			
+			for (var cuidador : cuidadoresSemEspecialidades) {
+				Set<Especialidade> especCuidador = new HashSet<>();
+				
+				// Adicionar de 2 a 4 especialidades (de forma rotativa)
+				int numEspec = 2 + (index % 3); // 2, 3 ou 4 especialidades
+				for (int i = 0; i < numEspec && i < especialidades.size(); i++) {
+					int espIndex = (index + i * 2) % especialidades.size();
+					especCuidador.add(especialidades.get(espIndex));
+				}
+				
+				cuidador.setEspecialidades(especCuidador);
+				
+				// Adicionar biografia se estiver vazia
+				if (cuidador.getBiografia() == null || cuidador.getBiografia().isBlank()) {
+					cuidador.setBiografia(biografias[index % biografias.length]);
+				}
+				
+				// Adicionar experiência se estiver vazia
+				if (cuidador.getExperiencia() == null || cuidador.getExperiencia().isBlank()) {
+					cuidador.setExperiencia(experiencias[index % experiencias.length]);
+				}
+				
+				cuidadorRepo.save(cuidador);
+				System.out.println("Cuidador '" + cuidador.getName() + "' atualizado com " + especCuidador.size() + " especialidades");
+				index++;
+			}
+			
+			// Atualizar TODOS os cuidadores para garantir que experiência e biografia estão preenchidas
+			var todosCuidadores = cuidadorRepo.findAll();
+			for (int i = 0; i < todosCuidadores.size(); i++) {
+				var cuidador = todosCuidadores.get(i);
+				boolean precisaAtualizar = false;
+				
+				if (cuidador.getBiografia() == null || cuidador.getBiografia().isBlank()) {
+					cuidador.setBiografia(biografias[i % biografias.length]);
+					precisaAtualizar = true;
+				}
+				
+				if (cuidador.getExperiencia() == null || cuidador.getExperiencia().isBlank()) {
+					cuidador.setExperiencia(experiencias[i % experiencias.length]);
+					precisaAtualizar = true;
+				}
+				
+				if (precisaAtualizar) {
+					cuidadorRepo.save(cuidador);
+					System.out.println("Cuidador '" + cuidador.getName() + "' teve biografia/experiência atualizada");
+				}
+			}
+			
+			System.out.println("Total de cuidadores atualizados com especialidades: " + index);
+		} catch (Exception ex) {
+			System.err.println("Aviso: Erro ao atualizar especialidades dos cuidadores: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Popula avaliações variadas para os cuidadores, com notas realistas.
+	 * Alguns cuidadores terão notas excelentes (4.5-5.0), outros boas (3.5-4.5),
+	 * e alguns medianas (3.0-3.5) para criar diversidade.
+	 */
+	private void popularAvaliacoesVariadas(CuidadorRepository cuidadorRepo, 
+											ClienteRepository clienteRepo,
+											AgendamentoRepository agendamentoRepo,
+											AvaliacaoRepository avaliacaoRepo) {
+		try {
+			var cuidadores = cuidadorRepo.findAll();
+			var clientes = clienteRepo.findAll();
+			
+			if (cuidadores.isEmpty() || clientes.isEmpty()) {
+				System.out.println("Sem cuidadores ou clientes para criar avaliações.");
+				return;
+			}
+			
+			// Comentários positivos (5 estrelas)
+			String[] comentarios5 = {
+				"Excelente profissional! Muito atencioso e dedicado.",
+				"Recomendo muito! Cuidou da minha mãe com muito carinho.",
+				"Profissional exemplar, pontual e muito competente.",
+				"O melhor cuidador que já contratamos. Nota 10!",
+				"Atendimento impecável, superou todas as expectativas."
+			};
+			
+			// Comentários bons (4 estrelas)
+			String[] comentarios4 = {
+				"Muito bom profissional, atencioso e cuidadoso.",
+				"Gostei bastante do atendimento, recomendo.",
+				"Profissional competente e dedicado.",
+				"Bom atendimento, apenas poderia ser mais comunicativo.",
+				"Cuidou bem do meu pai, fiquei satisfeito."
+			};
+			
+			// Comentários medianos (3 estrelas)
+			String[] comentarios3 = {
+				"Atendimento regular, mas cumpriu o básico.",
+				"Poderia ser mais atencioso, mas foi adequado.",
+				"Serviço ok, nada excepcional mas também nada ruim.",
+				"Atendeu as necessidades básicas.",
+				"Razoável, mas esperava um pouco mais."
+			};
+			
+			// Distribuição de notas por cuidador (índice -> notas)
+			// Gildenor (idx 1): Excelente - 4.8
+			// João (idx 0): Muito bom - 4.5
+			// Outros: variados
+			int[][] notasPorCuidador = {
+				{5, 5, 4, 4, 5},  // João - média 4.6
+				{5, 5, 5, 5, 4},  // Gildenor - média 4.8
+				{4, 4, 3, 4, 4},  // Cuidador Teste 1 - média 3.8
+				{3, 4, 4, 3, 3},  // Cuidador Teste 2 - média 3.4
+				{5, 4, 5, 4, 5},  // Cuidador Teste 3 - média 4.6
+				{3, 3, 4, 3, 4},  // Cuidador Teste 4 - média 3.4
+				{4, 5, 4, 4, 5},  // Cuidador Teste 5 - média 4.4
+			};
+			
+			int cuidadorIndex = 0;
+			for (var cuidador : cuidadores) {
+				// Verificar se já tem avaliações suficientes
+				long avaliacoesExistentes = avaliacaoRepo.countByCuidadorId(cuidador.getId());
+				if (avaliacoesExistentes >= 3) {
+					cuidadorIndex++;
+					continue; // Já tem avaliações suficientes
+				}
+				
+				// Pegar notas para este cuidador
+				int[] notas = cuidadorIndex < notasPorCuidador.length 
+					? notasPorCuidador[cuidadorIndex] 
+					: new int[]{4, 4, 3, 4, 3}; // Padrão mediano
+				
+				int totalNotas = 0;
+				int somaNotas = 0;
+				int clienteIndex = 0;
+				
+				// Criar até 5 avaliações por cuidador
+				for (int i = 0; i < Math.min(notas.length, clientes.size()); i++) {
+					var cliente = clientes.get(clienteIndex % clientes.size());
+					int nota = notas[i];
+					
+					// Verificar se já existe avaliação deste cliente para este cuidador
+					boolean jaAvaliou = avaliacaoRepo.existsByClienteIdAndCuidadorId(cliente.getId(), cuidador.getId());
+					if (jaAvaliou) {
+						clienteIndex++;
+						continue;
+					}
+					
+					// Buscar ou criar agendamento concluído para esta avaliação
+					var agendamentos = agendamentoRepo.findByCuidadorIdOrderByDataHoraInicioDesc(cuidador.getId());
+					Agendamento agendamentoConcluido = agendamentos.stream()
+						.filter(a -> a.getStatus() == Agendamento.StatusAgendamento.CONCLUIDO)
+						.filter(a -> a.getCliente().getId().equals(cliente.getId()))
+						.findFirst()
+						.orElse(null);
+					
+					// Se não tem agendamento concluído, criar um fictício para a avaliação
+					if (agendamentoConcluido == null) {
+						agendamentoConcluido = new Agendamento();
+						agendamentoConcluido.setCuidador(cuidador);
+						agendamentoConcluido.setCliente(cliente);
+						agendamentoConcluido.setDataHoraInicio(LocalDateTime.now().minusDays(10 + i * 3).withHour(9));
+						agendamentoConcluido.setDataHoraFim(LocalDateTime.now().minusDays(10 + i * 3).withHour(12));
+						agendamentoConcluido.setStatus(Agendamento.StatusAgendamento.CONCLUIDO);
+						agendamentoConcluido.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+						agendamentoConcluido.setObservacoes("Atendimento para avaliação");
+						agendamentoConcluido = agendamentoRepo.save(agendamentoConcluido);
+					}
+					
+					// Selecionar comentário apropriado
+					String comentario;
+					if (nota == 5) {
+						comentario = comentarios5[i % comentarios5.length];
+					} else if (nota == 4) {
+						comentario = comentarios4[i % comentarios4.length];
+					} else {
+						comentario = comentarios3[i % comentarios3.length];
+					}
+					
+					// Criar avaliação
+					Avaliacao avaliacao = new Avaliacao();
+					avaliacao.setCuidador(cuidador);
+					avaliacao.setCliente(cliente);
+					avaliacao.setAgendamento(agendamentoConcluido);
+					avaliacao.setNota(nota);
+					avaliacao.setComentario(comentario);
+					avaliacaoRepo.save(avaliacao);
+					
+					totalNotas++;
+					somaNotas += nota;
+					clienteIndex++;
+				}
+				
+				// Atualizar média do cuidador
+				if (totalNotas > 0) {
+					double mediaAnterior = cuidador.getAvaliacaoMedia() == null ? 0.0 : cuidador.getAvaliacaoMedia().doubleValue();
+					int totalAnterior = cuidador.getTotalAvaliacoes() == null ? 0 : cuidador.getTotalAvaliacoes();
+					
+					int novoTotal = totalAnterior + totalNotas;
+					double novaMedia = (mediaAnterior * totalAnterior + somaNotas) / novoTotal;
+					
+					// Usar Locale.US para garantir ponto como separador decimal
+					cuidador.setAvaliacaoMedia(new BigDecimal(String.format(java.util.Locale.US, "%.2f", novaMedia)));
+					cuidador.setTotalAvaliacoes(novoTotal);
+					cuidadorRepo.save(cuidador);
+					
+					System.out.println("Cuidador '" + cuidador.getName() + "' - " + totalNotas + " avaliações, média: " + String.format(java.util.Locale.US, "%.2f", novaMedia));
+				}
+				
+				cuidadorIndex++;
+			}
+			
+			System.out.println("Avaliações populadas com sucesso!");
+		} catch (Exception ex) {
+			System.err.println("Aviso: Erro ao popular avaliações: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Cria o agendamento específico para a apresentação.
+	 * Dona Maria com Gildenor às 19h do dia 11/12/2025 até 21h.
+	 */
+	private void criarAgendamentoApresentacao(ClienteRepository clienteRepo, 
+											   CuidadorRepository cuidadorRepo, 
+											   AgendamentoRepository agendamentoRepo) {
+		try {
+			// Buscar Dona Maria
+			var mariaOpt = clienteRepo.findByUsername("maria");
+			if (mariaOpt.isEmpty()) {
+				System.out.println("Cliente 'maria' não encontrado para criar agendamento da apresentação.");
+				return;
+			}
+			
+			// Buscar Gildenor
+			var gildenorOpt = cuidadorRepo.findByUsername("gildenor");
+			if (gildenorOpt.isEmpty()) {
+				System.out.println("Cuidador 'gildenor' não encontrado para criar agendamento da apresentação.");
+				return;
+			}
+			
+			Cliente maria = mariaOpt.get();
+			Cuidador gildenor = gildenorOpt.get();
+			
+			// Data específica: 11/12/2025 às 19h até 21h
+			LocalDateTime dataInicio = LocalDateTime.of(2025, 12, 11, 19, 0);
+			LocalDateTime dataFim = LocalDateTime.of(2025, 12, 11, 21, 0);
+			
+			// Verificar se já existe um agendamento nesta data e horário
+			var agendamentosExistentes = agendamentoRepo.findAll();
+			boolean jaExiste = agendamentosExistentes.stream().anyMatch(a -> 
+				a.getCliente().getId().equals(maria.getId()) &&
+				a.getCuidador().getId().equals(gildenor.getId()) &&
+				a.getDataHoraInicio().equals(dataInicio)
+			);
+			
+			if (jaExiste) {
+				System.out.println("Agendamento da apresentação já existe.");
+				return;
+			}
+			
+			// Criar o agendamento para a apresentação
+			Agendamento agendamentoApresentacao = new Agendamento();
+			agendamentoApresentacao.setCliente(maria);
+			agendamentoApresentacao.setCuidador(gildenor);
+			agendamentoApresentacao.setDataHoraInicio(dataInicio);
+			agendamentoApresentacao.setDataHoraFim(dataFim);
+			agendamentoApresentacao.setStatus(Agendamento.StatusAgendamento.CONFIRMADO);
+			agendamentoApresentacao.setTipoAtendimento(TipoAtendimento.DOMICILIO);
+			agendamentoApresentacao.setObservacoes("Atendimento especial - Visita domiciliar para acompanhamento e auxílio com medicação");
+			
+			agendamentoRepo.save(agendamentoApresentacao);
+			
+			System.out.println("✅ Agendamento da apresentação criado: " + 
+				maria.getName() + " com " + gildenor.getName() + 
+				" em 11/12/2025 das 19h às 21h");
+				
+		} catch (Exception ex) {
+			System.err.println("Aviso: Erro ao criar agendamento da apresentação: " + ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
 }

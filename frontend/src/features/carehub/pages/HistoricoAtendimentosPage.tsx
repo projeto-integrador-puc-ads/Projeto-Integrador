@@ -18,6 +18,7 @@ import {
   Badge,
   Tooltip,
   Button,
+  Rating,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -33,10 +34,15 @@ import {
   Search,
   Assignment,
   Refresh,
+  Star,
+  StarBorder,
+  RateReview,
 } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
 import { getUserId, isCuidador as isRoleCuidador, checkAndCacheUserType } from '../components/auth';
+import { AvaliacaoModal } from '../components/AvaliacaoModal';
+import { avaliacoesApi } from '../api';
 
 interface RegistroAcompanhamento {
   id: number;
@@ -58,12 +64,23 @@ interface RegistroAcompanhamento {
   dataCriacao: string;
 }
 
+interface AvaliacaoInfo {
+  id: number;
+  nota: number;
+  comentario?: string;
+  dataAvaliacao: string;
+}
+
 export function HistoricoAtendimentosPage() {
   const [registros, setRegistros] = useState<RegistroAcompanhamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
   const [isCuidador, setIsCuidador] = useState<boolean>(false);
+  const [avaliacoes, setAvaliacoes] = useState<{ [cuidadorId: number]: AvaliacaoInfo[] }>({});
+  const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
+  const [selectedCuidador, setSelectedCuidador] = useState<{ id: number; nome: string } | null>(null);
+  const [selectedAgendamentoId, setSelectedAgendamentoId] = useState<number | null>(null);
   
   const userId = getUserId();
 
@@ -102,6 +119,13 @@ export function HistoricoAtendimentosPage() {
       );
       setRegistros(registrosOrdenados);
       console.log('  - Total de registros:', registrosOrdenados.length);
+      
+      // Se for cliente, carregar as avaliações dos cuidadores
+      if (!ehCuidador) {
+        const cuidadorIds = [...new Set(registrosOrdenados.map((r: RegistroAcompanhamento) => r.cuidadorId))];
+        await carregarAvaliacoesCuidadores(cuidadorIds as number[]);
+      }
+      
       setError(null);
     } catch (err) {
       console.error('Erro ao carregar histórico:', err);
@@ -109,6 +133,51 @@ export function HistoricoAtendimentosPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const carregarAvaliacoesCuidadores = async (cuidadorIds: number[]) => {
+    try {
+      const avaliacoesMap: { [key: number]: AvaliacaoInfo[] } = {};
+      for (const cuidadorId of cuidadorIds) {
+        const avs = await avaliacoesApi.porCuidador(cuidadorId);
+        // Filtrar apenas as avaliações do cliente atual
+        avaliacoesMap[cuidadorId] = avs
+          .filter((av: any) => av.clienteId === userId)
+          .map((av: any) => ({
+            id: av.id,
+            nota: av.nota,
+            comentario: av.comentario,
+            dataAvaliacao: av.dataAvaliacao,
+            agendamentoId: av.agendamentoId,
+          }));
+      }
+      setAvaliacoes(avaliacoesMap);
+    } catch (err) {
+      console.error('Erro ao carregar avaliações:', err);
+    }
+  };
+
+  const abrirAvaliacaoModal = (cuidadorId: number, cuidadorNome: string, agendamentoId?: number) => {
+    setSelectedCuidador({ id: cuidadorId, nome: cuidadorNome });
+    setSelectedAgendamentoId(agendamentoId || null);
+    setAvaliacaoModalOpen(true);
+  };
+
+  const fecharAvaliacaoModal = () => {
+    setAvaliacaoModalOpen(false);
+    setSelectedCuidador(null);
+    setSelectedAgendamentoId(null);
+    // Recarregar dados após avaliar
+    if (!isCuidador) {
+      const cuidadorIds = [...new Set(registros.map(r => r.cuidadorId))];
+      carregarAvaliacoesCuidadores(cuidadorIds);
+    }
+  };
+
+  // Verificar se um agendamento já foi avaliado
+  const getAvaliacaoDoAgendamento = (agendamentoId: number, cuidadorId: number): AvaliacaoInfo | undefined => {
+    const avaliacoesCuidador = avaliacoes[cuidadorId] || [];
+    return avaliacoesCuidador.find((av: any) => av.agendamentoId === agendamentoId);
   };
 
   const formatarData = (dataISO: string) => {
@@ -404,6 +473,77 @@ export function HistoricoAtendimentosPage() {
                             </Paper>
                           )}
 
+                          {/* 🌟 Seção de Avaliação - apenas para clientes */}
+                          {!isCuidador && (
+                            <Paper 
+                              elevation={0} 
+                              sx={{ 
+                                p: 2, 
+                                bgcolor: getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId) 
+                                  ? 'success.50' 
+                                  : 'grey.50',
+                                border: '1px solid',
+                                borderColor: getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId) 
+                                  ? 'success.light' 
+                                  : 'grey.300',
+                              }}
+                            >
+                              {(() => {
+                                const avaliacao = getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId);
+                                if (avaliacao) {
+                                  return (
+                                    <Stack spacing={1}>
+                                      <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.dark' }}>
+                                        <Star fontSize="small" sx={{ color: '#ffc107' }} />
+                                        Sua Avaliação
+                                      </Typography>
+                                      <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Rating value={avaliacao.nota} readOnly size="small" />
+                                        <Typography variant="body2" fontWeight={600}>
+                                          {avaliacao.nota}/5
+                                        </Typography>
+                                      </Stack>
+                                      {avaliacao.comentario && (
+                                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                          "{avaliacao.comentario}"
+                                        </Typography>
+                                      )}
+                                    </Stack>
+                                  );
+                                } else {
+                                  return (
+                                    <Stack spacing={1}>
+                                      <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <StarBorder fontSize="small" sx={{ color: '#ffc107' }} />
+                                        Avalie este atendimento
+                                      </Typography>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Sua opinião é importante e ajuda outros clientes na escolha do cuidador.
+                                      </Typography>
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        startIcon={<RateReview />}
+                                        onClick={() => abrirAvaliacaoModal(registro.cuidadorId, registro.cuidadorNome, registro.agendamentoId)}
+                                        sx={{ 
+                                          alignSelf: 'flex-start',
+                                          background: 'linear-gradient(135deg, #ffc107 0%, #ffb300 100%)',
+                                          color: '#000',
+                                          fontWeight: 600,
+                                          '&:hover': {
+                                            background: 'linear-gradient(135deg, #ffb300 0%, #ffa000 100%)',
+                                          }
+                                        }}
+                                      >
+                                        Avaliar agora
+                                      </Button>
+                                    </Stack>
+                                  );
+                                }
+                              })()}
+                            </Paper>
+                          )}
+
                           {/* Metadados */}
                           <Divider />
                           <Typography variant="caption" color="text.secondary">
@@ -418,6 +558,18 @@ export function HistoricoAtendimentosPage() {
             </Card>
           ))}
         </Stack>
+      )}
+
+      {/* Modal de Avaliação */}
+      {selectedCuidador && (
+        <AvaliacaoModal
+          open={avaliacaoModalOpen}
+          onClose={fecharAvaliacaoModal}
+          cuidadorId={selectedCuidador.id}
+          cuidadorNome={selectedCuidador.nome}
+          clienteId={userId || 0}
+          initialAgendamentoId={selectedAgendamentoId || undefined}
+        />
       )}
     </Box>
   );

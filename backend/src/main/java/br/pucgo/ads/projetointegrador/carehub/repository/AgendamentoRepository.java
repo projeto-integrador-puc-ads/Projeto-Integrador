@@ -46,4 +46,19 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
            "FROM Agendamento a WHERE (a.cuidador.id = :user1Id AND a.cliente.id = :user2Id) OR (a.cuidador.id = :user2Id AND a.cliente.id = :user1Id)")
     boolean existsBetweenUsers(Long user1Id, Long user2Id);
+
+    // Buscar agendamentos CONCLUIDOS do cliente que ainda não foram avaliados
+    @Query("SELECT a FROM Agendamento a " +
+           "WHERE a.cliente.id = :clienteId " +
+           "AND a.status = 'CONCLUIDO' " +
+           "AND NOT EXISTS (SELECT av FROM Avaliacao av WHERE av.agendamento.id = a.id) " +
+           "ORDER BY a.dataHoraFim DESC")
+    List<Agendamento> findAgendamentosPendentesAvaliacaoByClienteId(Long clienteId);
+    
+    // Contar avaliações pendentes do cliente
+    @Query("SELECT COUNT(a) FROM Agendamento a " +
+           "WHERE a.cliente.id = :clienteId " +
+           "AND a.status = 'CONCLUIDO' " +
+           "AND NOT EXISTS (SELECT av FROM Avaliacao av WHERE av.agendamento.id = a.id)")
+    long countAvaliacoesPendentesByClienteId(Long clienteId);
 }

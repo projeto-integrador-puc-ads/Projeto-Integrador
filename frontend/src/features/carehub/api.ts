@@ -57,6 +57,15 @@ export const agendamentosApi = {
     const { data } = await http.get(`/api/carehub/agendamentos/cliente/${clienteId}`);
     return data;
   },
+  // Sistema de avaliação estilo Uber/99
+  avaliacoesPendentes: async (): Promise<AgendamentoResponseDTO[]> => {
+    const { data } = await http.get('/api/carehub/agendamentos/avaliacoes-pendentes');
+    return data;
+  },
+  contarAvaliacoesPendentes: async (): Promise<{ count: number }> => {
+    const { data } = await http.get('/api/carehub/agendamentos/avaliacoes-pendentes/count');
+    return data;
+  },
 };
 
 export const prontuariosApi = {

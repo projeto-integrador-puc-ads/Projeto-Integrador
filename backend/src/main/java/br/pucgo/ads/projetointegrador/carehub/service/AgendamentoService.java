@@ -418,4 +418,28 @@ public class AgendamentoService {
         dto.setProposedDataHoraFim(agendamento.getProposedDataHoraFim());
         return dto;
     }
+
+    /**
+     * Retorna agendamentos concluídos do cliente que ainda não foram avaliados.
+     * Usado para o sistema de avaliação estilo Uber/99.
+     */
+    public List<AgendamentoResponseDTO> listarAvaliacoesPendentes(Long clienteId) {
+        Objects.requireNonNull(clienteId, "Cliente ID não pode ser null");
+        
+        List<Agendamento> pendentes = agendamentoRepository
+                .findAgendamentosPendentesAvaliacaoByClienteId(clienteId);
+        
+        return pendentes.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Conta quantos atendimentos concluídos estão pendentes de avaliação.
+     * Usado para exibir badge de notificação.
+     */
+    public long contarAvaliacoesPendentes(Long clienteId) {
+        Objects.requireNonNull(clienteId, "Cliente ID não pode ser null");
+        return agendamentoRepository.countAvaliacoesPendentesByClienteId(clienteId);
+    }
 }

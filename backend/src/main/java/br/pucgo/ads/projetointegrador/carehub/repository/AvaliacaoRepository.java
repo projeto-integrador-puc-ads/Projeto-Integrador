@@ -15,6 +15,9 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
     List<Avaliacao> findByCuidadorOrderByDataAvaliacaoDesc(Cuidador cuidador);
     List<Avaliacao> findByCuidadorIdOrderByDataAvaliacaoDesc(Long cuidadorId);
     
+    // Conta avaliações de um cuidador
+    long countByCuidadorId(Long cuidadorId);
+    
     // Verifica se cliente já avaliou este cuidador
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
            "FROM Avaliacao a WHERE a.cliente.id = :clienteId AND a.cuidador.id = :cuidadorId")

@@ -126,4 +126,38 @@ public class AgendamentoController {
         AgendamentoResponseDTO agendamento = agendamentoService.aceitarContraproposta(id, principal);
         return ResponseEntity.ok(agendamento);
     }
+
+    /**
+     * Retorna os agendamentos concluídos que ainda não foram avaliados (estilo Uber/99).
+     * Usado para mostrar notificação de avaliação pendente.
+     */
+    @GetMapping("/avaliacoes-pendentes")
+    public ResponseEntity<List<AgendamentoResponseDTO>> listarAvaliacoesPendentes(
+            Principal principal
+    ) {
+        String usernameOrEmail = principal.getName();
+        Long clienteId = agendamentoService.getUserIdByUsernameOrEmail(usernameOrEmail);
+        log.info("Listando avaliações pendentes: clienteId={}", clienteId);
+        
+        List<AgendamentoResponseDTO> pendentes = agendamentoService.listarAvaliacoesPendentes(clienteId);
+        log.info("Avaliações pendentes encontradas: {}", pendentes.size());
+        
+        return ResponseEntity.ok(pendentes);
+    }
+
+    /**
+     * Conta quantos atendimentos concluídos estão pendentes de avaliação.
+     * Usado para badge de notificação.
+     */
+    @GetMapping("/avaliacoes-pendentes/count")
+    public ResponseEntity<Map<String, Long>> contarAvaliacoesPendentes(
+            Principal principal
+    ) {
+        String usernameOrEmail = principal.getName();
+        Long clienteId = agendamentoService.getUserIdByUsernameOrEmail(usernameOrEmail);
+        
+        long count = agendamentoService.contarAvaliacoesPendentes(clienteId);
+        
+        return ResponseEntity.ok(Map.of("count", count));
+    }
 }

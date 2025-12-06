@@ -1,17 +1,22 @@
-import { Box, Typography, Paper, Container, Alert, Button, Card, CardContent, Stack, Chip } from '@mui/material';
+import { Box, Typography, Paper, Container, Alert, Button, Card, CardContent, Stack, Chip, Badge } from '@mui/material';
 import '../components/carehub-accessibility.css';
 import { CareHubModuleGrid } from '../components/CareHubModuleGrid';
-import { Favorite, CheckCircle, Cancel } from '@mui/icons-material';
+import { Favorite, CheckCircle, Cancel, Star, RateReview } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { initializeAuthToken, getUser, getUserRole, isCliente, getUserId, checkAndCacheUserType } from '../components/auth';
 import http from '../libHttp';
 import dayjs from 'dayjs';
+import { agendamentosApi } from '../api';
+import { AvaliacaoModal } from '../components/AvaliacaoModal';
 
 export default function CareHubHomePage() {
   const [_authStatus, setAuthStatus] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
   const [userInfo, setUserInfo] = useState<any>(null);
   const [repropostas, setRepropostas] = useState<any[]>([]);
   const [_isUserCliente, setIsUserCliente] = useState<boolean>(false);
+  const [avaliacoesPendentes, setAvaliacoesPendentes] = useState<any[]>([]);
+  const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
+  const [selectedAgendamento, setSelectedAgendamento] = useState<any>(null);
   const userId = getUserId();
 
   useEffect(() => {
@@ -38,11 +43,34 @@ export default function CareHubHomePage() {
       // Carregar repropostas pendentes se for cliente
       if (userId && ehCliente) {
         carregarRepropostas();
+        carregarAvaliacoesPendentes();
       }
     };
     
     inicializar();
   }, []);
+
+  const carregarAvaliacoesPendentes = async () => {
+    try {
+      const pendentes = await agendamentosApi.avaliacoesPendentes();
+      setAvaliacoesPendentes(pendentes);
+    } catch {
+      // Silenciosamente ignora erro
+      setAvaliacoesPendentes([]);
+    }
+  };
+
+  const abrirAvaliacaoModal = (agendamento: any) => {
+    setSelectedAgendamento(agendamento);
+    setAvaliacaoModalOpen(true);
+  };
+
+  const fecharAvaliacaoModal = () => {
+    setAvaliacaoModalOpen(false);
+    setSelectedAgendamento(null);
+    // Recarregar lista de avaliações pendentes após fechar modal
+    carregarAvaliacoesPendentes();
+  };
 
   const carregarRepropostas = async () => {
     try {
@@ -248,7 +276,108 @@ export default function CareHubHomePage() {
         </Alert>
       )}
 
+      {/* 🌟 Notificações de Avaliação Pendente - Estilo Uber/99 */}
+      {avaliacoesPendentes.length > 0 && (
+        <Alert 
+          severity="info" 
+          icon={<Badge badgeContent={avaliacoesPendentes.length} color="error"><RateReview /></Badge>}
+          sx={{ 
+            mb: { xs: 2, md: 3 }, 
+            '& .MuiAlert-message': { width: '100%' },
+            background: 'linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%)',
+            border: '2px solid #ffc107',
+          }}
+        >
+          <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Star sx={{ color: '#ffc107' }} />
+            Como foi seu atendimento?
+          </Typography>
+          <Typography variant="body2" gutterBottom color="text.secondary">
+            Você tem {avaliacoesPendentes.length} atendimento(s) concluído(s) aguardando sua avaliação. Sua opinião ajuda outros clientes!
+          </Typography>
+          
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            {avaliacoesPendentes.slice(0, 3).map((ag) => (
+              <Card 
+                key={ag.id} 
+                variant="outlined"
+                sx={{ 
+                  transition: 'all 0.2s ease',
+                  '&:hover': { 
+                    boxShadow: 3,
+                    borderColor: '#ffc107',
+                  }
+                }}
+              >
+                <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    justifyContent="space-between" 
+                    alignItems={{ xs: 'stretch', sm: 'center' }} 
+                    gap={2}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="subtitle1" fontWeight={600} sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                        {ag.cuidadorNome}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        Concluído em {dayjs(ag.dataHoraFim).format('DD/MM/YYYY [às] HH:mm')}
+                      </Typography>
+                      {ag.tipoAtendimento && (
+                        <Chip 
+                          label={ag.tipoAtendimento.replace('_', ' ')} 
+                          size="small" 
+                          sx={{ mt: 1 }} 
+                          color="primary"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                    
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      startIcon={<Star />}
+                      onClick={() => abrirAvaliacaoModal(ag)}
+                      sx={{ 
+                        background: 'linear-gradient(135deg, #ffc107 0%, #ffb300 100%)',
+                        color: '#000',
+                        fontWeight: 600,
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #ffb300 0%, #ffa000 100%)',
+                        },
+                        minWidth: { xs: '100%', sm: 'auto' }
+                      }}
+                    >
+                      Avaliar agora
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {avaliacoesPendentes.length > 3 && (
+              <Typography variant="body2" color="text.secondary" textAlign="center">
+                + {avaliacoesPendentes.length - 3} mais avaliação(ões) pendente(s)
+              </Typography>
+            )}
+          </Stack>
+        </Alert>
+      )}
+
       <CareHubModuleGrid />
+
+      {/* Modal de Avaliação */}
+      {selectedAgendamento && (
+        <AvaliacaoModal
+          open={avaliacaoModalOpen}
+          onClose={fecharAvaliacaoModal}
+          cuidadorId={selectedAgendamento.cuidadorId}
+          cuidadorNome={selectedAgendamento.cuidadorNome}
+          clienteId={userId || 0}
+          initialAgendamentoId={selectedAgendamento.id}
+        />
+      )}
     </Container>
   );
 }

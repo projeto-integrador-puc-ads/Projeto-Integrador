@@ -36,14 +36,16 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
             );
 
                 // Fallback native query that attempts to cast bytea columns to text when DB stores them as binary.
-                @Query(value = "SELECT u.*, c.* FROM users u JOIN ch_cuidador c ON u.id = c.id " +
+                // Usa DISTINCT para evitar duplicatas quando cuidador tem múltiplas especialidades
+                @Query(value = "SELECT DISTINCT ON (u.id) u.*, c.* FROM users u JOIN ch_cuidador c ON u.id = c.id " +
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
                     "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
-                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) ",
+                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
+                    "ORDER BY u.id",
                     countQuery = "SELECT count(DISTINCT c.id) FROM ch_cuidador c JOIN users u ON u.id = c.id " +
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -60,14 +62,15 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                                   Pageable pageable);
 
                 // Native variant that avoids any convert_from/casting and uses ILIKE directly.
-                @Query(value = "SELECT u.*, c.* FROM users u JOIN ch_cuidador c ON u.id = c.id " +
+                @Query(value = "SELECT DISTINCT ON (u.id) u.*, c.* FROM users u JOIN ch_cuidador c ON u.id = c.id " +
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
                     "WHERE u.deleted_at IS NULL " +
                     "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
-                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
+                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
+                    "ORDER BY u.id",
                     countQuery = "SELECT count(DISTINCT c.id) FROM ch_cuidador c JOIN users u ON u.id = c.id " +
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -84,7 +87,8 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                                   Pageable pageable);
 
                 // Projection-based native queries (return only selected columns mapped to CuidadorProjection)
-                @Query(value = "SELECT u.id as \"id\", u.name as \"name\", u.email as \"email\", u.phone as \"phone\", u.experiencia as \"experiencia\", c.cidade as \"cidade\", c.estado as \"estado\", c.disponibilidade as \"disponibilidade\", c.taxa_hora as \"taxaHora\", c.avaliacao_media as \"avaliacaoMedia\", c.total_avaliacoes as \"totalAvaliacoes\", c.biografia as \"biografia\", c.foto_perfil as \"fotoPerfil\", u.created_at as \"createdAt\", (u.deleted_at IS NULL) as \"ativo\" " +
+                // DISTINCT é essencial para evitar duplicatas quando cuidador tem múltiplas especialidades
+                @Query(value = "SELECT DISTINCT ON (u.id) u.id as \"id\", u.name as \"name\", u.email as \"email\", u.phone as \"phone\", u.experiencia as \"experiencia\", c.cidade as \"cidade\", c.estado as \"estado\", c.disponibilidade as \"disponibilidade\", c.taxa_hora as \"taxaHora\", c.avaliacao_media as \"avaliacaoMedia\", c.total_avaliacoes as \"totalAvaliacoes\", c.biografia as \"biografia\", c.foto_perfil as \"fotoPerfil\", u.created_at as \"createdAt\", (u.deleted_at IS NULL) as \"ativo\" " +
                     "FROM users u JOIN ch_cuidador c ON u.id = c.id " +
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -92,7 +96,8 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (convert_from(c.estado, 'UTF8') = :localizacao) OR (convert_from(c.cidade, 'UTF8') ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR lower(es.nome) LIKE lower('%'||:especialidade||'%')) " +
-                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
+                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
+                    "ORDER BY u.id, c.avaliacao_media DESC NULLS LAST",
                     countQuery = "SELECT count(DISTINCT c.id) FROM ch_cuidador c JOIN users u ON u.id = c.id " +
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -108,7 +113,7 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);
 
-                @Query(value = "SELECT u.id as \"id\", u.name as \"name\", u.email as \"email\", u.phone as \"phone\", u.experiencia as \"experiencia\", c.cidade as \"cidade\", c.estado as \"estado\", c.disponibilidade as \"disponibilidade\", c.taxa_hora as \"taxaHora\", c.avaliacao_media as \"avaliacaoMedia\", c.total_avaliacoes as \"totalAvaliacoes\", c.biografia as \"biografia\", c.foto_perfil as \"fotoPerfil\", u.created_at as \"createdAt\", (u.deleted_at IS NULL) as \"ativo\" " +
+                @Query(value = "SELECT DISTINCT ON (u.id) u.id as \"id\", u.name as \"name\", u.email as \"email\", u.phone as \"phone\", u.experiencia as \"experiencia\", c.cidade as \"cidade\", c.estado as \"estado\", c.disponibilidade as \"disponibilidade\", c.taxa_hora as \"taxaHora\", c.avaliacao_media as \"avaliacaoMedia\", c.total_avaliacoes as \"totalAvaliacoes\", c.biografia as \"biografia\", c.foto_perfil as \"fotoPerfil\", u.created_at as \"createdAt\", (u.deleted_at IS NULL) as \"ativo\" " +
                     "FROM users u JOIN ch_cuidador c ON u.id = c.id " +
                     "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                     "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -116,7 +121,8 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                     "AND (:nome IS NULL OR u.name ILIKE '%'||:nome||'%') " +
                     "AND (:localizacao IS NULL OR (c.estado = :localizacao) OR (c.cidade ILIKE '%'||:localizacao||'%')) " +
                     "AND (:especialidade IS NULL OR es.nome ILIKE '%'||:especialidade||'%') " +
-                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade)",
+                    "AND (:disponibilidade IS NULL OR c.disponibilidade = :disponibilidade) " +
+                    "ORDER BY u.id, c.avaliacao_media DESC NULLS LAST",
                     countQuery = "SELECT count(DISTINCT c.id) FROM ch_cuidador c JOIN users u ON u.id = c.id " +
                         "LEFT JOIN ch_cuidador_especialidade ce ON c.id = ce.cuidador_id " +
                         "LEFT JOIN ch_especialidade es ON ce.especialidade_id = es.id " +
@@ -131,4 +137,16 @@ public interface CuidadorRepository extends JpaRepository<Cuidador, Long> {
                                   @Param("especialidade") String especialidade,
                                   @Param("disponibilidade") Boolean disponibilidade,
                                   Pageable pageable);
+                
+    /**
+     * Busca todos os cuidadores que não possuem especialidades cadastradas.
+     */
+    @Query("SELECT c FROM Cuidador c WHERE c.especialidades IS EMPTY AND c.deletedAt IS NULL")
+    List<Cuidador> findCuidadoresSemEspecialidades();
+    
+    /**
+     * Busca todos os cuidadores ativos com suas especialidades carregadas (evita LazyInitializationException).
+     */
+    @Query("SELECT DISTINCT c FROM Cuidador c LEFT JOIN FETCH c.especialidades WHERE c.deletedAt IS NULL")
+    List<Cuidador> findAllComEspecialidades();
 }
