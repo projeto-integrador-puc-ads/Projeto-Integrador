@@ -1,16 +1,34 @@
 import React, { useEffect, useState, useRef } from "react";
+
+// Declaração global para SpeechRecognition (caso não exista no escopo)
+// Usando 'any' para compatibilidade cross-browser e evitar erros de tipo em navegadores sem suporte
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SpeechRecognition = any;
+declare global {
+  interface Window {
+    SpeechRecognition: SpeechRecognition;
+    webkitSpeechRecognition: SpeechRecognition;
+  }
+}
+
+type SpeechRecognitionEventType = {
+  results: SpeechRecognitionResultList;
+  error?: string;
+};
 import MicIcon from "@mui/icons-material/Mic";
+import PhotoAlbumIcon from "@mui/icons-material/PhotoAlbum";
+import LembrancasPage from "./LembrancasPage";
 import { getDiarios, postDiario } from "../api/remember";
 import type { Diario } from "../types/remember";
 
 const DiariosPage: React.FC = () => {
+  const [openLembranca, setOpenLembranca] = useState(false);
   // Áudio para título
   const [gravandoTitulo, setGravandoTitulo] = useState(false);
   const [erroAudioTitulo, setErroAudioTitulo] = useState<string | null>(null);
-  const recognitionTituloRef = useRef<any>(null);
+  const recognitionTituloRef = useRef<SpeechRecognition | null>(null);
   const handleGravarAudioTitulo = () => {
     setErroAudioTitulo(null);
-    // @ts-expect-error SpeechRecognition pode não estar disponível em todos navegadores
     const SpeechRecognitionClass =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognitionClass) {
@@ -20,17 +38,25 @@ const DiariosPage: React.FC = () => {
       return;
     }
     if (!recognitionTituloRef.current) {
-      // @ts-expect-error SpeechRecognition pode não estar disponível em todos navegadores
       recognitionTituloRef.current = new SpeechRecognitionClass();
       recognitionTituloRef.current.lang = "pt-BR";
       recognitionTituloRef.current.continuous = false;
       recognitionTituloRef.current.interimResults = false;
-      recognitionTituloRef.current.onresult = (event: any) => {
+      recognitionTituloRef.current.onresult = (
+        event: SpeechRecognitionEventType
+      ) => {
         const texto = event.results[0][0].transcript;
-        setTitulo((prev: string) => prev + (prev ? " " : "") + texto);
+        setDiarios((prev) => {
+          const novos = ensurePagina([...prev], paginaAtual);
+          novos[paginaAtual].titulo +=
+            (novos[paginaAtual].titulo ? " " : "") + texto;
+          return novos;
+        });
       };
-      recognitionTituloRef.current.onerror = (event: any) => {
-        setErroAudioTitulo("Erro ao capturar áudio: " + event.error);
+      recognitionTituloRef.current.onerror = (
+        event: SpeechRecognitionEventType
+      ) => {
+        setErroAudioTitulo("Erro ao capturar áudio: " + (event.error || ""));
         setGravandoTitulo(false);
       };
       recognitionTituloRef.current.onend = () => {
@@ -53,16 +79,30 @@ const DiariosPage: React.FC = () => {
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
   // Simulação: ID do usuário (ajuste para pegar do contexto de autenticação)
   const identificadorUsuario = 1;
+  // Garante que sempre existe uma página válida antes de editar
+  const ensurePagina = (arr: Diario[], idx: number): Diario[] => {
+    if (!arr[idx]) {
+      return [...arr, { id: Date.now(), titulo: "", conteudo: "", data: "" }];
+    }
+    return arr;
+  };
+
   // Atualiza título e nota da página atual
   const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const novos = [...diarios];
-    novos[paginaAtual].titulo = e.target.value;
-    setDiarios(novos);
+    const value = e.target.value;
+    setDiarios((prev) => {
+      const novos = ensurePagina([...prev], paginaAtual);
+      novos[paginaAtual].titulo = value;
+      return novos;
+    });
   };
   const handleNotaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const novos = [...diarios];
-    novos[paginaAtual].conteudo = e.target.value;
-    setDiarios(novos);
+    const value = e.target.value;
+    setDiarios((prev) => {
+      const novos = ensurePagina([...prev], paginaAtual);
+      novos[paginaAtual].conteudo = value;
+      return novos;
+    });
   };
   // Salva a página atual no backend
   const handleSalvar = async (e: React.FormEvent) => {
@@ -88,13 +128,12 @@ const DiariosPage: React.FC = () => {
     }
   };
   // Áudio para conteúdo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // Função para iniciar/parar gravação e transcrição
   const handleGravarAudio = () => {
     setErroAudio(null);
-    // @ts-expect-error SpeechRecognition pode não estar disponível em todos navegadores
     const SpeechRecognitionClass =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognitionClass) {
@@ -104,21 +143,21 @@ const DiariosPage: React.FC = () => {
       return;
     }
     if (!recognitionRef.current) {
-      // @ts-expect-error SpeechRecognition pode não estar disponível em todos navegadores
       recognitionRef.current = new SpeechRecognitionClass();
       recognitionRef.current.lang = "pt-BR";
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      recognitionRef.current.onresult = (event: any) => {
+      recognitionRef.current.onresult = (event: SpeechRecognitionEventType) => {
         const texto = event.results[0][0].transcript;
-        // Atualiza a página atual
-        const novos = [...diarios];
-        novos[paginaAtual].conteudo +=
-          (novos[paginaAtual].conteudo ? "\n" : "") + texto;
-        setDiarios(novos);
+        setDiarios((prev) => {
+          const novos = ensurePagina([...prev], paginaAtual);
+          novos[paginaAtual].conteudo +=
+            (novos[paginaAtual].conteudo ? "\n" : "") + texto;
+          return novos;
+        });
       };
-      recognitionRef.current.onerror = (event: any) => {
-        setErroAudio("Erro ao capturar áudio: " + event.error);
+      recognitionRef.current.onerror = (event: SpeechRecognitionEventType) => {
+        setErroAudio("Erro ao capturar áudio: " + (event.error || ""));
         setGravando(false);
       };
       recognitionRef.current.onend = () => {
@@ -140,7 +179,83 @@ const DiariosPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 16 }}>
-      <h1>Diário</h1>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 24,
+        }}
+      >
+        <h1 style={{ margin: 0 }}>Memória</h1>
+        <button
+          onClick={() => setOpenLembranca(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "#ff9800",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            padding: "10px 18px",
+            fontWeight: 700,
+            fontSize: 18,
+            boxShadow: "0 2px 8px #ffd54f",
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+        >
+          <PhotoAlbumIcon sx={{ fontSize: 28 }} /> Lembranças
+        </button>
+      </div>
+      {openLembranca && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.25)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ position: "relative", width: "100%", maxWidth: 640 }}>
+            <button
+              onClick={() => setOpenLembranca(false)}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "#fff3e0",
+                color: "#ff9800",
+                border: "none",
+                borderRadius: "50%",
+                width: 36,
+                height: 36,
+                fontSize: 22,
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 1px 4px #ffd54f",
+                zIndex: 2,
+              }}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+            <div style={{ padding: 0, borderRadius: 18, overflow: "hidden" }}>
+              <LembrancasPage />
+            </div>
+          </div>
+        </div>
+      )}
+      <h2 style={{ fontSize: 22, marginBottom: 16, color: "#1976d2" }}>
+        Diário
+      </h2>
       <form onSubmit={handleSalvar} style={{ marginBottom: 24 }}>
         <div
           style={{

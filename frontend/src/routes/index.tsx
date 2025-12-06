@@ -14,15 +14,19 @@ import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AdminUsuarioCreatePage from '@/features/admin/pages/AdminUsuarioCreatePage';
 import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
 import DiariosPage from "@/features/remember/pages/DiariosPage";
+import LembrancasPage from "@/features/remember/pages/LembrancasPage";
 
 function Home() {
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', margin: 0 }}>Plataforma de Auxílio ao Idoso</h1>
-      <p style={{ fontSize: '1.125rem', lineHeight: 1.7, color: '#345' }}>
-        Bem-vindo(a)! Esta é uma plataforma para promover bem-estar e inclusão.
+      <h1 style={{ fontSize: "2rem", margin: 0 }}>
+        UNADE — Plataforma de Auxílio ao Idoso
+      </h1>
+      <p style={{ fontSize: "1.125rem", lineHeight: 1.7, color: "#345" }}>
+        Bem-vindo(a)! Esta é uma plataforma para promover autonomia, bem-estar e
+        inclusão.
       </p>
-      <h2 style={{ fontSize: '1.6rem' }}>Módulos</h2>
+      <h2 style={{ fontSize: "1.6rem" }}>Módulos</h2>
       <ModuleGrid />
     </div>
   );
@@ -54,7 +58,7 @@ export function AppRoutes() {
 
         {/* Nova rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
-          <Route path="remember/diario" element={<DiariosPage />} />
+        <Route path="remember/diario" element={<DiariosPage />} />
         {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
