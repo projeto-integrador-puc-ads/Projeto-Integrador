@@ -13,11 +13,11 @@ export default function CareHubHomePage() {
   const [_authStatus, setAuthStatus] = useState<'checking' | 'authenticated' | 'unauthenticated'>('checking');
   const [userInfo, setUserInfo] = useState<any>(null);
   const [repropostas, setRepropostas] = useState<any[]>([]);
-  const [_isUserCliente, setIsUserCliente] = useState<boolean>(false);
+  const [isUserCliente, setIsUserCliente] = useState<boolean>(false);
   const [avaliacoesPendentes, setAvaliacoesPendentes] = useState<any[]>([]);
   const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
   const [selectedAgendamento, setSelectedAgendamento] = useState<any>(null);
-  const userId = getUserId();
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     // Inicializar token JWT no interceptor quando o CareHub for carregado
@@ -28,6 +28,10 @@ export default function CareHubHomePage() {
       await checkAndCacheUserType();
       const ehCliente = isCliente();
       setIsUserCliente(ehCliente);
+      
+      // Obter userId após inicialização
+      const currentUserId = getUserId();
+      setUserId(currentUserId);
 
       // Verificar status da autenticação
       const user = getUser();
@@ -39,16 +43,18 @@ export default function CareHubHomePage() {
       } else {
         setAuthStatus('unauthenticated');
       }
-
-      // Carregar repropostas pendentes se for cliente
-      if (userId && ehCliente) {
-        carregarRepropostas();
-        carregarAvaliacoesPendentes();
-      }
     };
     
     inicializar();
   }, []);
+
+  // Carregar dados quando userId e tipo de usuário estiverem disponíveis
+  useEffect(() => {
+    if (userId && isUserCliente) {
+      carregarRepropostas();
+      carregarAvaliacoesPendentes();
+    }
+  }, [userId, isUserCliente]);
 
   const carregarAvaliacoesPendentes = async () => {
     try {

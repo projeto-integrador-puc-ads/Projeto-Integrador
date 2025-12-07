@@ -14,12 +14,17 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useMensagensNaoLidas } from '../hooks/useMensagensNaoLidas';
 import { getUserId, isCuidador as isRoleCuidador } from './auth';
+import { agendamentosApi } from '../api';
 
 export function CareHubModuleGrid() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<number | null>(null);
   const [detectedCuidador, setDetectedCuidador] = useState<boolean | null>(null);
   const { data: naoLidas = 0 } = useMensagensNaoLidas(userId || 0);
+  
+  // Contadores de notificações
+  const [pendentesCuidador, setPendentesCuidador] = useState<number>(0);
+  const [reagendadosCliente, setReagendadosCliente] = useState<number>(0);
 
   useEffect(() => {
     const id = getUserId();
@@ -28,6 +33,9 @@ export function CareHubModuleGrid() {
 
   // Se a role não indicar explicitamente 'CUIDADOR', tentar validar usando localStorage
   useEffect(() => {
+    // Aguardar userId estar definido antes de detectar tipo de usuário
+    if (!userId) return;
+    
     // Verificar diretamente pela role armazenada no localStorage
     // Sem fazer chamadas API que podem falhar por falta de permissão
     if (isRoleCuidador()) {
@@ -54,6 +62,30 @@ export function CareHubModuleGrid() {
     setDetectedCuidador(false);
   }, [userId]);
 
+  // Carregar contadores de notificações
+  useEffect(() => {
+    const carregarContadores = async () => {
+      // Aguardar userId e detectedCuidador estarem definidos
+      if (!userId || detectedCuidador === null) return;
+
+      try {
+        if (detectedCuidador) {
+          // Cuidador: buscar agendamentos pendentes de confirmação
+          const { count } = await agendamentosApi.contarPendentesCuidador();
+          setPendentesCuidador(count);
+        } else {
+          // Cliente: buscar agendamentos reagendados (contrapropostas)
+          const { count } = await agendamentosApi.contarReagendadosCliente();
+          setReagendadosCliente(count);
+        }
+      } catch {
+        // Silenciosamente ignora erro
+      }
+    };
+
+    carregarContadores();
+  }, [userId, detectedCuidador]);
+
   // Módulos do Cliente (Dona Maria - ID 2)
   const clienteModules = [
     {
@@ -69,9 +101,17 @@ export function CareHubModuleGrid() {
       to: '/carehub/proximos',
     },
     {
-      icon: <Event sx={{ fontSize: 40 }} />,
+      icon: reagendadosCliente > 0 ? (
+        <Badge badgeContent={reagendadosCliente} color="warning">
+          <Event sx={{ fontSize: 40 }} />
+        </Badge>
+      ) : (
+        <Event sx={{ fontSize: 40 }} />
+      ),
       title: 'Meus Agendamentos',
-      desc: 'Gerencie seus agendamentos',
+      desc: reagendadosCliente > 0 
+        ? `${reagendadosCliente} proposta(s) de nova data` 
+        : 'Gerencie seus agendamentos',
       to: '/carehub/agendamentos',
     },
     {
@@ -101,9 +141,17 @@ export function CareHubModuleGrid() {
       to: '/carehub/proximos',
     },
     {
-      icon: <CalendarMonth sx={{ fontSize: 40 }} />,
+      icon: pendentesCuidador > 0 ? (
+        <Badge badgeContent={pendentesCuidador} color="error">
+          <CalendarMonth sx={{ fontSize: 40 }} />
+        </Badge>
+      ) : (
+        <CalendarMonth sx={{ fontSize: 40 }} />
+      ),
       title: 'Meus Agendamentos',
-      desc: 'Gerencie atendimentos agendados',
+      desc: pendentesCuidador > 0 
+        ? `${pendentesCuidador} agendamento(s) pendente(s)!` 
+        : 'Gerencie atendimentos agendados',
       to: '/carehub/cuidador/agendamentos',
     },
     {

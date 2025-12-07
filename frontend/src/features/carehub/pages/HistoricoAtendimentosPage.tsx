@@ -47,6 +47,7 @@ import { avaliacoesApi } from '../api';
 interface RegistroAcompanhamento {
   id: number;
   agendamentoId: number;
+  agendamentoStatus?: string; // Status do agendamento (PENDENTE, CONFIRMADO, EM_ANDAMENTO, CONCLUIDO, etc)
   cuidadorId: number;
   cuidadorNome: string;
   clienteId: number;
@@ -69,6 +70,7 @@ interface AvaliacaoInfo {
   nota: number;
   comentario?: string;
   dataAvaliacao: string;
+  agendamentoId: number;
 }
 
 export function HistoricoAtendimentosPage() {
@@ -77,24 +79,31 @@ export function HistoricoAtendimentosPage() {
   const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
   const [isCuidador, setIsCuidador] = useState<boolean>(false);
-  const [avaliacoes, setAvaliacoes] = useState<{ [cuidadorId: number]: AvaliacaoInfo[] }>({});
+  // Mapa de avaliações indexado por agendamentoId para acesso rápido
+  const [avaliacoesPorAgendamento, setAvaliacoesPorAgendamento] = useState<{ [agendamentoId: number]: AvaliacaoInfo }>({});
   const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
   const [selectedCuidador, setSelectedCuidador] = useState<{ id: number; nome: string } | null>(null);
   const [selectedAgendamentoId, setSelectedAgendamentoId] = useState<number | null>(null);
   
-  const userId = getUserId();
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const inicializar = async () => {
       await checkAndCacheUserType();
       const ehCuidador = isRoleCuidador();
       setIsCuidador(ehCuidador);
-      if (userId) {
-        carregarHistoricoComTipo(ehCuidador);
-      }
+      const currentUserId = getUserId();
+      setUserId(currentUserId);
     };
     inicializar();
-  }, [userId]);
+  }, []);
+
+  // Carregar histórico quando userId estiver disponível
+  useEffect(() => {
+    if (userId) {
+      carregarHistoricoComTipo(isCuidador);
+    }
+  }, [userId, isCuidador]);
 
   const carregarHistoricoComTipo = async (ehCuidador: boolean) => {
     try {
@@ -120,10 +129,19 @@ export function HistoricoAtendimentosPage() {
       setRegistros(registrosOrdenados);
       console.log('  - Total de registros:', registrosOrdenados.length);
       
-      // Se for cliente, carregar as avaliações dos cuidadores
+      // Se for cliente, carregar as avaliações dos agendamentos concluídos
       if (!ehCuidador) {
-        const cuidadorIds = [...new Set(registrosOrdenados.map((r: RegistroAcompanhamento) => r.cuidadorId))];
-        await carregarAvaliacoesCuidadores(cuidadorIds as number[]);
+        // Pegar IDs únicos dos agendamentos concluídos
+        const agendamentosConcluidosIds = [...new Set(
+          registrosOrdenados
+            .filter((r: RegistroAcompanhamento) => r.agendamentoStatus === 'CONCLUIDO')
+            .map((r: RegistroAcompanhamento) => r.agendamentoId)
+        )] as number[];
+        
+        // Pegar IDs únicos dos cuidadores
+        const cuidadorIds = [...new Set(registrosOrdenados.map((r: RegistroAcompanhamento) => r.cuidadorId))] as number[];
+        
+        await carregarAvaliacoes(cuidadorIds, agendamentosConcluidosIds);
       }
       
       setError(null);
@@ -135,49 +153,60 @@ export function HistoricoAtendimentosPage() {
     }
   };
 
-  const carregarAvaliacoesCuidadores = async (cuidadorIds: number[]) => {
+  // Carrega avaliações e indexa por agendamentoId para acesso O(1)
+  const carregarAvaliacoes = async (cuidadorIds: number[], agendamentosIds: number[]) => {
     try {
-      const avaliacoesMap: { [key: number]: AvaliacaoInfo[] } = {};
+      const avaliacoesMap: { [agendamentoId: number]: AvaliacaoInfo } = {};
+      
       for (const cuidadorId of cuidadorIds) {
         const avs = await avaliacoesApi.porCuidador(cuidadorId);
-        // Filtrar apenas as avaliações do cliente atual
-        avaliacoesMap[cuidadorId] = avs
-          .filter((av: any) => av.clienteId === userId)
-          .map((av: any) => ({
-            id: av.id,
-            nota: av.nota,
-            comentario: av.comentario,
-            dataAvaliacao: av.dataAvaliacao,
-            agendamentoId: av.agendamentoId,
-          }));
+        
+        // Filtrar apenas as avaliações do cliente atual e indexar por agendamentoId
+        avs
+          .filter((av: any) => Number(av.clienteId) === Number(userId) && av.agendamentoId)
+          .forEach((av: any) => {
+            const agendamentoId = Number(av.agendamentoId);
+            // Só adiciona se o agendamento está na lista de interesse
+            if (agendamentosIds.includes(agendamentoId)) {
+              avaliacoesMap[agendamentoId] = {
+                id: av.id,
+                nota: av.nota,
+                comentario: av.comentario,
+                dataAvaliacao: av.dataAvaliacao,
+                agendamentoId: agendamentoId,
+              };
+            }
+          });
       }
-      setAvaliacoes(avaliacoesMap);
+      
+      console.log('📊 Mapa de avaliações por agendamento:', avaliacoesMap);
+      setAvaliacoesPorAgendamento(avaliacoesMap);
     } catch (err) {
       console.error('Erro ao carregar avaliações:', err);
     }
   };
 
-  const abrirAvaliacaoModal = (cuidadorId: number, cuidadorNome: string, agendamentoId?: number) => {
+  const abrirAvaliacaoModal = (cuidadorId: number, cuidadorNome: string, agendamentoId: number) => {
     setSelectedCuidador({ id: cuidadorId, nome: cuidadorNome });
-    setSelectedAgendamentoId(agendamentoId || null);
+    setSelectedAgendamentoId(agendamentoId);
     setAvaliacaoModalOpen(true);
   };
 
-  const fecharAvaliacaoModal = () => {
+  const fecharAvaliacaoModal = async () => {
     setAvaliacaoModalOpen(false);
     setSelectedCuidador(null);
     setSelectedAgendamentoId(null);
     // Recarregar dados após avaliar
     if (!isCuidador) {
-      const cuidadorIds = [...new Set(registros.map(r => r.cuidadorId))];
-      carregarAvaliacoesCuidadores(cuidadorIds);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      // Recarregar todo o histórico para atualizar os dados
+      carregarHistoricoComTipo(false);
     }
   };
 
-  // Verificar se um agendamento já foi avaliado
-  const getAvaliacaoDoAgendamento = (agendamentoId: number, cuidadorId: number): AvaliacaoInfo | undefined => {
-    const avaliacoesCuidador = avaliacoes[cuidadorId] || [];
-    return avaliacoesCuidador.find((av: any) => av.agendamentoId === agendamentoId);
+  // Verificar se um agendamento já foi avaliado - acesso O(1) pelo mapa
+  const getAvaliacaoDoAgendamento = (agendamentoId: number): AvaliacaoInfo | undefined => {
+    return avaliacoesPorAgendamento[agendamentoId];
   };
 
   const formatarData = (dataISO: string) => {
@@ -473,23 +502,23 @@ export function HistoricoAtendimentosPage() {
                             </Paper>
                           )}
 
-                          {/* 🌟 Seção de Avaliação - apenas para clientes */}
-                          {!isCuidador && (
+                          {/* 🌟 Seção de Avaliação - apenas para clientes e atendimentos CONCLUÍDOS */}
+                          {!isCuidador && registro.agendamentoStatus === 'CONCLUIDO' && (
                             <Paper 
                               elevation={0} 
                               sx={{ 
                                 p: 2, 
-                                bgcolor: getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId) 
+                                bgcolor: getAvaliacaoDoAgendamento(registro.agendamentoId) 
                                   ? 'success.50' 
                                   : 'grey.50',
                                 border: '1px solid',
-                                borderColor: getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId) 
+                                borderColor: getAvaliacaoDoAgendamento(registro.agendamentoId) 
                                   ? 'success.light' 
                                   : 'grey.300',
                               }}
                             >
                               {(() => {
-                                const avaliacao = getAvaliacaoDoAgendamento(registro.agendamentoId, registro.cuidadorId);
+                                const avaliacao = getAvaliacaoDoAgendamento(registro.agendamentoId);
                                 if (avaliacao) {
                                   return (
                                     <Stack spacing={1}>

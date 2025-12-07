@@ -93,6 +93,7 @@ public class RegistroAcompanhamentoService {
         RegistroAcompanhamentoResponseDTO dto = new RegistroAcompanhamentoResponseDTO();
         dto.setId(registro.getId());
         dto.setAgendamentoId(registro.getAgendamento().getId());
+        dto.setAgendamentoStatus(registro.getAgendamento().getStatus().name()); // Adiciona o status do agendamento
         dto.setCuidadorId(registro.getCuidador().getId());
         dto.setCuidadorNome(registro.getCuidador().getName());
         dto.setClienteId(registro.getCliente().getId());

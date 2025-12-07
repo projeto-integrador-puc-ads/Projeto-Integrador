@@ -160,4 +160,34 @@ public class AgendamentoController {
         
         return ResponseEntity.ok(Map.of("count", count));
     }
+
+    /**
+     * Conta agendamentos PENDENTES aguardando confirmação do cuidador.
+     * Usado para badge de notificação no grid de módulos.
+     */
+    @GetMapping("/pendentes-cuidador/count")
+    public ResponseEntity<Map<String, Long>> contarPendentesCuidador(Principal principal) {
+        String usernameOrEmail = principal.getName();
+        Long cuidadorId = agendamentoService.getUserIdByUsernameOrEmail(usernameOrEmail);
+        
+        long count = agendamentoService.contarPendentesCuidador(cuidadorId);
+        log.info("Agendamentos pendentes para cuidador {}: {}", cuidadorId, count);
+        
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    /**
+     * Conta agendamentos REAGENDADOS (contrapropostas) aguardando resposta do cliente.
+     * Usado para badge de notificação no grid de módulos.
+     */
+    @GetMapping("/reagendados-cliente/count")
+    public ResponseEntity<Map<String, Long>> contarReagendadosCliente(Principal principal) {
+        String usernameOrEmail = principal.getName();
+        Long clienteId = agendamentoService.getUserIdByUsernameOrEmail(usernameOrEmail);
+        
+        long count = agendamentoService.contarReagendadosCliente(clienteId);
+        log.info("Agendamentos reagendados para cliente {}: {}", clienteId, count);
+        
+        return ResponseEntity.ok(Map.of("count", count));
+    }
 }

@@ -66,6 +66,16 @@ export const agendamentosApi = {
     const { data } = await http.get('/api/carehub/agendamentos/avaliacoes-pendentes/count');
     return data;
   },
+  // Notificação para cuidador: agendamentos pendentes de confirmação
+  contarPendentesCuidador: async (): Promise<{ count: number }> => {
+    const { data } = await http.get('/api/carehub/agendamentos/pendentes-cuidador/count');
+    return data;
+  },
+  // Notificação para cliente: contrapropostas aguardando resposta
+  contarReagendadosCliente: async (): Promise<{ count: number }> => {
+    const { data } = await http.get('/api/carehub/agendamentos/reagendados-cliente/count');
+    return data;
+  },
 };
 
 export const prontuariosApi = {

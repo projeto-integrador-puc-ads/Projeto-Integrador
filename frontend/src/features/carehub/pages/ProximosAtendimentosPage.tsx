@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -38,20 +38,16 @@ interface Agendamento {
 }
 
 export function ProximosAtendimentosPage() {
-  const userId = getUserId();
+  const [userId, setUserId] = useState<number | null>(null);
   const [avaliacaoModalOpen, setAvaliacaoModalOpen] = useState(false);
   const [cuidadorSelecionado, setCuidadorSelecionado] = useState<{id: number, nome: string} | null>(null);
   const [agendamentoAvaliacao, setAgendamentoAvaliacao] = useState<number | null>(null);
+
+  useEffect(() => {
+    const id = getUserId();
+    setUserId(id);
+  }, []);
   
-  if (!userId) {
-    return (
-      <Box p={3}>
-        <Alert severity="warning">
-          Faça login para ver seus próximos atendimentos.\n
-        </Alert>
-      </Box>
-    );
-  }
   const { data: agendamentos = [], isLoading, error } = useQuery<Agendamento[]>({
     queryKey: ['proximos-atendimentos', userId],
     queryFn: async () => {
@@ -62,6 +58,7 @@ export function ProximosAtendimentosPage() {
       });
       return response.data;
     },
+    enabled: !!userId, // Só executa quando userId estiver disponível
   });
 
   const getStatusColor = (status: string) => {
@@ -120,15 +117,22 @@ export function ProximosAtendimentosPage() {
   };
 
   const getDiasRestantes = (dataString: string) => {
-    const agora = new Date();
+    // Comparar apenas as datas (ignorando horário) para determinar Hoje/Amanhã/X dias
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Zera o horário para comparar só a data
+    
     const dataAgendamento = new Date(dataString);
-    const diferencaMs = dataAgendamento.getTime() - agora.getTime();
-    const diferencaDias = Math.ceil(diferencaMs / (1000 * 60 * 60 * 24));
+    dataAgendamento.setHours(0, 0, 0, 0); // Zera o horário para comparar só a data
+    
+    const diferencaMs = dataAgendamento.getTime() - hoje.getTime();
+    const diferencaDias = Math.round(diferencaMs / (1000 * 60 * 60 * 24));
     
     if (diferencaDias === 0) {
       return 'Hoje';
     } else if (diferencaDias === 1) {
       return 'Amanhã';
+    } else if (diferencaDias < 0) {
+      return 'Passado';
     } else {
       return `Em ${diferencaDias} dias`;
     }

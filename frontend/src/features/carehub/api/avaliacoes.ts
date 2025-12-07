@@ -9,6 +9,7 @@ export interface AvaliacaoResponse {
   nota: number;
   comentario: string;
   dataAvaliacao: string;
+  agendamentoId?: number;
 }
 
 export interface AvaliacaoRequest {

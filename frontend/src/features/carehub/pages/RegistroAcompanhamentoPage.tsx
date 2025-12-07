@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -14,9 +15,13 @@ import {
   InputLabel,
   Divider,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
-import { Save, CheckCircle } from '@mui/icons-material';
+import { Save, CheckCircle, Done } from '@mui/icons-material';
 import { PageHeader } from '../components/PageHeader';
 import http from '../libHttp';
 import { useSnackbar } from 'notistack';
@@ -30,13 +35,17 @@ interface Agendamento {
 }
 
 export function RegistroAcompanhamentoPage() {
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [ehCuidador, setEhCuidador] = useState<boolean>(false);
+  const [registroSalvo, setRegistroSalvo] = useState(false);
+  const [dialogFinalizarOpen, setDialogFinalizarOpen] = useState(false);
+  const [finalizando, setFinalizando] = useState(false);
   
-  const cuidadorId = getUserId(); // Cuidador logado
+  const [cuidadorId, setCuidadorId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     pressaoArterial: '',
@@ -55,6 +64,8 @@ export function RegistroAcompanhamentoPage() {
     const inicializar = async () => {
       await checkAndCacheUserType();
       setEhCuidador(isRoleCuidador());
+      const currentUserId = getUserId();
+      setCuidadorId(currentUserId);
       
       const params = new URLSearchParams(window.location.search);
       const agendamentoId = params.get('agendamentoId');
@@ -129,28 +140,57 @@ export function RegistroAcompanhamentoPage() {
         }
       );
 
-      enqueueSnackbar('Registro salvo com sucesso!', { variant: 'success' });
+      enqueueSnackbar('✅ Registro salvo com sucesso!', { variant: 'success' });
+      setRegistroSalvo(true);
       
-      // Limpar formulário
-      setFormData({
-        pressaoArterial: '',
-        glicemia: '',
-        medicamentosAdministrados: '',
-        alimentacao: '',
-        atividadesRealizadas: '',
-        observacoes: '',
-        intercorrencias: '',
-        humorEstado: '',
-        sinaisVitais: '',
-      });
-      setAgendamentoSelecionado('');
+      // Abrir diálogo perguntando se deseja finalizar o atendimento
+      setDialogFinalizarOpen(true);
       
-      carregarAgendamentos();
     } catch {
       enqueueSnackbar('Erro ao salvar registro', { variant: 'error' });
     } finally {
       setLoading(false);
     }
+  };
+
+  const finalizarAtendimento = async () => {
+    if (!agendamentoSelecionado) return;
+    
+    try {
+      setFinalizando(true);
+      await http.put(
+        `/api/carehub/agendamentos/${agendamentoSelecionado}/status?status=CONCLUIDO`
+      );
+      
+      enqueueSnackbar('✅ Atendimento finalizado com sucesso!', { variant: 'success' });
+      setDialogFinalizarOpen(false);
+      
+      // Redirecionar para Meus Agendamentos
+      navigate('/carehub/cuidador/agendamentos');
+    } catch (err: any) {
+      console.error('Erro ao finalizar atendimento:', err);
+      enqueueSnackbar('Erro ao finalizar atendimento', { variant: 'error' });
+    } finally {
+      setFinalizando(false);
+    }
+  };
+
+  const continuarRegistrando = () => {
+    setDialogFinalizarOpen(false);
+    // Limpar formulário para novo registro ou continuar editando
+    setFormData({
+      pressaoArterial: '',
+      glicemia: '',
+      medicamentosAdministrados: '',
+      alimentacao: '',
+      atividadesRealizadas: '',
+      observacoes: '',
+      intercorrencias: '',
+      humorEstado: '',
+      sinaisVitais: '',
+    });
+    setRegistroSalvo(false);
+    carregarAgendamentos();
   };
 
   return (
@@ -324,15 +364,74 @@ export function RegistroAcompanhamentoPage() {
               variant="contained"
               size="large"
               startIcon={<Save />}
-              disabled={loading}
+              disabled={loading || registroSalvo}
             >
-              {loading ? 'Salvando...' : 'Salvar Registro'}
+              {loading ? 'Salvando...' : registroSalvo ? '✓ Registro Salvo' : 'Salvar Registro'}
             </Button>
+
+            {registroSalvo && (
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                startIcon={<Done />}
+                onClick={() => setDialogFinalizarOpen(true)}
+              >
+                ✓ Finalizar Atendimento
+              </Button>
+            )}
           </Stack>
         </CardContent>
       </Card>
         </>
       )}
+
+      {/* Dialog de Confirmação para Finalizar Atendimento */}
+      <Dialog 
+        open={dialogFinalizarOpen} 
+        onClose={() => !finalizando && setDialogFinalizarOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle color="success" />
+          Registro Salvo com Sucesso!
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            O registro de acompanhamento foi salvo. Deseja finalizar o atendimento agora?
+          </Typography>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <strong>Ao finalizar:</strong>
+            <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+              <li>O atendimento será marcado como <strong>Concluído</strong></li>
+              <li>O cliente poderá avaliar o atendimento</li>
+              <li>O registro ficará disponível no histórico</li>
+            </ul>
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            Se precisar adicionar mais informações ao registro, clique em "Continuar Registrando".
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button 
+            onClick={continuarRegistrando} 
+            variant="outlined"
+            disabled={finalizando}
+          >
+            Continuar Registrando
+          </Button>
+          <Button 
+            onClick={finalizarAtendimento} 
+            variant="contained" 
+            color="success"
+            startIcon={<Done />}
+            disabled={finalizando}
+          >
+            {finalizando ? 'Finalizando...' : 'Finalizar Atendimento'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

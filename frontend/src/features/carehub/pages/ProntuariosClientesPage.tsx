@@ -53,7 +53,7 @@ export function ProntuariosClientesPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCuidador, setIsCuidador] = useState(false);
-  const cuidadorId = getUserId();
+  const [cuidadorId, setCuidadorId] = useState<number | null>(null);
 
   useEffect(() => {
     const verificarECarregar = async () => {
@@ -62,17 +62,22 @@ export function ProntuariosClientesPage() {
       
       const ehCuidador = isRoleCuidador();
       setIsCuidador(ehCuidador);
+      const currentUserId = getUserId();
+      setCuidadorId(currentUserId);
       setAuthChecked(true);
-      
-      if (cuidadorId && ehCuidador) {
-        carregarProntuarios();
-      } else {
-        setLoading(false);
-      }
     };
     
     verificarECarregar();
-  }, [cuidadorId]);
+  }, []);
+
+  // Carregar prontuários quando cuidadorId estiver disponível
+  useEffect(() => {
+    if (cuidadorId && isCuidador) {
+      carregarProntuarios();
+    } else if (authChecked) {
+      setLoading(false);
+    }
+  }, [cuidadorId, isCuidador, authChecked]);
 
   const carregarProntuarios = async () => {
     if (!cuidadorId) return;

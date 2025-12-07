@@ -285,7 +285,7 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public List<AgendamentoResponseDTO> listarPorCuidador(Long cuidadorId) {
-        return agendamentoRepository.findByCuidadorIdOrderByDataHoraInicioDesc(cuidadorId)
+        return agendamentoRepository.findByCuidadorIdOrderByDataSolicitacaoDesc(cuidadorId)
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -293,7 +293,7 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public List<AgendamentoResponseDTO> listarPorCliente(Long clienteId) {
-        return agendamentoRepository.findByClienteIdOrderByDataHoraInicioDesc(clienteId)
+        return agendamentoRepository.findByClienteIdOrderByDataSolicitacaoDesc(clienteId)
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -441,5 +441,23 @@ public class AgendamentoService {
     public long contarAvaliacoesPendentes(Long clienteId) {
         Objects.requireNonNull(clienteId, "Cliente ID não pode ser null");
         return agendamentoRepository.countAvaliacoesPendentesByClienteId(clienteId);
+    }
+
+    /**
+     * Conta agendamentos PENDENTES aguardando confirmação do cuidador.
+     * Usado para exibir badge de notificação no grid de módulos.
+     */
+    public long contarPendentesCuidador(Long cuidadorId) {
+        Objects.requireNonNull(cuidadorId, "Cuidador ID não pode ser null");
+        return agendamentoRepository.countPendentesByCuidadorId(cuidadorId);
+    }
+
+    /**
+     * Conta agendamentos REAGENDADOS (contrapropostas) aguardando resposta do cliente.
+     * Usado para exibir badge de notificação no grid de módulos.
+     */
+    public long contarReagendadosCliente(Long clienteId) {
+        Objects.requireNonNull(clienteId, "Cliente ID não pode ser null");
+        return agendamentoRepository.countReagendadosByClienteId(clienteId);
     }
 }

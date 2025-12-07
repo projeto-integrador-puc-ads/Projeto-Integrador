@@ -13,6 +13,7 @@ public class RegistroAcompanhamentoResponseDTO {
 
     private Long id;
     private Long agendamentoId;
+    private String agendamentoStatus; // Status do agendamento (PENDENTE, CONFIRMADO, EM_ANDAMENTO, CONCLUIDO, etc)
     private Long cuidadorId;
     private String cuidadorNome;
     private Long clienteId;

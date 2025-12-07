@@ -17,6 +17,11 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     
     List<Agendamento> findByClienteIdOrderByDataHoraInicioDesc(Long clienteId);
     
+    // Ordenação por data de solicitação (quando o idoso criou o agendamento)
+    List<Agendamento> findByCuidadorIdOrderByDataSolicitacaoDesc(Long cuidadorId);
+    
+    List<Agendamento> findByClienteIdOrderByDataSolicitacaoDesc(Long clienteId);
+    
        @Query("SELECT a FROM Agendamento a WHERE a.cuidador.id = :cuidadorId " +
            "AND a.dataHoraInicio >= :inicio AND a.dataHoraFim <= :fim " +
            "ORDER BY a.dataHoraInicio")
@@ -61,4 +66,12 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
            "AND a.status = 'CONCLUIDO' " +
            "AND NOT EXISTS (SELECT av FROM Avaliacao av WHERE av.agendamento.id = a.id)")
     long countAvaliacoesPendentesByClienteId(Long clienteId);
+    
+    // Contar agendamentos PENDENTES aguardando confirmação do cuidador
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.cuidador.id = :cuidadorId AND a.status = 'PENDENTE'")
+    long countPendentesByCuidadorId(Long cuidadorId);
+    
+    // Contar agendamentos REAGENDADOS (contrapropostas) aguardando resposta do cliente
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.cliente.id = :clienteId AND a.status = 'REAGENDADO'")
+    long countReagendadosByClienteId(Long clienteId);
 }

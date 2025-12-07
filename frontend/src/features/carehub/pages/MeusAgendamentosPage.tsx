@@ -62,11 +62,9 @@ export function MeusAgendamentosPage() {
   const [validacoes, setValidacoes] = useState<Record<number, ValidacaoInicio>>({});
   const [tabAtual, setTabAtual] = useState(0);
   
-  // ID do usuário logado e papel
-  const currentUserId = getUserId();
+  // ID do usuário logado e papel - usar state para garantir reatividade
+  const [userId, setUserId] = useState<number | null>(null);
   const [isUserCuidador, setIsUserCuidador] = useState<boolean>(false);
-  const cuidadorId = currentUserId; // usado nas chamadas quando usuário for cuidador
-  const clienteId = currentUserId;
 
   const [avaliacaoModalOpen, setAvaliacoesModalOpen] = useState(false);
   const [avaliacaoCuidadorId, setAvaliacaoCuidadorId] = useState<number | null>(null);
@@ -80,15 +78,25 @@ export function MeusAgendamentosPage() {
     const inicializar = async () => {
       await checkAndCacheUserType();
       setIsUserCuidador(isCuidador());
-      carregarAgendamentos();
+      const currentUserId = getUserId();
+      setUserId(currentUserId);
     };
     inicializar();
-  }, [cuidadorId]);
+  }, []);
+
+  // Carregar agendamentos quando userId estiver disponível
+  useEffect(() => {
+    if (userId) {
+      carregarAgendamentos();
+    }
+  }, [userId]);
 
   const carregarAgendamentos = async () => {
+    if (!userId) return;
+    
     try {
       setLoading(true);
-      const response = await http.get(`/api/carehub/agendamentos/cuidador/${cuidadorId}`);
+      const response = await http.get(`/api/carehub/agendamentos/cuidador/${userId}`);
       setAgendamentos(response.data);
       
       // Verificar quais agendamentos CONFIRMADOS podem ser iniciados
@@ -128,7 +136,7 @@ export function MeusAgendamentosPage() {
           if (!registros || registros.length === 0) {
             alert('❌ Nenhum registro de acompanhamento encontrado!\n\n' +
                   'Preencha o registro antes de finalizar o atendimento.');
-            navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+            navigate(`/carehub/cuidador/registro?agendamentoId=${agendamentoId}`);
             return;
           }
           
@@ -147,13 +155,13 @@ export function MeusAgendamentosPage() {
           if (camposFaltantes.length > 0) {
             alert('❌ Antes de finalizar, preencha o registro de acompanhamento completo!\n\n' +
                   'Campos pendentes: ' + camposFaltantes.join(', '));
-            navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+            navigate(`/carehub/cuidador/registro?agendamentoId=${agendamentoId}`);
             return;
           }
         } catch (err: any) {
           alert('❌ Erro ao verificar registro de acompanhamento!\n\n' +
                 'Preencha o registro antes de finalizar o atendimento.');
-          navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+          navigate(`/carehub/cuidador/registro?agendamentoId=${agendamentoId}`);
           return;
         }
       }
@@ -164,7 +172,7 @@ export function MeusAgendamentosPage() {
       
       // ✅ Se iniciou o atendimento, redireciona para registro de acompanhamento
       if (novoStatus === 'EM_ANDAMENTO') {
-        navigate(`/carehub/registro-acompanhamento?agendamentoId=${agendamentoId}`);
+        navigate(`/carehub/cuidador/registro?agendamentoId=${agendamentoId}`);
       } else if (novoStatus === 'CONCLUIDO' && isUserCuidador) {
         // Cuidador finalizou - recarregar lista e mostrar sucesso
         alert('✅ Atendimento finalizado com sucesso!\n\nO cliente poderá avaliar o atendimento agora.');
@@ -548,7 +556,7 @@ export function MeusAgendamentosPage() {
                         ? '✓ Atendimento concluído com sucesso!' 
                         : '✕ Este agendamento foi cancelado.'}
                     </Alert>
-                    {agendamento.status === 'CONCLUIDO' && !isUserCuidador && currentUserId === agendamento.clienteId && (
+                    {agendamento.status === 'CONCLUIDO' && !isUserCuidador && userId === agendamento.clienteId && (
                       <Box sx={{ mt: 2 }}>
                         <Button
                           fullWidth
@@ -573,13 +581,13 @@ export function MeusAgendamentosPage() {
         </Box>
       )}
       {/* Modal de Avaliação (pré-seleciona agendamento quando aberto daqui) */}
-      {avaliacaoModalOpen && avaliacaoCuidadorId && clienteId && (
+      {avaliacaoModalOpen && avaliacaoCuidadorId && userId && (
         <AvaliacaoModal
           open={avaliacaoModalOpen}
           onClose={() => setAvaliacoesModalOpen(false)}
           cuidadorId={avaliacaoCuidadorId}
           cuidadorNome={avaliacaoCuidadorNome || ''}
-          clienteId={clienteId}
+          clienteId={userId}
           initialAgendamentoId={avaliacaoAgendamentoId ?? undefined}
         />
       )}
