@@ -27,6 +27,7 @@ public interface ListaRepository extends JpaRepository<Lista,Long> {
 
     // Buscar listas não-template (listas normais do usuário)
     List<Lista> findByUsuario_IdAndTemplateFalse(Long usuarioId);
+    List<Lista> findByUsuario_IdAndTemplateFalseOrderByCreatedAtDesc(Long usuarioId);
 
     // Buscar templates disponíveis
     List<Lista> findByTemplateTrueOrderByTituloAsc();

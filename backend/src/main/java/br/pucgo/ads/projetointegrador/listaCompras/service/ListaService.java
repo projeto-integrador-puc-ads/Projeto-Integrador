@@ -115,7 +115,7 @@ public class ListaService {
             throw new IllegalArgumentException(
                     "Usuário não encontrado com ID: " + userId);
         }
-        return listaRepository.findByUsuario_IdAndTemplateFalse(userId).stream()
+        return listaRepository.findByUsuario_IdAndTemplateFalseOrderByCreatedAtDesc(userId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
