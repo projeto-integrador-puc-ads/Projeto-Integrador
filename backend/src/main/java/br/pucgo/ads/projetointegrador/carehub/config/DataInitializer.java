@@ -154,7 +154,7 @@ public class DataInitializer {
 
 			// Gildenor - cuidador principal para a apresentação
 			Cuidador gildenor = new Cuidador();
-			gildenor.setName("Gildenor Silva");
+			gildenor.setName("Gildenor Souza");
 			gildenor.setUsername("gildenor");
 			gildenor.setEmail("gildenor@example.com");
 			gildenor.setPassword(encoder.encode("123456"));
