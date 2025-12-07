@@ -31,6 +31,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -52,7 +53,6 @@ export default function TemplatesPage() {
 
     // Estados de Filtro e Seleção
     const [filtroPatologia, setFiltroPatologia] = useState<number | "Todas">("Todas");
-    // filtro de status (abertas / arquivadas / todas)
     const [filtroStatus, setFiltroStatus] = useState<"abertas" | "arquivadas" | "todas">("abertas");
     const [templateSelecionado, setTemplateSelecionado] = useState<ListaDTO | null>(null);
     const [modalDetalhesOpen, setModalDetalhesOpen] = useState(false);
@@ -104,6 +104,7 @@ export default function TemplatesPage() {
         } else if (filtroStatus === "arquivadas") {
             lista = lista.filter((t) => t.status === "FINALIZADA");
         }
+        // "todas" não filtra
 
         return lista;
     }, [templates, filtroPatologia, filtroStatus]);
@@ -112,6 +113,19 @@ export default function TemplatesPage() {
     const handleAbrirDetalhes = (tpl: ListaDTO) => {
         setTemplateSelecionado(tpl);
         setModalDetalhesOpen(true);
+    };
+
+    // Ir para tela de edição de template
+    const handleIrParaEdicaoTemplate = (tpl: ListaDTO) => {
+        const query = new URLSearchParams();
+        query.set("isTemplate", "1");
+        if (tpl.patologiaId) {
+            query.set("patologiaId", String(tpl.patologiaId));
+        }
+
+        // fecha o modal antes de navegar, pra não ficar estado preso
+        setModalDetalhesOpen(false);
+        navigate(`/lista-compras/${tpl.id}/editar?${query.toString()}`);
     };
 
     /** Cria template vazio e navega para EditListaPage */
@@ -208,8 +222,8 @@ export default function TemplatesPage() {
                         borderRadius: 2,
                         textTransform: "none",
                         fontWeight: 700,
-                        width: { xs: "100%", sm: "auto" },      // 🔹 full-width no mobile
-                        alignSelf: { xs: "stretch", sm: "auto" }, // acompanha a largura no xs
+                        width: { xs: "100%", sm: "auto" },     // full-width no mobile
+                        alignSelf: { xs: "stretch", sm: "auto" },
                     }}
                 >
                     Novo Template
@@ -220,14 +234,14 @@ export default function TemplatesPage() {
             <Paper sx={{ p: 2, mb: 3, borderRadius: 3, backgroundColor: "#fff" }} elevation={0}>
                 <Stack
                     direction={{ xs: "column", sm: "row" }}
-                    alignItems={{ xs: "stretch", sm: "center" }}  // 🔹 no mobile os filtros ocupam 100%
+                    alignItems={{ xs: "stretch", sm: "center" }}
                     spacing={2}
                 >
                     {/* Filtro por Patologia */}
                     <FormControl
                         size="small"
                         sx={{
-                            width: { xs: "100%", sm: 220 }, // xs: ocupa tudo, sm+: largura fixa
+                            width: { xs: "100%", sm: 220 },
                         }}
                     >
                         <InputLabel>Filtrar por Patologia</InputLabel>
@@ -251,7 +265,7 @@ export default function TemplatesPage() {
                     <FormControl
                         size="small"
                         sx={{
-                            width: { xs: "100%", sm: 180 }, // xs: ocupa tudo, sm+: largura fixa
+                            width: { xs: "100%", sm: 180 },
                         }}
                     >
                         <InputLabel>Status</InputLabel>
@@ -448,6 +462,7 @@ export default function TemplatesPage() {
                         <CloseIcon />
                     </IconButton>
                 </DialogTitle>
+
                 <DialogContent dividers>
                     <List disablePadding>
                         {templateSelecionado?.itens?.map((item, idx) => (
@@ -475,66 +490,95 @@ export default function TemplatesPage() {
                         )}
                     </List>
                 </DialogContent>
-                <DialogActions>
-                    {/* Arquivar template – só se ainda não estiver finalizado */}
-                    {templateSelecionado && templateSelecionado.status !== "FINALIZADA" && (
+
+                <DialogActions sx={{ px: 3, py: 2.5 }}>
+                    <Box
+                        sx={{
+                            width: "100%",
+                            display: "grid",
+                            gap: 1.2,
+
+                            // MOBILE → 2 colunas na primeira linha e 1 botão grande na segunda
+                            gridTemplateColumns: {
+                                xs: "1fr 1fr",
+                                sm: "auto auto auto", // Desktop mantém original
+                            },
+
+                            // MOBILE → duas linhas
+                            gridTemplateRows: {
+                                xs: "auto auto",
+                                sm: "auto",
+                            },
+
+                            justifyContent: { sm: "flex-end" },
+                            alignItems: "center",
+                        }}
+                    >
+                        {/* === EDITAR === */}
                         <Button
-                            color="error"
-                            onClick={async () => {
-                                try {
-                                    await listaComprasService.finalizarLista(
-                                        templateSelecionado.id
-                                    );
-                                    enqueueSnackbar("Template arquivado com sucesso.", {
-                                        variant: "success",
-                                    });
-                                    setModalDetalhesOpen(false);
-                                    await carregarDados(true);
-                                } catch (e: any) {
-                                    console.error(e);
-                                    const msg =
-                                        e.response?.data?.erro ||
-                                        "Erro ao arquivar template.";
-                                    enqueueSnackbar(msg, { variant: "error" });
-                                }
+                            startIcon={<EditIcon />}
+                            onClick={() => handleIrParaEdicaoTemplate(templateSelecionado!)}
+                            sx={{
+                                textTransform: "none",
+                                whiteSpace: "nowrap",
+                                width: { xs: "100%", sm: "auto" },
                             }}
                         >
-                            Arquivar template
+                            Editar
                         </Button>
-                    )}
 
-                    {/* Reabrir template – só se estiver FINALIZADA */}
-                    {templateSelecionado && templateSelecionado.status === "FINALIZADA" && (
-                        <Button
-                            color="primary"
-                            onClick={async () => {
-                                try {
-                                    await listaComprasService.reabrirLista(
-                                        templateSelecionado.id
-                                    );
-                                    enqueueSnackbar("Template reaberto com sucesso.", {
-                                        variant: "success",
-                                    });
+                        {/* === ARQUIVAR / REABRIR === */}
+                        {templateSelecionado?.status !== "FINALIZADA" ? (
+                            <Button
+                                color="error"
+                                onClick={async () => {
+                                    await listaComprasService.finalizarLista(templateSelecionado.id);
+                                    enqueueSnackbar("Template arquivado.", { variant: "success" });
                                     setModalDetalhesOpen(false);
                                     await carregarDados(true);
-                                } catch (e: any) {
-                                    console.error(e);
-                                    const msg =
-                                        e.response?.data?.erro ||
-                                        "Erro ao reabrir template.";
-                                    enqueueSnackbar(msg, { variant: "error" });
-                                }
+                                }}
+                                sx={{
+                                    textTransform: "none",
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Arquivar
+                            </Button>
+                        ) : (
+                            <Button
+                                color="primary"
+                                onClick={async () => {
+                                    await listaComprasService.reabrirLista(templateSelecionado.id);
+                                    enqueueSnackbar("Template reaberto.", { variant: "success" });
+                                    setModalDetalhesOpen(false);
+                                    await carregarDados(true);
+                                }}
+                                sx={{
+                                    textTransform: "none",
+                                    whiteSpace: "nowrap",
+                                    width: { xs: "100%", sm: "auto" },
+                                }}
+                            >
+                                Reabrir
+                            </Button>
+                        )}
+
+                        {/* === USAR TEMPLATE === */}
+                        <Button
+                            variant="contained"
+                            onClick={() => navigate("/lista-compras/nova")}
+                            sx={{
+                                textTransform: "none",
+                                whiteSpace: "nowrap",
+                                gridColumn: { xs: "1 / 3", sm: "auto" }, // mobile → ocupa a linha inteira
+                                width: { xs: "100%", sm: "auto" },
+                                mt: { xs: 0.5, sm: 0 },
                             }}
                         >
-                            Reabrir template
+                            Usar Template
                         </Button>
-                    )}
-
-                    <Button onClick={() => setModalDetalhesOpen(false)}>Fechar</Button>
-
-                    <Button variant="contained" onClick={() => navigate("/lista-compras/nova")}>
-                        Usar Template
-                    </Button>
+                    </Box>
                 </DialogActions>
             </Dialog>
 
@@ -594,11 +638,19 @@ export default function TemplatesPage() {
                         </Stack>
                     </Box>
                 </DialogContent>
-                <DialogActions>
+                <DialogActions
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: 1,
+                        flexWrap: "wrap",
+                    }}
+                >
                     <Button
                         onClick={() => setModalCriarOpen(false)}
                         color="error"
                         disabled={criandoTemplate}
+                        sx={{ textTransform: "none" }}
                     >
                         Cancelar
                     </Button>
@@ -611,6 +663,7 @@ export default function TemplatesPage() {
                                 <CircularProgress size={20} color="inherit" />
                             ) : null
                         }
+                        sx={{ textTransform: "none" }}
                     >
                         {criandoTemplate ? "Criando..." : "Criar"}
                     </Button>

@@ -18,6 +18,8 @@ import {
     Tooltip,
     Alert,
     ListItemIcon,
+    useMediaQuery,
+    useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -34,19 +36,22 @@ import type {
     ListaItemVM,
     Template,
     Patologia,
-    PatologiaItem, ProdutoSubstituivel,
+    PatologiaItem,
+    ProdutoSubstituivel,
 } from '../types';
 import { listaComprasService } from '../api/service/listaComprasService.ts';
-import {listaViewService} from "@/features/lista-compras/api/service/listaViewService.ts";
-import {patologiasService} from "@/features/lista-compras/api/service/patologiaService.ts";
-import {produtoService} from "@/features/lista-compras/api/service/produtoService.ts";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { listaViewService } from '@/features/lista-compras/api/service/listaViewService.ts';
+import { patologiasService } from '@/features/lista-compras/api/service/patologiaService.ts';
+import { produtoService } from '@/features/lista-compras/api/service/produtoService.ts';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const normalize = (s: string) => s.trim().toLowerCase();
-const userIdTemp = 1 //TODO remover todas referencias de userIdTemp para a que irá retornar do usuário logado
+const userIdTemp = 1; // TODO remover todas referencias de userIdTemp para a que irá retornar do usuário logado
 
 export default function CreateListaPage() {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [catalogo, setCatalogo] = useState<Produto[]>([]);
     const [listaItens, setListaItens] = useState<ListaItemVM[]>([]);
@@ -59,8 +64,9 @@ export default function CreateListaPage() {
         { label: string; value: number }[]
     >([]);
 
-    const [riscosPorProduto, setRiscosPorProduto] = useState<Record<number, ProdutoSubstituivel[]>>({});
-
+    const [riscosPorProduto, setRiscosPorProduto] = useState<
+        Record<number, ProdutoSubstituivel[]>
+    >({});
 
     const [patologias, setPatologias] = useState<Patologia[]>([]);
     const [loadingPats, setLoadingPats] = useState(false);
@@ -84,31 +90,7 @@ export default function CreateListaPage() {
     };
 
     const templatesForDisplay = useMemo(() => {
-        // 🔹 mocks só pra teste visual de scroll
-        const mocks: Template[] = [
-            { id: -101, titulo: 'Lista - Festa de Aniversário' } as Template,
-            { id: -102, titulo: 'Lista - Churrasco de Fim de Semana' } as Template,
-            { id: -103, titulo: 'Lista - Almoço de Domingo' } as Template,
-            { id: -104, titulo: 'Lista - Semana Saudável' } as Template,
-            { id: -105, titulo: 'Lista - Café da Manhã Reforçado' } as Template,
-            { id: -106, titulo: 'Lista - Compras do Mês' } as Template,
-            { id: -107, titulo: 'Lista - Jantar Romântico' } as Template,
-            { id: -108, titulo: 'Lista - Lanche das Crianças' } as Template,
-        ];
-
-        // se vier vazio do backend, usa só mocks
-        if (templates.length === 0) {
-            return mocks;
-        }
-
-        // se vier poucos, completa com alguns mocks para testar visual
-        if (templates.length < 8) {
-            const faltam = 8 - templates.length;
-            return [...templates, ...mocks.slice(0, faltam)];
-        }
-
-        // se já tiver bastante template real, usa só os reais
-        return templates;
+        return templates.filter((t) => t.status !== 'FINALIZADA');
     }, [templates]);
 
     const carregouRef = useRef(false);
@@ -118,16 +100,14 @@ export default function CreateListaPage() {
         carregouRef.current = true;
         const loadInicial = async () => {
             try {
-
                 setLoadingPats(true);
                 const pats = await patologiasService.getPatologiasDoUsuario(userIdTemp);
                 setPatologias(pats);
                 setLoadingPats(false);
 
                 const tpls = await listaViewService.listarTemplates(userIdTemp);
+
                 setTemplates(tpls);
-
-
             } catch (e) {
                 showError('Erro ao carregar dados iniciais da lista de compras');
                 console.error('Erro ao carregar dados iniciais da lista de compras', e);
@@ -149,10 +129,10 @@ export default function CreateListaPage() {
                 if (!ativo) return;
 
                 setOpcoesAutocomplete(
-                    produtos.map(p => ({
+                    produtos.map((p) => ({
                         label: p.nome,
                         value: p.id,
-                    }))
+                    })),
                 );
             } catch (e) {
                 showError('Erro ao buscar produtos para autocomplete.');
@@ -167,7 +147,7 @@ export default function CreateListaPage() {
 
     const ensureProduto = (nomeDigitado: string): Produto => {
         const nn = normalize(nomeDigitado);
-        const existente = catalogo.find(p => p.nome_normalizado === nn);
+        const existente = catalogo.find((p) => p.nome_normalizado === nn);
         if (existente) return existente;
 
         const novo: Produto = {
@@ -177,13 +157,13 @@ export default function CreateListaPage() {
             ativo: true,
             is_personalizado: true,
         };
-        setCatalogo(prev => [novo, ...prev]);
+        setCatalogo((prev) => [novo, ...prev]);
         return novo;
     };
 
     const addProdutoNaLista = (produto: Produto, qtd = 1) => {
-        setListaItens(prev => {
-            const idx = prev.findIndex(li => li.produto.id === produto.id);
+        setListaItens((prev) => {
+            const idx = prev.findIndex((li) => li.produto.id === produto.id);
             if (idx >= 0) {
                 const clone = [...prev];
                 clone[idx] = { ...clone[idx], qtd: clone[idx].qtd + qtd };
@@ -191,10 +171,7 @@ export default function CreateListaPage() {
             }
             return [...prev, { produto, qtd }];
         });
-
     };
-
-
 
     const handleFinalizarLista = async () => {
         if (saving) return;
@@ -210,8 +187,7 @@ export default function CreateListaPage() {
             return;
         }
 
-        // ⚠️ Por enquanto só envia itens com ID > 0 (existem no backend)
-        const itensValidos = listaItens.filter(li => li.produto.id > 0);
+        const itensValidos = listaItens.filter((li) => li.produto.id > 0);
 
         if (itensValidos.length === 0) {
             showError('Não há itens válidos para salvar (apenas personalizados locais).');
@@ -220,7 +196,7 @@ export default function CreateListaPage() {
 
         const payload = {
             titulo,
-            itens: itensValidos.map(li => ({
+            itens: itensValidos.map((li) => ({
                 produtoId: li.produto.id,
                 qtd: li.qtd,
             })),
@@ -229,17 +205,17 @@ export default function CreateListaPage() {
         try {
             setSaving(true);
 
-            const listaCriada = await listaComprasService.criarLista(payload, userIdTemp);
-            resetState()
+            await listaComprasService.criarLista(payload, userIdTemp);
+            resetState();
             setSuccessOpen(true);
-
         } catch (e) {
-            showError('Erro ao carregar dados iniciais da lista de compras. Tente novamente.');
+            showError(
+                'Erro ao carregar dados iniciais da lista de compras. Tente novamente.',
+            );
         } finally {
             setSaving(false);
         }
     };
-
 
     const handleAdicionar = async () => {
         const texto = (produtoSelecionado?.nome || inputValue).trim();
@@ -252,53 +228,49 @@ export default function CreateListaPage() {
 
         if (p.id > 0) {
             try {
-                const substituiveis = await produtoService.listarSubstituiveis(p.id, userIdTemp);
+                const substituiveis = await produtoService.listarSubstituiveis(
+                    p.id,
+                    userIdTemp,
+                );
 
                 if (substituiveis.length > 0) {
-                    // Guarda no estado de riscos
-                    setRiscosPorProduto(prev => ({
+                    setRiscosPorProduto((prev) => ({
                         ...prev,
                         [p.id]: substituiveis,
                     }));
 
-                    // Monta a mensagem global de alerta
-                    const nomesPats = Array.from(new Set(substituiveis.map(s => s.patologia.nome))).join(', ');
+                    const nomesPats = Array.from(
+                        new Set(substituiveis.map((s) => s.patologia.nome)),
+                    ).join(', ');
                     setWarnMsg(
                         `Atenção: "${p.nome}" pode não ser adequado para: ${nomesPats}. ` +
-                        `Veja as sugestões na lista.`
+                        `Veja as sugestões na lista.`,
                     );
                     setWarnOpen(true);
                 }
             } catch (e) {
                 console.error('Erro ao buscar substituíveis para produto', p, e);
-                // pode ou não mostrar erro pro usuário, fica a seu critério
             }
         }
-
     };
 
     const substituirProdutoNaLista = (produtoId: number, sugestao: Produto) => {
-        setListaItens(prev =>
-            prev.map(li =>
-                li.produto.id === produtoId
-                    ? { ...li, produto: sugestao }
-                    : li
-            )
+        setListaItens((prev) =>
+            prev.map((li) =>
+                li.produto.id === produtoId ? { ...li, produto: sugestao } : li,
+            ),
         );
 
-        setCatalogo(prev => {
-            const exists = prev.some(p => p.id === sugestao.id);
+        setCatalogo((prev) => {
+            const exists = prev.some((p) => p.id === sugestao.id);
             return exists ? prev : [sugestao, ...prev];
         });
 
-        setRiscosPorProduto(prev => {
+        setRiscosPorProduto((prev) => {
             const clone = { ...prev };
             delete clone[produtoId];
             return clone;
         });
-
-        // opcional: checar riscos do produto sugerido
-        // checarRiscos(sugestao);
     };
 
     const copiarTemplate = (tpl: Template) => {
@@ -306,25 +278,22 @@ export default function CreateListaPage() {
             showError('Este modelo não possui itens cadastrados.');
             return;
         }
-        setListaItens(prev => {
-
+        setListaItens((prev) => {
             const map = new Map<number, { produto: Produto; qtd: number }>();
 
-            prev.forEach(li => {
+            prev.forEach((li) => {
                 map.set(li.produto.id, { produto: li.produto, qtd: li.qtd });
             });
 
-            // 2) Adiciona (ou soma) os itens do template
-            tpl.itens.forEach(it => {
+            tpl.itens.forEach((it) => {
                 const pApi = it.produto;
 
-                // Converte o produto do backend para o tipo Produto usado no front
                 const produto: Produto = {
                     id: pApi.id,
                     nome: pApi.nome,
                     nome_normalizado:
-                        pApi.nomeNormalizado?.toLowerCase().trim()
-                        ?? pApi.nome.toLowerCase().trim(),
+                        pApi.nomeNormalizado?.toLowerCase().trim() ??
+                        pApi.nome.toLowerCase().trim(),
                     ativo: pApi.ativo ?? true,
                     is_personalizado: pApi.isPersonalizado ?? false,
                 };
@@ -333,7 +302,6 @@ export default function CreateListaPage() {
                 const existente = map.get(produto.id);
 
                 if (existente) {
-                    // Se já existe na lista, soma as quantidades
                     map.set(produto.id, {
                         produto: existente.produto,
                         qtd: existente.qtd + qtdTemplate,
@@ -343,9 +311,8 @@ export default function CreateListaPage() {
                 }
             });
 
-            // 3) Atualiza também o catálogo pra garantir que todos produtos do template estão lá
-            setCatalogo(old => {
-                const ids = new Set(old.map(p => p.id));
+            setCatalogo((old) => {
+                const ids = new Set(old.map((p) => p.id));
                 const extras: Produto[] = [];
                 map.forEach(({ produto }) => {
                     if (!ids.has(produto.id)) {
@@ -355,7 +322,6 @@ export default function CreateListaPage() {
                 return [...old, ...extras];
             });
 
-            // 4) Retorna a nova lista de itens (ListaItemVM[])
             return Array.from(map.values());
         });
     };
@@ -372,18 +338,26 @@ export default function CreateListaPage() {
         setProdutoSelecionado(null);
         setInputValue('');
         setOpcoesAutocomplete([]);
-    }
+    };
 
     const incQtd = (id: number) =>
-        setListaItens(prev => prev.map(li => (li.produto.id === id ? { ...li, qtd: li.qtd + 1 } : li)));
+        setListaItens((prev) =>
+            prev.map((li) =>
+                li.produto.id === id ? { ...li, qtd: li.qtd + 1 } : li,
+            ),
+        );
 
     const decQtd = (id: number) =>
-        setListaItens(prev =>
-            prev.map(li => (li.produto.id === id ? { ...li, qtd: Math.max(1, li.qtd - 1) } : li))
+        setListaItens((prev) =>
+            prev.map((li) =>
+                li.produto.id === id
+                    ? { ...li, qtd: Math.max(1, li.qtd - 1) }
+                    : li,
+            ),
         );
 
     const remover = (id: number) =>
-        setListaItens(prev => prev.filter(li => li.produto.id !== id));
+        setListaItens((prev) => prev.filter((li) => li.produto.id !== id));
 
     return (
         <Box sx={{ maxWidth: 900, mx: 'auto' }}>
@@ -398,7 +372,7 @@ export default function CreateListaPage() {
                     variant="outlined"
                     size="small"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate("/lista-compras", { replace: true })}
+                    onClick={() => navigate('/lista-compras', { replace: true })}
                     sx={{ textTransform: 'none', height: 40 }}
                 >
                     Voltar
@@ -408,7 +382,7 @@ export default function CreateListaPage() {
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 justifyContent="space-between"
-                alignItems="flex-start" // <-- garante alinhamento pelo topo
+                alignItems="flex-start"
                 sx={{ mb: 2 }}
             >
                 <Box sx={{ flex: 1 }}>
@@ -431,7 +405,8 @@ export default function CreateListaPage() {
                         borderRadius: 2,
                         px: 3,
                         height: 42,
-                        mt: { xs: 2, sm: 0 }, // em mobile desce, em desktop alinha pelo topo
+                        mt: { xs: 2, sm: 0 },
+                        width: { xs: '100%', sm: 'auto' },
                     }}
                 >
                     Minhas listas
@@ -447,14 +422,19 @@ export default function CreateListaPage() {
                 onChange={(e) => setTituloLista(e.target.value)}
             />
             {/* Patologias do usuário */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 3 }}>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ py: 3 }}
+            >
                 {patologias.length === 0 ? (
                     <Typography color="text.secondary">
                         Nenhuma condição carregada ainda.
                     </Typography>
                 ) : (
                     <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
-                        {patologias.map(p => (
+                        {patologias.map((p) => (
                             <Chip
                                 key={p.id}
                                 icon={<WarningAmberIcon />}
@@ -468,9 +448,18 @@ export default function CreateListaPage() {
                                     fontWeight: 500,
                                     color: theme.palette.warning.dark,
                                     backdropFilter: 'blur(10px)',
-                                    backgroundColor: alpha(theme.palette.warning.light, 0.42),
-                                    borderColor: alpha(theme.palette.warning.dark, 0.45),
-                                    boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.08)}`,
+                                    backgroundColor: alpha(
+                                        theme.palette.warning.light,
+                                        0.42,
+                                    ),
+                                    borderColor: alpha(
+                                        theme.palette.warning.dark,
+                                        0.45,
+                                    ),
+                                    boxShadow: `0 2px 6px ${alpha(
+                                        theme.palette.common.black,
+                                        0.08,
+                                    )}`,
                                     '& .MuiChip-icon': {
                                         color: theme.palette.warning.dark,
                                         fontSize: '1.3rem',
@@ -483,7 +472,7 @@ export default function CreateListaPage() {
                 )}
             </Stack>
 
-            {/* Templates + Adicionar itens + Lista, tudo dentro do mesmo Paper */}
+            {/* Templates + Adicionar itens + Lista */}
             <Paper
                 sx={{
                     mb: 3,
@@ -493,8 +482,6 @@ export default function CreateListaPage() {
                     backgroundColor: '#ffffff',
                 }}
             >
-
-
                 <Stack spacing={2}>
                     {/* Modelos rápidos */}
                     <Box>
@@ -518,27 +505,27 @@ export default function CreateListaPage() {
                         </Stack>
 
                         <Stack
-                            direction="row"
-                            alignItems="flex-start"
+                            direction={{ xs: 'column', sm: 'row' }}
+                            alignItems={{ xs: 'stretch', sm: 'flex-start' }}
                             justifyContent="space-between"
                             spacing={2}
                         >
-
                             <Box
-                                sx={(theme) => ({
+                                sx={{
                                     flex: 1,
-                                    maxWidth: '70%',
+                                    width: '100%',
+                                    ...(isMobile ? {} : { maxWidth: '70%' }),
                                     display: 'flex',
                                     flexDirection: 'row',
-                                    alignItems: 'center', // 🔥 nada de stretch aqui
+                                    alignItems: 'center',
                                     overflowX: 'auto',
                                     gap: 1.25,
                                     py: 1.25,
                                     px: 1.25,
                                     borderRadius: 1,
                                     border: '1px solid',
-                                    borderColor: theme.palette.divider,
-                                    backgroundColor: theme.palette.background.paper,
+                                    borderColor: 'divider',
+                                    backgroundColor: 'background.paper',
                                     boxShadow: '0 1px 3px rgba(15, 23, 42, 0.08)',
                                     '&::-webkit-scrollbar': {
                                         height: 6,
@@ -547,14 +534,14 @@ export default function CreateListaPage() {
                                         borderRadius: 999,
                                         backgroundColor: 'rgba(0,0,0,0.20)',
                                     },
-                                })}
+                                }}
                             >
-                                {templates.map((t) => (
+                                {templatesForDisplay.map((t) => (
                                     <Card
                                         key={t.id}
                                         elevation={0}
                                         sx={{
-                                            flex: '0 0 210px',   // 🔹 um pouco mais estreito e uniforme
+                                            flex: '0 0 210px',
                                             maxWidth: 210,
                                             borderRadius: 2,
                                             border: '1px solid',
@@ -575,10 +562,14 @@ export default function CreateListaPage() {
                                             onClick={() => copiarTemplate(t)}
                                             sx={{
                                                 px: 1.25,
-                                                py: 0.75,              // 🔹 mais compacto
+                                                py: 0.75,
                                             }}
                                         >
-                                            <Stack direction="row" spacing={1.25} alignItems="center">
+                                            <Stack
+                                                direction="row"
+                                                spacing={1.25}
+                                                alignItems="center"
+                                            >
                                                 <Box
                                                     sx={{
                                                         width: 26,
@@ -588,7 +579,7 @@ export default function CreateListaPage() {
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        flexShrink: 0,        // 🔥 nunca deforma
+                                                        flexShrink: 0,
                                                     }}
                                                 >
                                                     <ContentCopyIcon
@@ -622,6 +613,8 @@ export default function CreateListaPage() {
                                     height: 40,
                                     whiteSpace: 'nowrap',
                                     flexShrink: 0,
+                                    width: { xs: '100%', sm: 'auto' },
+                                    alignSelf: { xs: 'stretch', sm: 'center' },
                                 }}
                                 onClick={handleLimparLista}
                                 disabled={saving}
@@ -648,7 +641,8 @@ export default function CreateListaPage() {
                                         return;
                                     }
 
-                                    let p = catalogo.find(c => c.id === opt.value) || null;
+                                    let p =
+                                        catalogo.find((c) => c.id === opt.value) || null;
 
                                     if (!p) {
                                         p = {
@@ -658,7 +652,7 @@ export default function CreateListaPage() {
                                             ativo: true,
                                             is_personalizado: false,
                                         };
-                                        setCatalogo(prev => [p!, ...prev]);
+                                        setCatalogo((prev) => [p!, ...prev]);
                                     }
 
                                     setProdutoSelecionado(p);
@@ -708,7 +702,8 @@ export default function CreateListaPage() {
                         >
                             {listaItens.length === 0 && (
                                 <Typography color="text.secondary" sx={{ p: 2 }}>
-                                    Sua lista está vazia. Adicione itens acima ou use um modelo rápido.
+                                    Sua lista está vazia. Adicione itens acima ou use um
+                                    modelo rápido.
                                 </Typography>
                             )}
 
@@ -717,79 +712,103 @@ export default function CreateListaPage() {
                                 const hasRisk = riscos.length > 0;
                                 const primeiraSugestao = riscos[0]?.produtoSugestao;
 
+                                const actionButtons = (
+                                    <Stack
+                                        direction="row"
+                                        spacing={0.5}
+                                        alignItems="center"
+                                    >
+                                        {hasRisk && primeiraSugestao && (
+                                            <Tooltip
+                                                title={`Trocar por ${primeiraSugestao.nome}`}
+                                            >
+                                                <IconButton
+                                                    size="small"
+                                                    color="warning"
+                                                    onClick={() =>
+                                                        substituirProdutoNaLista(
+                                                            li.produto.id,
+                                                            {
+                                                                id: primeiraSugestao.id,
+                                                                nome: primeiraSugestao.nome,
+                                                                nome_normalizado:
+                                                                    primeiraSugestao.nomeNormalizado
+                                                                        ?.toLowerCase()
+                                                                        .trim() ??
+                                                                    primeiraSugestao.nome
+                                                                        .toLowerCase()
+                                                                        .trim(),
+                                                                ativo:
+                                                                    primeiraSugestao.ativo ??
+                                                                    true,
+                                                                is_personalizado:
+                                                                    primeiraSugestao.isPersonalizado ??
+                                                                    false,
+                                                            },
+                                                        )
+                                                    }
+                                                >
+                                                    <RecommendIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => decQtd(li.produto.id)}
+                                        >
+                                            <RemoveIcon fontSize="small" />
+                                        </IconButton>
+
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                minWidth: 18,
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {li.qtd}
+                                        </Typography>
+
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => incQtd(li.produto.id)}
+                                        >
+                                            <AddIcon fontSize="small" />
+                                        </IconButton>
+
+                                        <IconButton
+                                            size="small"
+                                            color="error"
+                                            onClick={() => remover(li.produto.id)}
+                                        >
+                                            <DeleteOutlineIcon fontSize="small" />
+                                        </IconButton>
+                                    </Stack>
+                                );
+
+                                // @ts-ignore
                                 return (
                                     <ListItem
                                         key={li.produto.id}
                                         sx={(theme) => ({
                                             px: 2,
-                                            height: 60,
-                                            alignItems: 'center',
+                                            py: isMobile ? 1.5 : 1,
+                                            minHeight: isMobile ? undefined : 60,
+                                            alignItems: isMobile ? 'flex-start' : 'center',
+                                            flexDirection: isMobile ? 'column' : 'row',
                                             borderBottom:
                                                 idx < listaItens.length - 1
                                                     ? `1px solid ${theme.palette.divider}`
                                                     : 'none',
                                             ...(hasRisk && {
                                                 borderLeft: `3px solid ${theme.palette.warning.main}`,
-                                                backgroundColor: theme.palette.action.hover,
+                                                backgroundColor:
+                                                theme.palette.action.hover,
                                             }),
+                                            gap: isMobile ? 0.5 : 0,
                                         })}
-                                        secondaryAction={
-                                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                                {/* 🔸 NOVO: botão de trocar pelo sugerido, se tiver risco */}
-                                                {hasRisk && primeiraSugestao && (
-                                                    <Tooltip title={`Trocar por ${primeiraSugestao.nome}`}>
-                                                        <IconButton
-                                                            size="small"
-                                                            color="warning"
-                                                            onClick={() =>
-                                                                substituirProdutoNaLista(li.produto.id, {
-                                                                    id: primeiraSugestao.id,
-                                                                    nome: primeiraSugestao.nome,
-                                                                    nome_normalizado:
-                                                                        primeiraSugestao.nomeNormalizado?.toLowerCase().trim() ??
-                                                                        primeiraSugestao.nome.toLowerCase().trim(),
-                                                                    ativo: primeiraSugestao.ativo ?? true,
-                                                                    is_personalizado:
-                                                                        primeiraSugestao.isPersonalizado ?? false,
-                                                                })
-                                                            }
-                                                        >
-                                                            <RecommendIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                )}
-
-                                                {/* 🔹 TUDO ABAIXO JÁ EXISTIA IGUALZINHO */}
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => decQtd(li.produto.id)}
-                                                >
-                                                    <RemoveIcon fontSize="small" />
-                                                </IconButton>
-
-                                                <Typography
-                                                    variant="body2"
-                                                    sx={{ minWidth: 18, textAlign: 'center' }}
-                                                >
-                                                    {li.qtd}
-                                                </Typography>
-
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => incQtd(li.produto.id)}
-                                                >
-                                                    <AddIcon fontSize="small" />
-                                                </IconButton>
-
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => remover(li.produto.id)}
-                                                >
-                                                    <DeleteOutlineIcon fontSize="small" />
-                                                </IconButton>
-                                            </Stack>
-                                        }
+                                        secondaryAction={!isMobile ? actionButtons : undefined}
                                     >
                                         {hasRisk ? (
                                             <ListItemIcon sx={{ minWidth: 30 }}>
@@ -800,14 +819,25 @@ export default function CreateListaPage() {
                                                                 Pode não ser adequado para:
                                                             </Typography>
                                                             {riscos.map((r) => (
-                                                                <Box key={r.patologia.id}>
-                                                                    • {r.patologia.nome} — sugerido: <b>{r.produtoSugestao.nome}</b>
+                                                                <Box
+                                                                    key={r.patologia.id}
+                                                                >
+                                                                    • {r.patologia.nome} —
+                                                                    sugerido:{' '}
+                                                                    <b>
+                                                                        {
+                                                                            r.produtoSugestao.nome
+                                                                        }
+                                                                    </b>
                                                                 </Box>
                                                             ))}
                                                         </Box>
                                                     }
                                                 >
-                                                    <WarningAmberIcon color="warning" fontSize="small" />
+                                                    <WarningAmberIcon
+                                                        color="warning"
+                                                        fontSize="small"
+                                                    />
                                                 </Tooltip>
                                             </ListItemIcon>
                                         ) : (
@@ -816,7 +846,17 @@ export default function CreateListaPage() {
 
                                         <ListItemText
                                             primary={
-                                                <Stack direction="row" spacing={1} alignItems="center">
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={1}
+                                                    alignItems="center"
+                                                    sx={{
+                                                        flexWrap: isMobile
+                                                            ? 'wrap'
+                                                            : 'nowrap',
+                                                        rowGap: 0.5,
+                                                    }}
+                                                >
                                                     <Typography fontWeight={600}>
                                                         {li.produto.nome}
                                                     </Typography>
@@ -833,7 +873,8 @@ export default function CreateListaPage() {
                                                         <Typography
                                                             variant="caption"
                                                             sx={(theme) => ({
-                                                                color: theme.palette.warning.dark,
+                                                                color: theme.palette.warning
+                                                                    .dark,
                                                             })}
                                                         >
                                                             · restrição
@@ -842,6 +883,20 @@ export default function CreateListaPage() {
                                                 </Stack>
                                             }
                                         />
+
+                                        {/* Em mobile, os botões vão para uma linha embaixo */}
+                                        {isMobile && (
+                                            <Box
+                                                sx={{
+                                                    mt: 0.75,
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    justifyContent: 'flex-end',
+                                                }}
+                                            >
+                                                {actionButtons}
+                                            </Box>
+                                        )}
                                     </ListItem>
                                 );
                             })}
@@ -850,13 +905,21 @@ export default function CreateListaPage() {
                 </Stack>
             </Paper>
 
-            <Stack direction="row" justifyContent={'end'} spacing={1} sx={{ mt: 3 }}>
+            <Stack
+                direction={{ xs: 'column-reverse', sm: 'row' }}
+                justifyContent="flex-end"
+                spacing={1}
+                sx={{ mt: 3 }}
+            >
                 <Button
                     variant="outlined"
                     color="error"
                     onClick={() => navigate('/lista-compras')}
                     disabled={saving}
-                    sx={{ textTransform: 'none' }}
+                    sx={{
+                        textTransform: 'none',
+                        width: { xs: '100%', sm: 'auto' },
+                    }}
                 >
                     Cancelar
                 </Button>
@@ -865,6 +928,7 @@ export default function CreateListaPage() {
                     onClick={handleFinalizarLista}
                     startIcon={<CheckCircleIcon />}
                     disabled={saving || listaItens.length === 0}
+                    sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                     {saving ? 'Salvando...' : 'Finalizar lista'}
                 </Button>

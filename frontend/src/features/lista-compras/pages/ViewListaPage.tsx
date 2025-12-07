@@ -256,7 +256,13 @@ export default function ViewListaPage() {
                 </Button>
             </Stack>
 
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
+            {/* Header título + botão – responsivo */}
+            <Stack
+                direction={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                spacing={2}
+            >
                 <Box>
                     <Typography variant="h4" fontWeight={800}>
                         Minhas listas
@@ -269,7 +275,12 @@ export default function ViewListaPage() {
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
-                    sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2 }}
+                    sx={{
+                        textTransform: "none",
+                        fontWeight: 700,
+                        borderRadius: 2,
+                        width: { xs: "100%", sm: "auto" },   // full no mobile, compacto no desktop
+                    }}
                     onClick={() => navigate("/lista-compras/nova")}
                 >
                     Nova lista
@@ -442,8 +453,6 @@ export default function ViewListaPage() {
                                     });
                                     handleFecharModal();
                                     await carregarListas();           // recarrega dados
-                                    // opcional: já ajustar filtro pra "abertas"
-                                    // setFiltroStatus("abertas");
                                 } catch (e: any) {
                                     console.error(e);
                                     const msg =
