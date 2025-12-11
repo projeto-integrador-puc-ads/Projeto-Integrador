@@ -43,7 +43,7 @@ interface SensorsTabProps {
 export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers }) => {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [config, setConfig] = useState<SensorConfig>({
-    geofence: { enabled: false, centerLat: 0, centerLon: 0, radiusMeters: 100 },
+    geofence: { enabled: false, centerLat: 0, centerLon: 0, radiusMeters: 0 },
     fall: { enabled: true, sensitivity: 'MEDIUM' },
     immobility: { enabled: true, timeLimitMs: 86400 * 1000 },
   });
@@ -57,6 +57,31 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
     severity: 'success',
   });
 
+  // Sempre obtém a localização atual do navegador (ignora o banco)
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setMapCenter({ lat: latitude, lng: longitude });
+          setConfig((prev) => ({
+            ...prev,
+            geofence: {
+              ...prev.geofence,
+              centerLat: latitude,
+              centerLon: longitude,
+            },
+          }));
+        },
+        (err) => {
+          console.warn('⚠️ Não foi possível obter localização atual:', err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  }, []);
+
+  // Carrega apenas as outras configs do backend (sem usar lat/lon)
   useEffect(() => {
     const loadConfig = async () => {
       if (!selectedUser) return;
@@ -64,19 +89,23 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
         setIsLoadingConfig(true);
         const userConfig = await sensorConfigApi.obter(selectedUser.id);
 
-        // Sempre usar valores fixos para geofence
-        const geofence = {
-          enabled: userConfig.geofence.enabled, // apenas o enabled vem do banco
-          centerLat: -16.680882,               // valor fixo
-          centerLon: -49.2532691,              // valor fixo
-          radiusMeters: 0,                      // valor fixo
-        };
-
-        setConfig({ ...userConfig, geofence });
-        setMapCenter({ lat: geofence.centerLat, lng: geofence.centerLon });
+        setConfig((prev) => ({
+          ...userConfig,
+          geofence: {
+            ...prev.geofence,
+            enabled: userConfig.geofence.enabled,
+            centerLat: prev.geofence.centerLat,
+            centerLon: prev.geofence.centerLon,
+            radiusMeters: prev.geofence.radiusMeters,
+          },
+        }));
       } catch (err) {
         console.error(err);
-        setToast({ open: true, message: 'Não foi possível carregar a configuração do usuário', severity: 'error' });
+        setToast({
+          open: true,
+          message: 'Não foi possível carregar a configuração do usuário',
+          severity: 'error',
+        });
       } finally {
         setIsLoadingConfig(false);
       }
@@ -123,6 +152,10 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
     gap: '16px',
     marginBottom: '16px',
   };
+
+  // Exibe conversão de minutos para horas
+  const minutes = Math.round(config.immobility.timeLimitMs / 60000);
+  const hours = (minutes / 60).toFixed(1);
 
   return (
     <div style={{ padding: '24px', background: '#f5f5f5' }}>
@@ -215,11 +248,11 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
                   centerLat={mapCenter.lat}
                   centerLon={mapCenter.lng}
                   radiusMeters={config.geofence.radiusMeters}
-                  onLocationSelect={(lat, lon) => {
+                  onChange={(lat, lon, radius) => {
                     setMapCenter({ lat, lng: lon });
                     setConfig({
                       ...config,
-                      geofence: { ...config.geofence, centerLat: lat, centerLon: lon },
+                      geofence: { ...config.geofence, centerLat: lat, centerLon: lon, radiusMeters: radius },
                     });
                   }}
                 />
@@ -227,11 +260,20 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
                 <TextField
                   label="Raio (metros)"
                   type="number"
-                  value={config.geofence.radiusMeters}
-                  onChange={(e) =>
-                    setConfig({ ...config, geofence: { ...config.geofence, radiusMeters: +e.target.value } })
-                  }
+                  value={config.geofence.radiusMeters || ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value === '' ? 0 : +e.target.value;
+                    setConfig({
+                      ...config,
+                      geofence: { ...config.geofence, radiusMeters: newValue },
+                    });
+                  }}
                   fullWidth
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*',
+                    style: { textAlign: 'left' },
+                  }}
                   style={{ marginTop: '16px' }}
                 />
               </>
@@ -248,32 +290,13 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
               <Typography>Ativar detecção de queda</Typography>
               <Switch
                 checked={config.fall.enabled}
-                onChange={(e) => setConfig({ ...config, fall: { ...config.fall, enabled: e.target.checked } })}
+                onChange={(e) =>
+                  setConfig({ ...config, fall: { ...config.fall, enabled: e.target.checked } })
+                }
                 disabled={isDisabled}
                 sx={{ '& .Mui-checked': { color: '#3178c8' } }}
               />
             </div>
-            {config.fall.enabled && (
-              <div>
-                <Typography>Sensibilidade</Typography>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  {['LOW', 'MEDIUM', 'HIGH'].map((level) => (
-                    <label key={level} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <input
-                        type="radio"
-                        value={level}
-                        checked={config.fall.sensitivity === level}
-                        onChange={(e) =>
-                          setConfig({ ...config, fall: { ...config.fall, sensitivity: e.target.value as any } })
-                        }
-                        disabled={isDisabled}
-                      />
-                      {level}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Immobility Card */}
@@ -287,7 +310,10 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
               <Switch
                 checked={config.immobility.enabled}
                 onChange={(e) =>
-                  setConfig({ ...config, immobility: { ...config.immobility, enabled: e.target.checked } })
+                  setConfig({
+                    ...config,
+                    immobility: { ...config.immobility, enabled: e.target.checked },
+                  })
                 }
                 disabled={isDisabled}
                 sx={{ '& .Mui-checked': { color: '#3178c8' } }}
@@ -295,16 +321,17 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
             </div>
             {config.immobility.enabled && (
               <TextField
-                label="Tempo Limite (minutos)"
+                label={`Tempo Limite (minutos) — equivale a ${hours} h`}
                 type="number"
                 fullWidth
-                value={Math.round(config.immobility.timeLimitMs / 60000)}
-                onChange={(e) =>
+                value={minutes || ''}
+                onChange={(e) => {
+                  const newValue = e.target.value === '' ? 0 : +e.target.value;
                   setConfig({
                     ...config,
-                    immobility: { ...config.immobility, timeLimitMs: +e.target.value * 60000 },
-                  })
-                }
+                    immobility: { ...config.immobility, timeLimitMs: newValue * 60000 },
+                  });
+                }}
               />
             )}
           </div>
@@ -323,7 +350,6 @@ export const SensorsTab: React.FC<SensorsTabProps> = ({ users, isLoadingUsers })
         </>
       )}
 
-      {/* Snackbar Toast */}
       <Snackbar
         open={toast.open}
         autoHideDuration={4000}

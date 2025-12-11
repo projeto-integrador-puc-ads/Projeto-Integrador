@@ -14,10 +14,7 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
     private static final double HYSTERESIS_METERS = 5.0;
     private static final double MAX_SPEED_MPS = 10.0;
     private static final int MOVING_AVERAGE_SIZE = 5;
-    private static final int RADAR_RADIUS = 10; // raio do radar em caracteres
-
-    // tempo mínimo de warm-up (ms) antes de começar a detectar
-    private static final long WARM_UP_TIME_MS = 5000; // 5 segundos
+    private static final int RADAR_RADIUS = 10;
 
     private final double centerLat;
     private final double centerLon;
@@ -25,14 +22,12 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
     private final boolean enabled;
 
     private final Queue<SensorDTO> lastPositions = new LinkedList<>();
-    private final long startTime;
 
     public GeofenceRadarCircularDetector(UserConfig.Geofence config) {
         this.centerLat = (config != null) ? config.getCenterLat() : 0.0;
         this.centerLon = (config != null) ? config.getCenterLon() : 0.0;
         this.radiusMeters = (config != null) ? config.getRadiusMeters() : 100.0;
         this.enabled = config != null && config.isEnabled();
-        this.startTime = System.currentTimeMillis();
     }
 
     @Override
@@ -40,18 +35,9 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
         if (!enabled || current == null)
             return false;
 
-        // --- período de aquecimento (warm-up) ---
-        long elapsed = System.currentTimeMillis() - startTime;
-        if (elapsed < WARM_UP_TIME_MS) {
-            long remaining = (WARM_UP_TIME_MS - elapsed) / 1000;
-            System.out.printf("🕒 Aguardando warm-up... (%d s restantes)%n", remaining);
-            return false;
-        }
-
         if (previous != null && !isValidMovement(current, previous))
             return false;
 
-        // média móvel das últimas posições
         lastPositions.add(current);
         if (lastPositions.size() > MOVING_AVERAGE_SIZE) lastPositions.poll();
         double avgLat = lastPositions.stream().mapToDouble(SensorDTO::getLatitude).average().orElse(current.getLatitude());
@@ -92,17 +78,13 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
         return distance / timeDiff;
     }
 
-    /**
-     * Desenha radar circular ASCII com cores, sem usar char[][] para cores.
-     */
     private void drawRadar(double distance, double angle) {
-        System.out.print("\033[H\033[2J"); // limpa tela
+        System.out.print("\033[H\033[2J");
         System.out.flush();
 
         int size = RADAR_RADIUS * 2 + 1;
         int center = RADAR_RADIUS;
 
-        // calcula posição do usuário no radar
         double ratio = Math.min(1.0, distance / radiusMeters);
         int userX = center + (int) Math.round(ratio * RADAR_RADIUS * Math.cos(angle));
         int userY = center + (int) Math.round(ratio * RADAR_RADIUS * Math.sin(angle));
@@ -111,16 +93,11 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
             StringBuilder line = new StringBuilder();
             for (int x = 0; x < size; x++) {
                 if (x == center && y == center) {
-                    line.append("O"); // centro
+                    line.append("O");
                 } else if (x == userX && y == userY) {
-                    // usuário colorido
-                    if (distance <= radiusMeters) {
-                        line.append("\033[1;32m@\033[0m"); // verde
-                    } else {
-                        line.append("\033[1;31m@\033[0m"); // vermelho
-                    }
+                    line.append(distance <= radiusMeters ? "\033[1;32m@\033[0m" : "\033[1;31m@\033[0m");
                 } else {
-                    line.append("."); // ponto de fundo
+                    line.append(".");
                 }
             }
             System.out.println(line);

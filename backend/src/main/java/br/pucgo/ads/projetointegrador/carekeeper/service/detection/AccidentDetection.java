@@ -20,19 +20,30 @@ public class AccidentDetection {
 
     private final UserConfigurationCache userConfigurationCache;
 
-    // Mantém detectores por usuário (atualizados conforme configuração)
+    private static final long WARM_UP_TIME_MS = 5000; // 5 segundos de aquecimento global
+
+    // Detectores ativos por usuário
     private final Map<Long, List<AccidentDetector>> userDetectorsMap = new ConcurrentHashMap<>();
 
-    // Guarda a versão/hash da configuração atual para saber se precisa recriar
+    // Hash da configuração atual por usuário
     private final Map<Long, Integer> userConfigHashMap = new ConcurrentHashMap<>();
+
+    // Momento de início do monitoramento por usuário
+    private final Map<Long, Long> userStartTimestamps = new ConcurrentHashMap<>();
+
+    // Controle de log por usuário (para não repetir logs)
+    private final Set<Long> usersInWarmup = ConcurrentHashMap.newKeySet();
+
+    private boolean systemLoaded = false;
 
     public AccidentDetection(UserConfigurationCache userConfigurationCache) {
         this.userConfigurationCache = userConfigurationCache;
+        log.info("🚀 Inicializando sistema de detecção de acidentes...");
     }
 
     /**
      * Verifica acidentes para um usuário com base na leitura atual.
-     * Recria detectores automaticamente se a configuração foi atualizada.
+     * Controla o período de warm-up global e recria detectores se necessário.
      */
     public List<AccidentType> check(Long userId, SensorDTO current, SensorDTO previous) {
         if (userId == null || current == null) {
@@ -40,14 +51,24 @@ public class AccidentDetection {
             return Collections.emptyList();
         }
 
+        // Loga carregamento global apenas na primeira execução
+        if (!systemLoaded) {
+            log.info("⚙️ Carregando detectores ativos e configurações iniciais...");
+            systemLoaded = true;
+        }
+
+        // Verifica se o usuário está em warm-up
+        if (isInWarmUp(userId)) {
+            return Collections.emptyList();
+        }
+
         // Obtém configuração atualizada
         UserConfig config = userConfigurationCache.getConfigForUser(userId);
-        int currentConfigHash = config.hashCode(); // simples hash pra detectar mudanças
+        int currentConfigHash = config.hashCode();
 
-        // Verifica se precisa recriar detectores
+        // Recria detectores se a configuração mudou
         if (!userDetectorsMap.containsKey(userId)
                 || !Objects.equals(userConfigHashMap.get(userId), currentConfigHash)) {
-
             recreateDetectors(userId, config);
         }
 
@@ -71,6 +92,36 @@ public class AccidentDetection {
     }
 
     /**
+     * Controla o warm-up por usuário — impede a detecção até o tempo mínimo.
+     */
+    private boolean isInWarmUp(Long userId) {
+        long now = System.currentTimeMillis();
+
+        // Inicia o timer se for o primeiro acesso do usuário
+        if (!userStartTimestamps.containsKey(userId)) {
+            userStartTimestamps.put(userId, now);
+            usersInWarmup.add(userId);
+            log.info("🕒 Iniciando warm-up de {} ms para o usuário {}...", WARM_UP_TIME_MS, userId);
+            return true;
+        }
+
+        long elapsed = now - userStartTimestamps.get(userId);
+        if (elapsed < WARM_UP_TIME_MS) {
+            long remaining = (WARM_UP_TIME_MS - elapsed) / 1000;
+            log.debug("Usuário {} em warm-up... ({} s restantes)", userId, remaining);
+            return true;
+        }
+
+        // Conclui warm-up
+        if (usersInWarmup.contains(userId)) {
+            usersInWarmup.remove(userId);
+            log.info("✅ Warm-up concluído — detectores ativos para o usuário {}.", userId);
+        }
+
+        return false;
+    }
+
+    /**
      * Recria todos os detectores do usuário com base na configuração atual.
      */
     private void recreateDetectors(Long userId, UserConfig cfg) {
@@ -79,9 +130,9 @@ public class AccidentDetection {
         log.info("♻️ Recriando detectores do usuário {} com nova configuração...", userId);
 
         try {
-            // if (cfg.getFall() != null && cfg.getFall().isEnabled()) {
-            //     detectors.add(new FallDetector(cfg.getFall()));
-            // }
+            if (cfg.getFall() != null && cfg.getFall().isEnabled()) {
+                detectors.add(new FallDetector(cfg.getFall()));
+            }
 
             if (cfg.getImmobility() != null && cfg.getImmobility().isEnabled()) {
                 detectors.add(new ProlongedImmobilityDetector(cfg.getImmobility()));
@@ -93,8 +144,10 @@ public class AccidentDetection {
 
             userDetectorsMap.put(userId, detectors);
             userConfigHashMap.put(userId, cfg.hashCode());
+            userStartTimestamps.put(userId, System.currentTimeMillis());
+            usersInWarmup.add(userId);
 
-            log.info("✅ Detectores do usuário {} recriados: {}", userId,
+            log.info("✅ Detectores recriados para o usuário {}: {}", userId,
                     detectors.stream().map(d -> d.getClass().getSimpleName()).toList());
         } catch (Exception e) {
             log.error("Erro ao recriar detectores do usuário {}", userId, e);
@@ -102,20 +155,23 @@ public class AccidentDetection {
     }
 
     /**
-     * Força a remoção e recriação dos detectores (usado após refresh manual).
+     * Força a atualização dos detectores de um usuário específico.
      */
     public void refreshUserDetectors(Long userId) {
-        userConfigurationCache.refreshConfig(userId); // recarrega config do DB
+        userConfigurationCache.refreshConfig(userId);
         UserConfig newConfig = userConfigurationCache.getConfigForUser(userId);
         recreateDetectors(userId, newConfig);
     }
 
     /**
-     * Limpa todos os detectores de todos os usuários (caso queira reinicializar tudo).
+     * Limpa todos os detectores e configurações de warm-up.
      */
     public void clearAll() {
         userDetectorsMap.clear();
         userConfigHashMap.clear();
-        log.warn("🧹 Todos os detectores foram limpos.");
+        userStartTimestamps.clear();
+        usersInWarmup.clear();
+        systemLoaded = false;
+        log.warn("🧹 Todos os detectores e temporizadores foram limpos.");
     }
 }

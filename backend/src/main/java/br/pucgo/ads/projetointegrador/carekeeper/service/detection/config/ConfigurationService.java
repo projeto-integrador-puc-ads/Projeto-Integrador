@@ -6,6 +6,8 @@ import br.pucgo.ads.projetointegrador.carekeeper.repository.ConfigurationReposit
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -63,5 +65,47 @@ public class ConfigurationService {
      */
     public boolean userConfigExists(Long userId) {
         return configurationRepository.existsByUserId(userId);
+    }
+
+    // ============================================================
+    //  MÉTODOS RELACIONADOS AO GERENCIAMENTO DE ALERTAS
+    // ============================================================
+
+    /**
+     * Lista todos os usuários e seus respectivos estados de alerta.
+     */
+    public List<ConfigurationEntity> listAllAlertStates() {
+        return configurationRepository.findAll();
+    }
+
+    /**
+     * Retorna o estado de alerta de um usuário específico.
+     */
+    public boolean getAlertStatus(Long userId) {
+        ConfigurationEntity entity = configurationRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado: " + userId));
+        return entity.isAlert();
+    }
+
+    /**
+     * Atualiza o estado de alerta de um usuário.
+     */
+    public ConfigurationEntity updateAlertStatus(Long userId, boolean alert) {
+        ConfigurationEntity entity = configurationRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado: " + userId));
+
+        entity.setAlert(alert);
+        return configurationRepository.save(entity);
+    }
+
+    /**
+     * Reseta o estado de alerta de todos os usuários para false.
+     */
+    public void resetAllAlerts() {
+        List<ConfigurationEntity> allConfigs = configurationRepository.findAll();
+        for (ConfigurationEntity config : allConfigs) {
+            config.setAlert(false);
+        }
+        configurationRepository.saveAll(allConfigs);
     }
 }

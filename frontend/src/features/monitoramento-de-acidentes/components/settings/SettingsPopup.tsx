@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { SensorsTab } from '@/features/monitoramento-de-acidentes/components/settings/SensorsTab';
 import { ContactsTab } from '@/features/monitoramento-de-acidentes/components/settings/ContactsTab';
+import { AlertsTab } from '@/features/monitoramento-de-acidentes/components/settings/AlertsTab';
 import { adminUsersApi, type AdminUser } from '@/features/admin/api/users.ts';
 
 interface SettingsPopupProps {
@@ -68,15 +69,23 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ open, onClose }) =
         }}
       >
         <DialogContent sx={{ p: 0 }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
             <Tabs
               value={tabIndex}
               onChange={handleChangeTab}
-              variant="fullWidth" // faz as tabs ocuparem toda a largura disponível
+              variant="fullWidth"
               aria-label="tabs de configurações"
             >
-              <Tab label="Sensores" sx={{ width: '50%' }} />
-              <Tab label="Gerenciar E-mails de Contato" sx={{ width: '50%' }} />
+              <Tab label="Sensores" sx={{ width: '33%' }} />
+              <Tab label="Gerenciar E-mails de Contato" sx={{ width: '33%' }} />
+              <Tab label="Gerenciar Estados de Alerta" sx={{ width: '33%' }} />
             </Tabs>
           </Box>
 
@@ -96,13 +105,13 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ open, onClose }) =
               <>
                 {tabIndex === 0 && <SensorsTab users={users} isLoadingUsers={isLoadingUsers} />}
                 {tabIndex === 1 && <ContactsTab users={users} isLoadingUsers={isLoadingUsers} />}
+                {tabIndex === 2 && <AlertsTab users={users} />}
               </>
             )}
           </Box>
         </DialogContent>
       </Dialog>
 
-      {/* Snackbar de erro */}
       <Snackbar
         open={!!error}
         autoHideDuration={4000}

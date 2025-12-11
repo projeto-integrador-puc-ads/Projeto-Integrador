@@ -1,18 +1,14 @@
 package br.pucgo.ads.projetointegrador.carekeeper.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/*  
-    * Representa a configuração personalizada de um usuário para o sistema CareKeeper.
-*/
+/**
+ * Representa a configuração personalizada de um usuário para o sistema CareKeeper.
+ * Inclui agora o campo "alert" para indicar se o usuário está em estado de alerta ativo.
+ */
 @Entity
 @Table(name = "user_configuration")
 @Data
@@ -30,8 +26,12 @@ public class ConfigurationEntity {
     @Column(name = "config_json", columnDefinition = "TEXT")
     private String configJson;
 
+    @Column(name = "alert", nullable = false)
+    private boolean alert = false; 
+
     public ConfigurationEntity(Long userId, String configJson) {
         this.userId = userId;
         this.configJson = configJson;
+        this.alert = false;
     }
 }
