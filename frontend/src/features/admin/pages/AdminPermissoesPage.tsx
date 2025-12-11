@@ -23,7 +23,6 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -50,6 +49,8 @@ export default function AdminPermissoesPage() {
     moduleId: '',
   });
   const [formErrors, setFormErrors] = useState<{ name?: string; moduleId?: string }>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<Permission | null>(null);
 
   useEffect(() => {
     loadPermissions();
@@ -71,12 +72,10 @@ export default function AdminPermissoesPage() {
   const moduleOptions = useMemo(() => {
     const map = new Map<string, string>();
     rows.forEach((p) => {
-      const value = p.moduleId !== undefined && p.moduleId !== null
-        ? String(p.moduleId)
-        : (p.moduleName || 'none');
-      const label = p.moduleName
-        ? p.moduleName
-        : (p.moduleId !== undefined && p.moduleId !== null ? `Modulo ${p.moduleId}` : 'Sem modulo');
+      const hasModule = p.moduleId !== undefined && p.moduleId !== null;
+      if (!hasModule && !p.moduleName) return; // skip empty module entries for filtering
+      const value = hasModule ? String(p.moduleId) : (p.moduleName as string);
+      const label = p.moduleName || (hasModule ? `Modulo ${p.moduleId}` : '');
       if (!map.has(value)) map.set(value, label);
     });
     return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
@@ -84,9 +83,6 @@ export default function AdminPermissoesPage() {
 
   const filteredRows = useMemo(() => {
     if (!selectedModule) return rows;
-    if (selectedModule === 'none') {
-      return rows.filter((p) => p.moduleId === undefined || p.moduleId === null);
-    }
     return rows.filter((p) => String(p.moduleId ?? p.moduleName) === selectedModule);
   }, [rows, selectedModule]);
 
@@ -166,14 +162,24 @@ export default function AdminPermissoesPage() {
   }
 
   async function handleDeletePermission(row: Permission) {
-    const confirmed = window.confirm(`Remover a permissao "${row.name}"?`);
-    if (!confirmed) return;
+    setToDelete(row);
+    setConfirmOpen(true);
+  }
 
-    setDeletingId(row.id);
+  function handleCloseConfirm() {
+    if (deletingId) return;
+    setConfirmOpen(false);
+    setToDelete(null);
+  }
+
+  async function handleConfirmDelete() {
+    if (!toDelete) return;
+    setDeletingId(toDelete.id);
     try {
-      await adminPermissionsApi.remover(row.id);
-      setRows((prev) => prev.filter((p) => p.id !== row.id));
+      await adminPermissionsApi.remover(toDelete.id);
+      setRows((prev) => prev.filter((p) => p.id !== toDelete.id));
       enqueueSnackbar('Permissao removida.', { variant: 'success' });
+      handleCloseConfirm();
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Erro ao remover permissao.';
       enqueueSnackbar(message, { variant: 'error' });
@@ -201,9 +207,6 @@ export default function AdminPermissoesPage() {
               ))}
             </Select>
           </FormControl>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={loadPermissions} disabled={loading}>
-            Atualizar
-          </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -241,7 +244,7 @@ export default function AdminPermissoesPage() {
               <TableRow key={row.id} hover>
                 <TableCell>{row.id}</TableCell>
                 <TableCell>{row.name || '-'}</TableCell>
-                <TableCell>{row.moduleName || row.moduleId || '-'}</TableCell>
+                <TableCell>{row.moduleName || (row.moduleId !== undefined && row.moduleId !== null ? `Modulo ${row.moduleId}` : '-')}</TableCell>
                 <TableCell>{formatDate(row.createdAt)}</TableCell>
                 <TableCell align="right">
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -292,16 +295,29 @@ export default function AdminPermissoesPage() {
                 error={Boolean(formErrors.name)}
                 helperText={formErrors.name}
               />
-              <TextField
-                label="ID do modulo (opcional)"
-                value={formValues.moduleId}
-                onChange={(e) => setFormValues((prev) => ({ ...prev, moduleId: e.target.value }))}
-                fullWidth
-                type="text"
-                inputMode="numeric"
-                error={Boolean(formErrors.moduleId)}
-                helperText={formErrors.moduleId || 'Deixe em branco para nenhuma associacao.'}
-              />
+              <FormControl fullWidth error={Boolean(formErrors.moduleId)}>
+                <InputLabel id="module-select-label">Modulo (opcional)</InputLabel>
+                <Select
+                  labelId="module-select-label"
+                  label="Modulo (opcional)"
+                  value={formValues.moduleId}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, moduleId: e.target.value }))}
+                >
+                  <MenuItem value=""><em>Nenhum</em></MenuItem>
+                  {moduleOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                  ))}
+                </Select>
+                {formErrors.moduleId ? (
+                  <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                    {formErrors.moduleId}
+                  </Typography>
+                ) : (
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 2, mt: 0.5 }}>
+                    Escolha pelo nome; deixe em branco para nenhuma associacao.
+                  </Typography>
+                )}
+              </FormControl>
             </Stack>
           </Box>
         </DialogContent>
@@ -309,6 +325,31 @@ export default function AdminPermissoesPage() {
           <Button onClick={closeDialog} disabled={saving}>Cancelar</Button>
           <Button onClick={handleSavePermission} variant="contained" disabled={saving}>
             {saving ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Confirmar exclusao</DialogTitle>
+        <DialogContent dividers>
+          <Typography>
+            Tem certeza que deseja remover a permissao "{toDelete?.name || ''}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} disabled={Boolean(deletingId)}>Cancelar</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={Boolean(deletingId)}
+          >
+            {deletingId ? 'Removendo...' : 'Remover'}
           </Button>
         </DialogActions>
       </Dialog>
