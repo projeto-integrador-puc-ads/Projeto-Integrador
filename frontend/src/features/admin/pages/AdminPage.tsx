@@ -11,14 +11,14 @@ export default function AdminPage() {
           Area do Administrador
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Listagens e ações de gerenciamento
+          Listagens e areas de gerenciamento
         </Typography>
       </Box>
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={4}>
           <AdminModuleCard
-            title="Usuários"
+            title="Usuarios"
             description="Gerenciar usuarios do sistema"
             to="/admin/usuarios"
             icon={<GroupIcon color="primary" fontSize="large" />}
@@ -26,9 +26,9 @@ export default function AdminPage() {
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <AdminModuleCard
-            title="Permissões"
-            description="Listar permissões cadastradas"
-            to="/admin/permissões"
+            title="Permissoes"
+            description="Listar permissoes cadastradas"
+            to="/admin/permissoes"
             icon={<SecurityIcon color="primary" fontSize="large" />}
           />
         </Grid>
