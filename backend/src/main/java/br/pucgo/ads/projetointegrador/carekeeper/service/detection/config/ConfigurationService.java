@@ -57,4 +57,11 @@ public class ConfigurationService {
             throw new RuntimeException("Erro ao salvar configuração do usuário " + userId, e);
         }
     }
+
+    /**
+     * Verifica se o usuário já possui uma configuração salva.
+     */
+    public boolean userConfigExists(Long userId) {
+        return configurationRepository.existsByUserId(userId);
+    }
 }

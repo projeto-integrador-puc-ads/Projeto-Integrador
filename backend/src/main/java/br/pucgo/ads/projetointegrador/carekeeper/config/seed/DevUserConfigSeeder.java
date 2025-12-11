@@ -1,10 +1,9 @@
 package br.pucgo.ads.projetointegrador.carekeeper.config.seed;
 
-import br.pucgo.ads.projetointegrador.carekeeper.repository.ConfigurationRepository;
+import br.pucgo.ads.projetointegrador.carekeeper.service.detection.config.ConfigurationService;
 import br.pucgo.ads.projetointegrador.carekeeper.service.detection.config.UserConfigurationCache;
 import br.pucgo.ads.projetointegrador.carekeeper.config.detection.UserConfig;
 import br.pucgo.ads.projetointegrador.carekeeper.entity.ConfigurationEntity;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +24,13 @@ public class DevUserConfigSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DevUserConfigSeeder.class);
 
-    private final ConfigurationRepository ConfigurationRepository;
+    private final ConfigurationService configurationService;
     private final UserConfigurationCache userConfigurationCache;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public DevUserConfigSeeder(ConfigurationRepository ConfigurationRepository, UserConfigurationCache userConfigurationCache) {
-        this.ConfigurationRepository = ConfigurationRepository;
+    public DevUserConfigSeeder(ConfigurationService configurationService,
+                               UserConfigurationCache userConfigurationCache) {
+        this.configurationService = configurationService;
         this.userConfigurationCache = userConfigurationCache;
     }
 
@@ -39,10 +39,20 @@ public class DevUserConfigSeeder implements ApplicationRunner {
         Long demoUserId = 1L;
 
         try {
+            // Verifica se já existe configuração para o usuário
+            boolean exists = configurationService.userConfigExists(demoUserId);
+            if (exists) {
+                log.info("Configuração já existente para o usuário {}. Nenhuma ação necessária.", demoUserId);
+                return;
+            }
+
             UserConfig defaults = userConfigurationCache.getDefaultConfig();
             String json = mapper.writeValueAsString(defaults);
             ConfigurationEntity ent = new ConfigurationEntity(demoUserId, json);
-            ConfigurationRepository.save(ent);
+
+            configurationService.updateUserConfig(demoUserId, defaults);
+            log.info("Configuração padrão inserida para o usuário {}.", demoUserId);
+
         } catch (Exception e) {
             log.error("Falha ao persistir configuração padrão do usuário", e);
         }

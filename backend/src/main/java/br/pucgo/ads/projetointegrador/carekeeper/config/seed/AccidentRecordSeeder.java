@@ -35,6 +35,11 @@ public class AccidentRecordSeeder {
             if (recordRepository.count() > 0) return; 
             List<User> users = userRepository.findAll();
 
+            if (users.isEmpty()) {
+                System.out.println("Seeder: Nenhum usuário encontrado. Nenhum registro de acidente será criado.");
+                return;
+            }
+
             Random random = new Random();
 
             // Limites aproximados de Goiás

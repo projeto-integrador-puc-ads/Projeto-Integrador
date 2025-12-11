@@ -16,24 +16,37 @@ public class GeofenceRadarCircularDetector implements AccidentDetector {
     private static final int MOVING_AVERAGE_SIZE = 5;
     private static final int RADAR_RADIUS = 10; // raio do radar em caracteres
 
+    // tempo mínimo de warm-up (ms) antes de começar a detectar
+    private static final long WARM_UP_TIME_MS = 5000; // 5 segundos
+
     private final double centerLat;
     private final double centerLon;
     private final double radiusMeters;
     private final boolean enabled;
 
     private final Queue<SensorDTO> lastPositions = new LinkedList<>();
+    private final long startTime;
 
     public GeofenceRadarCircularDetector(UserConfig.Geofence config) {
         this.centerLat = (config != null) ? config.getCenterLat() : 0.0;
         this.centerLon = (config != null) ? config.getCenterLon() : 0.0;
         this.radiusMeters = (config != null) ? config.getRadiusMeters() : 100.0;
         this.enabled = config != null && config.isEnabled();
+        this.startTime = System.currentTimeMillis();
     }
 
     @Override
     public boolean detect(SensorDTO current, SensorDTO previous) {
         if (!enabled || current == null)
             return false;
+
+        // --- período de aquecimento (warm-up) ---
+        long elapsed = System.currentTimeMillis() - startTime;
+        if (elapsed < WARM_UP_TIME_MS) {
+            long remaining = (WARM_UP_TIME_MS - elapsed) / 1000;
+            System.out.printf("🕒 Aguardando warm-up... (%d s restantes)%n", remaining);
+            return false;
+        }
 
         if (previous != null && !isValidMovement(current, previous))
             return false;
