@@ -13,9 +13,18 @@ export interface PermissionPayload {
   moduleId?: number | null;
 }
 
+export interface ModuleItem {
+  id: number;
+  name: string;
+}
+
 export const adminPermissionsApi = {
   listar: async (): Promise<Permission[]> => {
     const { data } = await http.get<Permission[]>('/api/permissions');
+    return Array.isArray(data) ? data : [];
+  },
+  listarModulos: async (): Promise<ModuleItem[]> => {
+    const { data } = await http.get<ModuleItem[]>('/api/modules');
     return Array.isArray(data) ? data : [];
   },
   criar: async (payload: PermissionPayload): Promise<Permission> => {

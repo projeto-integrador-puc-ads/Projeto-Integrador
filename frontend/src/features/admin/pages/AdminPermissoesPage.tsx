@@ -26,7 +26,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { adminPermissionsApi, type Permission, type PermissionPayload } from '../api/permissions';
+import { adminPermissionsApi, type Permission, type PermissionPayload, type ModuleItem } from '../api/permissions';
 
 function formatDate(value?: string) {
   if (!value) return '-';
@@ -40,6 +40,7 @@ export default function AdminPermissoesPage() {
   const [rows, setRows] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModule, setSelectedModule] = useState<string>('');
+  const [modules, setModules] = useState<ModuleItem[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -54,6 +55,7 @@ export default function AdminPermissoesPage() {
 
   useEffect(() => {
     loadPermissions();
+    loadModules();
   }, []);
 
   async function loadPermissions() {
@@ -69,8 +71,19 @@ export default function AdminPermissoesPage() {
     }
   }
 
+  async function loadModules() {
+    try {
+      const data = await adminPermissionsApi.listarModulos();
+      setModules(data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Erro ao carregar modulos.';
+      enqueueSnackbar(message, { variant: 'warning' });
+    }
+  }
+
   const moduleOptions = useMemo(() => {
     const map = new Map<string, string>();
+    modules.forEach((m) => map.set(String(m.id), m.name));
     rows.forEach((p) => {
       const hasModule = p.moduleId !== undefined && p.moduleId !== null;
       if (!hasModule && !p.moduleName) return; // skip empty module entries for filtering
@@ -79,7 +92,7 @@ export default function AdminPermissoesPage() {
       if (!map.has(value)) map.set(value, label);
     });
     return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
-  }, [rows]);
+  }, [rows, modules]);
 
   const filteredRows = useMemo(() => {
     if (!selectedModule) return rows;
@@ -244,7 +257,12 @@ export default function AdminPermissoesPage() {
               <TableRow key={row.id} hover>
                 <TableCell>{row.id}</TableCell>
                 <TableCell>{row.name || '-'}</TableCell>
-                <TableCell>{row.moduleName || (row.moduleId !== undefined && row.moduleId !== null ? `Modulo ${row.moduleId}` : '-')}</TableCell>
+                <TableCell>
+                  {row.moduleName
+                    || (row.moduleId !== undefined && row.moduleId !== null
+                      ? modules.find((m) => m.id === row.moduleId)?.name || `Modulo ${row.moduleId}`
+                      : '-')}
+                </TableCell>
                 <TableCell>{formatDate(row.createdAt)}</TableCell>
                 <TableCell align="right">
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
