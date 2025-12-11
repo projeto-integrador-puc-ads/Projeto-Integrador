@@ -3,6 +3,9 @@ package br.pucgo.ads.projetointegrador.remember.service;
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
 import br.pucgo.ads.projetointegrador.plataforma.entity.User;
 import br.pucgo.ads.projetointegrador.plataforma.repository.UserRepository;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.RankingProjection;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.RankingResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Conquista;
 import br.pucgo.ads.projetointegrador.remember.entity.UsuarioConquista;
@@ -10,8 +13,16 @@ import br.pucgo.ads.projetointegrador.remember.key.UsuarioConquistaKey;
 import br.pucgo.ads.projetointegrador.remember.repository.ConquistaRepository;
 import br.pucgo.ads.projetointegrador.remember.repository.UsuarioConquistaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +32,10 @@ public class UsuarioConquistaService {
     private final UsuarioConquistaRepository usuarioConquistaRepository;
     private final UserRepository usuarioRepository;
     private final ConquistaRepository conquistaRepository;
+
+    private static final String SEPARADOR = FileSystems.getDefault().getSeparator();
+    private static final String CAMINHO_CONQUISTAS = SEPARADOR + "arquivos" + SEPARADOR + "remember" + SEPARADOR +
+            "imagens" + SEPARADOR + "conquistas" + SEPARADOR;
 
     @Autowired
     public UsuarioConquistaService(
@@ -65,12 +80,44 @@ public class UsuarioConquistaService {
      * @param identificadorUsuario O ID do usuário.
      * @return Uma lista com as conquistas do usuário.
      */
+    @Transactional(readOnly = true)
     public List<UsuarioConquistaResponseDTO> listarConquistasPorUsuario(Long identificadorUsuario) {
-        if (!usuarioRepository.existsById(identificadorUsuario)) {
-            throw new RecursoNaoEncontradoException("Usuário não encontrado com o ID: " + identificadorUsuario);
+        return usuarioConquistaRepository.findByUsuarioConquistaKey_IdentificadorUsuarioOrderByDataObtencaoAsc(identificadorUsuario)
+                .stream().map(this::prepararDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<RankingResponseDTO> buscarTop3Ranking() {
+        List<RankingProjection> projecoes = usuarioConquistaRepository
+                .buscarRankingGeral(PageRequest.of(0, 3));
+
+        return projecoes.stream()
+                .map(p -> new RankingResponseDTO(p.getNomeUsuario(), p.getTotalPontos()))
+                .collect(Collectors.toList());
+    }
+
+    private String getNomeArquivoConquista(Long IdentificadorConquista) {
+        return String.format("cnqst_%d.png", IdentificadorConquista);
+    }
+
+    private UsuarioConquistaResponseDTO prepararDTO(UsuarioConquista usuarioConquista) {
+        UsuarioConquistaResponseDTO dto = new UsuarioConquistaResponseDTO(usuarioConquista);
+
+        try {
+            Path caminhoArquivo = Paths.get(CAMINHO_CONQUISTAS,
+                    getNomeArquivoConquista(usuarioConquista.getConquista().getIdentificadorConquista()));
+
+            if (Files.exists(caminhoArquivo)) {
+                byte[] bytes = Files.readAllBytes(caminhoArquivo);
+                dto.getConquista().setIcone("data:image/png;base64," + Base64.getEncoder().encodeToString(bytes));
+            } else {
+                dto.getConquista().setIcone(null);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            dto.getConquista().setIcone(null);
         }
 
-        return usuarioConquistaRepository.findByUsuarioConquistaKey_IdentificadorUsuario(identificadorUsuario)
-                .stream().map(UsuarioConquistaResponseDTO::new).collect(Collectors.toList());
+        return dto;
     }
 }

@@ -9,10 +9,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class LembrancaRequestDTO {
-
-    @NotNull(message = "O identificador do usuário é obrigatório.")
-    private Long identificadorUsuario;
+public class LembrancaUpdateDTO {
 
     @NotBlank(message = "O título não pode estar em branco.")
     @Size(max = 255, message = "O título não pode exceder 255 caracteres.")

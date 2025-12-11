@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -22,16 +23,17 @@ public class UsuarioConquista {
     @Column(name = "data_obtencao", nullable = false, updatable = false)
     private LocalDateTime dataObtencao;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("identificadorUsuario")
     @JoinColumn(name = "id_usuario")
     private User usuario;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("identificadorConquista")
     @JoinColumn(name = "id_conquista")
     private Conquista conquista;
-
 
     @PrePersist
     protected void onCreate() {

@@ -1,11 +1,13 @@
 package br.pucgo.ads.projetointegrador.remember.dto.diario;
 
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.midia.MidiaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Diario;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +21,7 @@ public class DiarioResponseDTO {
     private LocalDate dataEscrita;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
-    private List<MidiaResponseDTO> midias;
+    private List<ConquistaResponseDTO> conquistasDesbloqueadas = new ArrayList<>();
 
     /**
      * Construtor que converte uma entidade Diario em um DiarioResponseDTO.
@@ -33,11 +35,5 @@ public class DiarioResponseDTO {
         this.dataEscrita = diario.getDataEscrita();
         this.dataCriacao = diario.getDataCriacao();
         this.dataAtualizacao = diario.getDataAtualizacao();
-
-//        if (diario.getMidias() != null) {
-//            this.midias = diario.getMidias().stream()
-//                    .map(MidiaResponseDTO::new)
-//                    .collect(Collectors.toList());
-//        }
     }
 }

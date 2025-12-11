@@ -1,6 +1,7 @@
 package br.pucgo.ads.projetointegrador.remember.controller;
 
 import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaRequestDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaRequestEditDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.service.ConquistaService;
 import jakarta.validation.Valid;
@@ -59,7 +60,7 @@ public class ConquistaController {
     @PutMapping("/{identificador}")
     public ResponseEntity<ConquistaResponseDTO> atualizarConquista(
             @PathVariable Long identificador,
-            @Valid @RequestBody ConquistaRequestDTO requestDTO
+            @Valid @RequestBody ConquistaRequestEditDTO requestDTO
     ) {
         ConquistaResponseDTO conquistaAtualizada = conquistaService.atualizarConquista(identificador, requestDTO);
         return ResponseEntity.ok(conquistaAtualizada);

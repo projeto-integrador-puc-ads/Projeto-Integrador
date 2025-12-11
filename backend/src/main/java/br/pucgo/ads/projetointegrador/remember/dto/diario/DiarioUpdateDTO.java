@@ -9,10 +9,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class DiarioRequestDTO {
-
-    @NotNull(message = "O identificador do usuário é obrigatório.")
-    private Long identificadorUsuario;
+public class DiarioUpdateDTO {
 
     @NotBlank(message = "O título não pode estar em branco.")
     @Size(max = 255, message = "O título não pode exceder 255 caracteres.")
@@ -20,7 +17,4 @@ public class DiarioRequestDTO {
 
     @NotBlank(message = "O conteúdo não pode estar em branco.")
     private String conteudo;
-
-    @NotNull(message = "A data da escrita é obrigatória.")
-    private LocalDate dataEscrita;
 }

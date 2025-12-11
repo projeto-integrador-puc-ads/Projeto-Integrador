@@ -1,13 +1,16 @@
 package br.pucgo.ads.projetointegrador.remember.service;
 
 import br.pucgo.ads.projetointegrador.plataforma.Exception.RecursoNaoEncontradoException;
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioRequestDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioUpdateDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Diario;
 import br.pucgo.ads.projetointegrador.remember.repository.DiarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,10 +18,18 @@ import java.util.stream.Collectors;
 public class DiarioService {
 
     private final DiarioRepository diarioRepository;
+    private final ConquistaService conquistaService;
+    private final GameService gamificationService;
 
     @Autowired
-    public DiarioService(DiarioRepository diarioRepository) {
+    public DiarioService(
+            DiarioRepository diarioRepository,
+            ConquistaService conquistaService,
+            GameService gamificationService
+    ) {
         this.diarioRepository = diarioRepository;
+        this.conquistaService = conquistaService;
+        this.gamificationService = gamificationService;
     }
 
     /**
@@ -35,7 +46,14 @@ public class DiarioService {
         novoDiario.setDataEscrita(requestDTO.getDataEscrita());
 
         Diario diarioSalvo = diarioRepository.save(novoDiario);
-        return new DiarioResponseDTO(diarioSalvo);
+        DiarioResponseDTO response = new DiarioResponseDTO(diarioSalvo);
+
+        List<ConquistaResponseDTO> conquistasGanhas = gamificationService
+                .verificarTodasConquistasDiario(diarioSalvo.getIdentificadorUsuario());
+
+        response.setConquistasDesbloqueadas(conquistasGanhas);
+
+        return response;
     }
 
     /**
@@ -64,16 +82,15 @@ public class DiarioService {
     /**
      * Atualiza uma página do diário existente.
      * @param identificador O ID do diário a ser atualizado.
-     * @param requestDTO Os novos dados para o diário.
+     * @param diarioUpdateDto Os novos dados para o diário.
      * @return O diário com os dados atualizados.
      */
-    public DiarioResponseDTO atualizarDiario(Long identificador, DiarioRequestDTO requestDTO) {
+    public DiarioResponseDTO atualizarDiario(Long identificador, DiarioUpdateDTO diarioUpdateDto) {
         Diario diarioExistente = diarioRepository.findById(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Diário não encontrado com o ID: " + identificador));
 
-        diarioExistente.setTitulo(requestDTO.getTitulo());
-        diarioExistente.setConteudo(requestDTO.getConteudo());
-        diarioExistente.setDataEscrita(requestDTO.getDataEscrita());
+        diarioExistente.setTitulo(diarioUpdateDto.getTitulo());
+        diarioExistente.setConteudo(diarioUpdateDto.getConteudo());
 
         Diario diarioAtualizado = diarioRepository.save(diarioExistente);
         return new DiarioResponseDTO(diarioAtualizado);

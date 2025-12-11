@@ -13,19 +13,16 @@ import java.time.LocalDateTime;
 public class UsuarioConquistaResponseDTO {
 
     private Long identificadorUsuario;
-    private ConquistaResponseDTO conquista;
     private LocalDateTime dataObtencao;
+    private ConquistaResponseDTO conquista;
 
     /**
      * Construtor que converte uma entidade de ligação UsuarioConquista em um DTO.
      * @param usuarioConquista A entidade a ser convertida.
      */
     public UsuarioConquistaResponseDTO(UsuarioConquista usuarioConquista) {
-        this.identificadorUsuario = usuarioConquista.getUsuario().getId();
+        this.identificadorUsuario = usuarioConquista.getUsuarioConquistaKey().getIdentificadorUsuario();
         this.dataObtencao = usuarioConquista.getDataObtencao();
-
-        if (usuarioConquista.getConquista() != null) {
-            this.conquista = new ConquistaResponseDTO(usuarioConquista.getConquista());
-        }
+        this.conquista = new ConquistaResponseDTO(usuarioConquista.getConquista());
     }
 }

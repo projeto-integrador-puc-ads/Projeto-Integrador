@@ -13,8 +13,10 @@ import AdminMedicosPage from '@/features/admin/pages/AdminMedicosPage';
 import AdminCuidadoresPage from '@/features/admin/pages/AdminCuidadoresPage';
 import AdminUsuarioCreatePage from '@/features/admin/pages/AdminUsuarioCreatePage';
 import AtendimentoMedico from '@/features/atendimento/AtendimentoMedico';
-import DiariosPage from "@/features/remember/pages/DiariosPage";
-import LembrancasPage from "@/features/remember/pages/LembrancasPage";
+import AdminConquistasPage from "@/features/remember/pages/AdminConquistasPage.tsx";
+import AdminEditConquistaPage from "@/features/remember/pages/AdminEditConquistaPage.tsx";
+import AdminCreateConquistaPage from "@/features/remember/pages/AdminCreateConquistaPage.tsx";
+import RememberPage from "@/features/remember/pages/RememberPage.tsx";
 
 function Home() {
   return (
@@ -52,13 +54,17 @@ export function AppRoutes() {
         <Route path="admin/usuarios/:id/edit" element={<EditUsuarioPage />} />
         <Route path="admin/medicos/:id/edit" element={<EditMedicoPage />} />
         <Route path="admin/cuidadores/:id/edit" element={<EditCuidadorPage />} />
+        <Route path="admin/conquistas" element={<AdminConquistasPage />} />
+        <Route path="admin/conquistas/:id/edit" element={<AdminEditConquistaPage />} />
+        <Route path="admin/conquistas/novo" element={<AdminCreateConquistaPage />} />
 
         {/* Rotas gerais */}
         <Route path="usuarios" element={<UsuariosPage />} />
 
         {/* Nova rota: Atendimento Médico */}
         <Route path="atendimento" element={<AtendimentoMedico />} />
-        <Route path="remember/diario" element={<DiariosPage />} />
+        <Route path="remember/diario" element={<RememberPage />} />
+
         {/* Rota fallback */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>

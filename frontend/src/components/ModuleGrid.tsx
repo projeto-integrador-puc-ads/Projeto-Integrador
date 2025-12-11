@@ -5,7 +5,7 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import HistoryIcon from "@mui/icons-material/History";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import PsychologyIcon from "@mui/icons-material/Psychology";
+import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import { useNavigate } from "react-router-dom";
 
 export function ModuleGrid() {
@@ -13,9 +13,9 @@ export function ModuleGrid() {
 
   const items = [
     {
-      icon: <PsychologyIcon sx={{ fontSize: 40, color: "#7b1fa2" }} />,
-      title: "Memória",
-      desc: "Acesse seu diário e conquistas.",
+      icon: <HistoryEduIcon sx={{ fontSize: 40}} />,
+      title: "Diário Cognitivo",
+      desc: "Registre seus momentos, pensamentos e memórias.",
       to: "/remember/diario",
     },
     {

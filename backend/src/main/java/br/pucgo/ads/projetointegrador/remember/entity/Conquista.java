@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class Conquista {
     @Column(nullable = false)
     private Integer tipo;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "conquista", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UsuarioConquista> conquistasAtribuidas  = new ArrayList<>();
 }

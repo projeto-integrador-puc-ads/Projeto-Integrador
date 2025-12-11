@@ -1,5 +1,6 @@
 package br.pucgo.ads.projetointegrador.remember.controller;
 
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.RankingResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaRequestDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.conquista.UsuarioConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.service.UsuarioConquistaService;
@@ -25,13 +26,18 @@ public class UsuarioConquistaController {
     /**
      * Lista todas as conquistas que um usuário específico ganhou.
      */
-    @GetMapping
+    @GetMapping("/{identificadorUsuario}")
     public ResponseEntity<List<UsuarioConquistaResponseDTO>> listarConquistasPorUsuario(
-            @RequestParam Long identificadorUsuario
+            @PathVariable Long identificadorUsuario
     ) {
         List<UsuarioConquistaResponseDTO> conquistasDoUsuario =
                 usuarioConquistaService.listarConquistasPorUsuario(identificadorUsuario);
         return ResponseEntity.ok(conquistasDoUsuario);
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<List<RankingResponseDTO>> getRanking() {
+        return ResponseEntity.ok(usuarioConquistaService.buscarTop3Ranking());
     }
 
     /**

@@ -1,170 +1,198 @@
-// Arquivo: src/features/remember/components/UsuarioConquistas.tsx
+import { useEffect, useState } from 'react';
+import {
+    Box,
+    Grid,
+    Typography,
+    CircularProgress,
+    Stack,
+    Paper,
+    Avatar
+} from '@mui/material';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import StarIcon from '@mui/icons-material/Star';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'; // Ícone de Medalha
+import { useSnackbar } from 'notistack';
+import { conquistasUsuarioApi, type UsuarioConquistaDTO, type RankingItem } from '../api/conquistasUsuario';
+import ConquistaCard from '../components/ConquistaCard';
 
-import React, { useEffect, useState } from 'react';
-import { getConquistas } from '../api/remember';
-import type { ConquistaDTO } from '../types/remember';
-
-interface ConquistaUsuarioUI extends ConquistaDTO {
-    obtida: boolean;
-    progressoAtual: number;
+interface ConquistasUsuarioPageProps {
+    usuarioId: number;
 }
 
+export default function ConquistasUsuarioPage({ usuarioId }: ConquistasUsuarioPageProps) {
+    const { enqueueSnackbar } = useSnackbar();
 
-const IMAGE_BASE_URL = "http://localhost:8080/api/public/sistema/icones/";
-
-const ConquistasUsuario: React.FC = () => {
-    const [userConquistas, setUserConquistas] = useState<ConquistaUsuarioUI[]>([]);
+    const [items, setItems] = useState<UsuarioConquistaDTO[]>([]);
+    const [ranking, setRanking] = useState<RankingItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+
+    // Calcula total de pontos do usuário logado
+    const totalPontos = items
+        .filter(item => item.dataObtencao)
+        .reduce((acc, curr) => acc + curr.conquista.pontos, 0);
+
+    const totalConquistas = items.filter(item => item.dataObtencao).length;
 
     useEffect(() => {
-        loadData();
-    }, []);
+        if (usuarioId) {
+            carregarDados();
+        }
+    }, [usuarioId]);
 
-    const loadData = async () => {
+    async function carregarDados() {
         setLoading(true);
-        setError(null);
         try {
-            // 1. BUSCA REAL: Pega as definições do servidor
-            const response = await getConquistas();
-            const dadosReaisDoBackend: ConquistaDTO[] = response.data;
+            // Carrega em paralelo: Conquistas do usuário E o Ranking geral
+            const [dadosConquistas, dadosRanking] = await Promise.all([
+                conquistasUsuarioApi.listarProgresso(usuarioId),
+                conquistasUsuarioApi.buscarRanking()
+            ]);
 
-            // 2. SIMULAÇÃO DE STATUS (Temporário):
-            // Como o backend ainda não informa o progresso do usuário,
-            // vamos gerar um status aleatório para cada conquista real
-            // para que a interface possa ser visualizada.
-            const dadosComStatusSimulado: ConquistaUsuarioUI[] = dadosReaisDoBackend.map(conquista => {
-                // Simula que 40% das conquistas foram obtidas
-                const isObtida = Math.random() > 0.6;
-                // Simula um progresso aleatório até a meta
-                const progressoSimulado = isObtida ? conquista.meta : Math.floor(Math.random() * conquista.meta);
-
-                return {
-                    ...conquista, // Copia todos os dados reais (id, nome, pontos, iconeUrl...)
-                    obtida: isObtida,
-                    progressoAtual: progressoSimulado
-                };
-            });
-
-            setUserConquistas(dadosComStatusSimulado);
-
-        } catch (err) {
-            console.error("Erro ao carregar conquistas do usuário:", err);
-            setError('Não foi possível carregar suas conquistas no momento.');
+            setItems(dadosConquistas);
+            setRanking(dadosRanking);
+        } catch (error) {
+            enqueueSnackbar('Erro ao carregar dados.', { variant: 'error' });
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    // Separa a lista baseada no estado atual
-    const obtidas = userConquistas.filter(c => c.obtida);
-    const aConquistar = userConquistas.filter(c => !c.obtida);
-
-    const renderCard = (conquista: ConquistaUsuarioUI) => {
-        const estiloCard: React.CSSProperties = {
-            display: 'flex', alignItems: 'center', padding: '16px', marginBottom: '12px', borderRadius: '12px',
-            background: conquista.obtida ? '#e8f5e9' : '#f5f5f5',
-            border: conquista.obtida ? '2px solid #4caf50' : '2px solid #e0e0e0',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.05)', opacity: conquista.obtida ? 1 : 0.9
-        };
-
-        const estiloImagem: React.CSSProperties = {
-            width: '60px', height: '60px', objectFit: 'contain', marginRight: '16px',
-            // Aplica filtro se não obtida
-            filter: conquista.obtida ? 'none' : 'grayscale(100%) opacity(0.6)',
-            transition: 'all 0.3s'
-        };
-
-        // Cálculo da porcentagem para a barra de progresso
-        const porcentagemProgresso = Math.min(100, (conquista.progressoAtual / conquista.meta) * 100);
-
-        return (
-            <div style={estiloCard}>
-                <img
-                    // Usa a URL real do backend
-                    src={`${IMAGE_BASE_URL}${conquista.iconeUrl}`}
-                    alt={conquista.nome}
-                    style={estiloImagem}
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/60?text=?'; }}
-                />
-                <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: conquista.obtida ? '#2e7d32' : '#424242' }}>
-                            {conquista.nome}
-                        </h3>
-                        <span style={{ background: conquista.obtida ? '#4caf50' : '#bdbdbd', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            +{conquista.pontos} pts
-                        </span>
-                    </div>
-                    <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#616161', lineHeight: 1.4 }}>{conquista.descricao}</p>
-
-                    {/* Área de Progresso (sempre visível agora, mas muda o estilo se completo) */}
-                    <div style={{ marginTop: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#757575', marginBottom: '4px' }}>
-                            <span>Progresso: {conquista.progressoAtual} / {conquista.meta}</span>
-                            <span>{porcentagemProgresso.toFixed(0)}%</span>
-                        </div>
-                        <div style={{ height: '8px', width: '100%', background: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{
-                                height: '100%',
-                                width: `${porcentagemProgresso}%`,
-                                background: conquista.obtida ? '#4caf50' : '#1976d2', // Verde se completou, Azul se em andamento
-                                borderRadius: '4px',
-                                transition: 'width 0.5s ease-in-out'
-                            }}></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+    // Função auxiliar para cor da medalha
+    const getMedalColor = (index: number) => {
+        switch(index) {
+            case 0: return '#FFD700'; // Ouro
+            case 1: return '#C0C0C0'; // Prata
+            case 2: return '#CD7F32'; // Bronze
+            default: return '#e0e0e0';
+        }
     };
 
     if (loading) {
-        return <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>Carregando suas conquistas...</div>;
+        return <Box display="flex" justifyContent="center" py={10}><CircularProgress color="warning" /></Box>;
     }
 
-    if (error) {
-        return <div style={{ padding: '40px', textAlign: 'center', color: '#d32f2f' }}>{error}</div>;
+    if (items.length === 0 && ranking.length === 0) {
+        return (
+            <Box textAlign="center" py={8} sx={{ opacity: 0.7 }}>
+                <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary">
+                    Nenhuma conquista disponível ainda.
+                </Typography>
+            </Box>
+        );
     }
 
     return (
-        <div style={{ padding: '24px', background: '#fff', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <h1 style={{ color: '#1976d2', margin: '0 0 8px 0' }}>Minhas Conquistas</h1>
-                <p style={{ color: '#666', margin: 0 }}>Acompanhe seu progresso e celebre suas vitórias!</p>
-            </div>
+        <Box sx={{ mt: 1 }}>
 
-            {obtidas.length > 0 && (
-                <section style={{ marginBottom: '40px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', borderBottom: '2px solid #4caf50', paddingBottom: '8px' }}>
-                        <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🏆</span>
-                        <h2 style={{ fontSize: '1.3rem', color: '#2e7d32', margin: 0 }}>
-                            Conquistadas ({obtidas.length})
-                        </h2>
-                    </div>
-                    {obtidas.map(renderCard)}
-                </section>
-            )}
+            {/* DASHBOARD PRINCIPAL */}
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 3,
+                    mb: 4,
+                    bgcolor: '#fff8e1',
+                    border: '1px solid #ffe082',
+                    borderRadius: 3,
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' }, // Em celular empilha, em PC fica lado a lado
+                    alignItems: 'center',
+                    justifyContent: 'space-between', // Espalha os itens
+                    gap: 3
+                }}
+            >
+                {/* 1. SUAS CONQUISTAS (Esquerda) */}
+                <Stack alignItems="center" sx={{ flex: 1 }}>
+                    <Typography variant="h6" color="text.secondary">Suas Conquistas</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <EmojiEventsIcon color="warning" fontSize="large" />
+                        <Typography variant="h3" fontWeight="bold" color="text.primary">
+                            {totalConquistas}
+                        </Typography>
+                    </Stack>
+                </Stack>
 
-            {aConquistar.length > 0 && (
-                <section>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', borderBottom: '2px solid #1976d2', paddingBottom: '8px' }}>
-                        <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🚀</span>
-                        <h2 style={{ fontSize: '1.3rem', color: '#1565c0', margin: 0 }}>
-                            Em Andamento ({aConquistar.length})
-                        </h2>
-                    </div>
-                    {aConquistar.map(renderCard)}
-                </section>
-            )}
+                {/* 2. RANKING (Centro - Substituindo a barra) */}
+                <Box
+                    sx={{
+                        flex: 1.5, // Ocupa um pouco mais de espaço
+                        borderLeft: { md: '1px solid #ffe082' },
+                        borderRight: { md: '1px solid #ffe082' },
+                        borderTop: { xs: '1px solid #ffe082', md: 'none' },
+                        borderBottom: { xs: '1px solid #ffe082', md: 'none' },
+                        px: { md: 4 },
+                        py: { xs: 2, md: 0 },
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        🏆 Top 3 Ranking
+                    </Typography>
 
-            {userConquistas.length === 0 && !loading && (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-                    Nenhuma conquista disponível no sistema ainda.
-                </div>
-            )}
-        </div>
+                    <Stack spacing={1} sx={{ width: '100%', maxWidth: 450 }}>
+                        {ranking.map((rank, index) => (
+                            <Stack
+                                key={index}
+                                direction="row"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.6)',
+                                    p: 0.5,
+                                    borderRadius: 2,
+                                    pl: 1, pr: 2
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    {/* Medalha */}
+                                    <WorkspacePremiumIcon sx={{ color: getMedalColor(index) }} />
+                                    {/* Nome */}
+                                    <Typography variant="body2" fontWeight="bold" sx={{
+                                        maxWidth: 120,
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {rank.nomeUsuario}
+                                    </Typography>
+                                </Stack>
+                                {/* Pontos */}
+                                <Typography variant="caption" fontWeight="bold" color="text.secondary">
+                                    {rank.totalPontos} pts
+                                </Typography>
+                            </Stack>
+                        ))}
+                        {ranking.length === 0 && (
+                            <Typography variant="caption" color="text.disabled" align="center">
+                                Seja o primeiro a pontuar!
+                            </Typography>
+                        )}
+                    </Stack>
+                </Box>
+
+                {/* 3. PONTUAÇÃO TOTAL (Direita) */}
+                <Stack alignItems="center" sx={{ flex: 1 }}>
+                    <Typography variant="h6" color="text.secondary">Pontuação Total</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <StarIcon sx={{ color: '#ff9800', fontSize: 40 }} />
+                        <Typography variant="h3" fontWeight="bold" color="text.primary">
+                            {totalPontos}
+                        </Typography>
+                    </Stack>
+                </Stack>
+            </Paper>
+
+            {/* GRID DE MEDALHAS */}
+            <Grid container spacing={3}>
+                {items.map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={4} key={item.conquista.identificadorConquista || index}>
+                        <ConquistaCard item={item} />
+                    </Grid>
+                ))}
+            </Grid>
+        </Box>
     );
-};
-
-export default ConquistasUsuario;
+}

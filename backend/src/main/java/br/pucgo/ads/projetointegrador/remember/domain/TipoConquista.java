@@ -35,4 +35,8 @@ public enum TipoConquista {
                 .filter(g -> g.getCodigo() == codigo).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Código de tipo de gatilho inválido: " + codigo));
     }
+
+    public String formatarCodigoDescricao() {
+        return String.format("%d - %s", this.codigo, this.descricao);
+    }
 }

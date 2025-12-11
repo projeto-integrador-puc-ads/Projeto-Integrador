@@ -2,6 +2,7 @@ package br.pucgo.ads.projetointegrador.remember.controller;
 
 import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioRequestDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.diario.DiarioUpdateDTO;
 import br.pucgo.ads.projetointegrador.remember.service.DiarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,9 @@ public class DiarioController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DiarioResponseDTO> atualizarDiario(
             @PathVariable Long identificador,
-            @Valid @RequestBody DiarioRequestDTO requestDTO
+            @Valid @RequestBody DiarioUpdateDTO diarioUpdateDto
     ) {
-        DiarioResponseDTO diarioAtualizado = diarioService.atualizarDiario(identificador, requestDTO);
+        DiarioResponseDTO diarioAtualizado = diarioService.atualizarDiario(identificador, diarioUpdateDto);
         return ResponseEntity.ok(diarioAtualizado);
     }
 

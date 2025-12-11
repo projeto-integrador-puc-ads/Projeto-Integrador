@@ -1,11 +1,13 @@
 package br.pucgo.ads.projetointegrador.remember.dto.lembranca;
 
+import br.pucgo.ads.projetointegrador.remember.dto.conquista.ConquistaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.midia.MidiaResponseDTO;
 import br.pucgo.ads.projetointegrador.remember.entity.Lembranca;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,8 @@ public class LembrancaResponseDTO {
     private String historia;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
-    private List<MidiaResponseDTO> midias;
+    private String imagem;
+    private List<ConquistaResponseDTO> conquistasDesbloqueadas = new ArrayList<>();
 
     /**
      * Construtor que converte uma entidade Lembranca em um LembrancaResponseDTO.
@@ -37,11 +40,5 @@ public class LembrancaResponseDTO {
         this.historia = lembranca.getHistoria();
         this.dataCriacao = lembranca.getDataCriacao();
         this.dataAtualizacao = lembranca.getDataAtualizacao();
-
-//        if (lembranca.getMidias() != null) {
-//            this.midias = lembranca.getMidias().stream()
-//                    .map(MidiaResponseDTO::new)
-//                    .collect(Collectors.toList());
-//        }
     }
 }

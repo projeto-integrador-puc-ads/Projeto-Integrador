@@ -13,4 +13,6 @@ public interface LembrancaRepository extends JpaRepository<Lembranca, Long> {
     List<Lembranca> findAllByIdentificadorUsuarioOrderByDataAcontecimentoDesc(Long identificadorUsuario);
 
     List<Lembranca> findAllByIdentificadorUsuarioAndDataCriacaoBetween(Long identificadorUsuario, LocalDateTime dataInicio, LocalDateTime dataFim);
+
+    long countByIdentificadorUsuario(Long identificadorUsuario);
 }

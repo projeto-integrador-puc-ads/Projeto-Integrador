@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -36,6 +37,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
+    @ToString.Exclude
     private Role role;
 
     @Column(nullable = true)
@@ -48,6 +50,7 @@ public class User {
     private String experiencia;
 
     // Relacionamento N:N com Permission (NOVO MODELO NORMALIZADO)
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_permissions",

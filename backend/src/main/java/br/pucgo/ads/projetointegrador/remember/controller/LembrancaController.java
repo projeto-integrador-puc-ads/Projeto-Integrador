@@ -2,6 +2,7 @@ package br.pucgo.ads.projetointegrador.remember.controller;
 
 import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaRequestDTO;
 import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaResponseDTO;
+import br.pucgo.ads.projetointegrador.remember.dto.lembranca.LembrancaUpdateDTO;
 import br.pucgo.ads.projetointegrador.remember.service.LembrancaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class LembrancaController {
 
     @GetMapping("/{identificador}")
     public ResponseEntity<LembrancaResponseDTO> buscarLembrancaPorId(@PathVariable Long identificador) {
-        LembrancaResponseDTO lembranca = lembrancaService.buscarLembrancaPorIdentificador(identificador);
+        LembrancaResponseDTO lembranca = lembrancaService.buscarLembrancaPorId(identificador);
         return ResponseEntity.ok(lembranca);
     }
 
@@ -43,9 +44,9 @@ public class LembrancaController {
     @PutMapping("/{identificador}")
     public ResponseEntity<LembrancaResponseDTO> atualizarLembranca(
             @PathVariable Long identificador,
-            @Valid @RequestBody LembrancaRequestDTO requestDTO
+            @Valid @RequestBody LembrancaUpdateDTO lembrancaUpdateDto
     ) {
-        LembrancaResponseDTO lembrancaAtualizada = lembrancaService.atualizarLembranca(identificador, requestDTO);
+        LembrancaResponseDTO lembrancaAtualizada = lembrancaService.atualizarLembranca(identificador, lembrancaUpdateDto);
         return ResponseEntity.ok(lembrancaAtualizada);
     }
 
