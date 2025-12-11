@@ -16,6 +16,7 @@ export interface AdminUser {
   crm?: string;
   certificacao?: string;
   experiencia?: string;
+  permissions?: Array<{ id: number; name: string; moduleId?: number; moduleName?: string }>;
 }
 
 export interface CreateUserPayload {
@@ -38,6 +39,7 @@ export interface UpdateUserPayload {
   certificacao?: string;
   experiencia?: string;
   password?: string;
+  permissionIds?: number[];
 }
 
 function stripPassword(user: any): AdminUser {

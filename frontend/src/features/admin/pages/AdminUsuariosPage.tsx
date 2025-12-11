@@ -24,7 +24,9 @@ import { adminUsersApi, type AdminUser } from '../api/users';
 function roleLabel(role?: AdminUser['role']) {
   if (!role) return '-';
   const code = (role.code || role.name || '').toUpperCase();
-  if (code.includes('ROLE_USER') || code === 'USER') return 'Idoso';
+  if (code.includes('ROLE_IDOSO') || code === 'IDOSO' || code.includes('ROLE_USER') || code === 'USER') return 'Idoso';
+  if (code.includes('ROLE_CUIDADOR') || code === 'CUIDADOR') return 'Cuidador';
+  if (code.includes('ROLE_MEDICO') || code === 'MEDICO') return 'Medico';
   if (code.includes('ROLE_ADMIN') || code === 'ADMIN') return 'Administrador';
   return role.name || '-';
 }

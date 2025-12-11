@@ -9,17 +9,22 @@ import {
   Stack,
   TextField,
   Typography,
+  Autocomplete,
+  Chip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useSnackbar } from 'notistack';
 import http from '@/lib/http';
 import { adminUsersApi, type CreateUserPayload } from '../api/users';
+import { adminPermissionsApi, type Permission } from '../api/permissions';
 
 type RoleOption = { id: number; name: string; code?: string };
 
 function roleLabel(role: RoleOption) {
   const code = (role.code || role.name || '').toUpperCase();
-  if (code.includes('ROLE_USER') || code === 'USER') return 'Idoso';
+  if (code.includes('ROLE_IDOSO') || code === 'IDOSO' || code.includes('ROLE_USER') || code === 'USER') return 'Idoso';
+  if (code.includes('ROLE_CUIDADOR') || code === 'CUIDADOR') return 'Cuidador';
+  if (code.includes('ROLE_MEDICO') || code === 'MEDICO') return 'Medico';
   if (code.includes('ROLE_ADMIN') || code === 'ADMIN') return 'Administrador';
   return role.name || '';
 }
@@ -28,6 +33,8 @@ export default function AdminUsuarioCreatePage() {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [roles, setRoles] = useState<RoleOption[]>([]);
+  const [permissionsOptions, setPermissionsOptions] = useState<Permission[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
   const [form, setForm] = useState<CreateUserPayload>({
     name: '',
     username: '',
@@ -42,6 +49,7 @@ export default function AdminUsuarioCreatePage() {
 
   useEffect(() => {
     loadRoles();
+    loadPermissions();
   }, []);
 
   async function loadRoles() {
@@ -50,6 +58,16 @@ export default function AdminUsuarioCreatePage() {
       setRoles(data);
     } catch {
       enqueueSnackbar('Nao foi possivel carregar perfis. Tente novamente.', { variant: 'warning' });
+    }
+  }
+
+  async function loadPermissions() {
+    try {
+      const data = await adminPermissionsApi.listar();
+      setPermissionsOptions(data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Erro ao carregar permissoes.';
+      enqueueSnackbar(message, { variant: 'warning' });
     }
   }
 
@@ -84,6 +102,7 @@ export default function AdminUsuarioCreatePage() {
         crm: isMedico ? form.crm : undefined,
         certificacao: isCuidador ? form.certificacao : undefined,
         experiencia: isCuidador ? form.experiencia : undefined,
+        permissionIds: selectedPermissions.map((p) => p.id),
       };
       await adminUsersApi.criar(payload);
       enqueueSnackbar('Usuario criado com sucesso.', { variant: 'success' });
@@ -150,6 +169,32 @@ export default function AdminUsuarioCreatePage() {
             onChange={(e) => handleChange('email', e.target.value)}
             required
             fullWidth
+          />
+          <Autocomplete
+            multiple
+            options={permissionsOptions}
+            getOptionLabel={(option) => option.name || `Permissao ${option.id}`}
+            value={selectedPermissions}
+            onChange={(_, value) => setSelectedPermissions(value)}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            loading={loading}
+            disableCloseOnSelect
+            renderTags={(value, getTagProps) => value.map((option, index) => (
+              <Chip
+                {...getTagProps({ index })}
+                key={option.id}
+                label={option.name || `Permissao ${option.id}`}
+                size="small"
+              />
+            ))}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Permissoes (multi-selecao)"
+                placeholder="Selecione permissoes"
+                helperText="Atribua permissoes especificas alem do perfil."
+              />
+            )}
           />
           <TextField
             label="Senha"
