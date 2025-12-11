@@ -48,7 +48,7 @@ export function ModuleGrid() {
 
     {
       icon: <EscalatorWarningIcon sx={{ fontSize: 40 }} />,
-      title: 'Ajudador',
+      title: 'Cuidador',
       desc: 'Dicas rápidas e ajuda no dia a dia.',
       to: '/grupo5/ajudador',
     },

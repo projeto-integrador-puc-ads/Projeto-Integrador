@@ -83,7 +83,7 @@ export default function AdminUsuariosPage() {
   return (
     <Container sx={{ py: 3 }}>
       <Box display="flex" alignItems="center" mb={2}>
-        <Typography variant="h3" sx={{ flex: 1 }}>Usuarios</Typography>
+        <Typography variant="h3" sx={{ flex: 1 }}>Usuários</Typography>
         <Stack direction="row" spacing={1}>
           <Button variant="contained" onClick={() => navigate('/admin/usuarios/novo')}>
             Registrar
@@ -100,7 +100,7 @@ export default function AdminUsuariosPage() {
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Perfil</TableCell>
-              <TableCell align="right">Acoes</TableCell>
+              <TableCell align="right">Açôes</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

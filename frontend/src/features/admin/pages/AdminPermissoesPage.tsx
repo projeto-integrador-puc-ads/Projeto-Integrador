@@ -191,7 +191,7 @@ export default function AdminPermissoesPage() {
   return (
     <Container sx={{ py: 3 }}>
       <Box display="flex" alignItems="center" mb={2}>
-        <Typography variant="h3" sx={{ flex: 1 }}>Permissoes</Typography>
+        <Typography variant="h3" sx={{ flex: 1 }}>Permissões</Typography>
         <Stack direction="row" spacing={1}>
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel id="module-filter-label">Filtrar por modulo</InputLabel>
@@ -213,7 +213,7 @@ export default function AdminPermissoesPage() {
             onClick={openCreateDialog}
             disabled={loading}
           >
-            Nova permissao
+            Nova permissão
           </Button>
         </Stack>
       </Box>
@@ -226,7 +226,7 @@ export default function AdminPermissoesPage() {
               <TableCell>Nome</TableCell>
               <TableCell>Modulo</TableCell>
               <TableCell>Criado em</TableCell>
-              <TableCell align="right">Acoes</TableCell>
+              <TableCell align="right">Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

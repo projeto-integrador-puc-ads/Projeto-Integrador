@@ -181,7 +181,7 @@ export default function AppLayout() {
             to="/admin"
             sx={{ mr: 2 }}
           >
-            Area do administrador
+            Área do administrador
           </Button>
 
           <Avatar
