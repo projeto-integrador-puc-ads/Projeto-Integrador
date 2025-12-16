@@ -38,6 +38,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/lista-compras/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/webjars/**"
+                ).permitAll()
                 // Endpoints dos outros grupos (protegidos)
                 .requestMatchers("/api/grupo1/**").authenticated()
                 .requestMatchers("/api/grupo2/**").authenticated()
