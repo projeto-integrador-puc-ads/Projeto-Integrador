@@ -36,7 +36,7 @@ export default function ListaComprasPage() {
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Lista de Compras
+                Compre com Saúde
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Escolha uma opção para continuar.

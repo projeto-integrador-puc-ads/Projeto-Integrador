@@ -27,8 +27,8 @@ export function ModuleGrid() {
     },
     {
       icon: <ShoppingCartIcon sx={{ fontSize: 40 }} />,
-      title: 'Lista de Compras',
-      desc: 'Organize compras do mês.',
+      title: 'Compre com Saúde',
+      desc: 'Gerencie suas listas com recomendações mais saudáveis.',
       to: '/lista-compras/',
     },
     {
