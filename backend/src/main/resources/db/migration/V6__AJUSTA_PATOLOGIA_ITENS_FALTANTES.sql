@@ -1,5 +1,5 @@
 -- ================================================================
--- V5__AJUSTA_PATOLOGIA_ITENS_FALTANTES.sql
+-- V6__AJUSTA_PATOLOGIA_ITENS_FALTANTES.sql
 -- Restaura vínculos de produtos problemáticos que existiam na V1
 -- e foram perdidos nas V2/V4 (após o DELETE geral).
 -- Só adiciona se:

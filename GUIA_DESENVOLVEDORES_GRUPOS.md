@@ -94,7 +94,7 @@ Edite o arquivo **`backend/src/main/resources/application.properties`**:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/projeto_integrador
-spring.datasource.username=postgres
+spring.datasource.username=postgres 
 spring.datasource.password=SUA_SENHA_AQUI
 ```
 

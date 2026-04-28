@@ -1,5 +1,5 @@
 -- ================================================================
--- V2__CONFIGURAR_SUGESTOES.sql
+-- V3__CONFIGURAR_SUGESTOES.sql
 -- 1. Adiciona coluna de sugestão
 -- 2. Cadastra os produtos saudáveis (que faltavam na V1)
 -- 3. Refaz os vínculos de patologia com as sugestões

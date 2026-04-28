@@ -1,5 +1,5 @@
 -- ================================================================
--- V7__NOVOS_PRODUTOS_BASICOS.sql
+-- V8__NOVOS_PRODUTOS_BASICOS.sql
 -- Enriquecimento da base de produtos com itens básicos de mercado
 -- + ajuste de vínculos em patologia_itens para produtos problemáticos
 -- ================================================================

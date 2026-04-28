@@ -1,5 +1,5 @@
 -- ================================================================
--- V3__ALTERA_LISTAS_TEMPLATES.sql
+-- V4__ALTERA_LISTAS_TEMPLATES.sql
 -- Ajuste de templates de lista para dietas específicas por patologia
 -- ATENÇÃO: assume que:
 --   - a tabela lista já possui a coluna patologia_id (NULL permitido)

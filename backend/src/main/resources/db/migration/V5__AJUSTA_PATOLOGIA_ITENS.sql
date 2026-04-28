@@ -1,5 +1,5 @@
 -- ================================================================
--- V4__AJUSTA_PATOLOGIA_ITENS.sql
+-- V5__AJUSTA_PATOLOGIA_ITENS.sql
 -- Ajusta itens que geram ALERTA para novas dietas
 -- Assume:
 --   - patologias 'Intolerância à Lactose' e 'Hipertensão' já existem

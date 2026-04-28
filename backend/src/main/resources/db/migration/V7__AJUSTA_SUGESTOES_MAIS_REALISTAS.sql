@@ -1,6 +1,6 @@
 
 -- ================================================================
--- V6__AJUSTA_SUGESTOES_MAIS_REALISTAS.sql
+-- V7__AJUSTA_SUGESTOES_MAIS_REALISTAS.sql
 -- Ajusta sugestões de substituição para serem mais próximas dos itens
 -- e enriquece a base de produtos para intolerância à lactose, hipertensão,
 -- diabetes mellitus e doença celíaca, mantendo tudo idempotente.

@@ -1,5 +1,5 @@
 -- ================================================================
--- V1__CARGA_DADOS_LISTA_COMPRAS.sql
+-- V2__CARGA_DADOS_LISTA_COMPRAS.sql
 -- Script inicial para carga de dados da base existente
 -- ================================================================
 
