@@ -14,7 +14,7 @@ ALTER TABLE public.patologia_itens
     ADD COLUMN IF NOT EXISTS produto_sugestao_id integer;
 
 UPDATE public.lista
-SET status = 'ABERTA'
+SET status = 'ABERTA'  
 WHERE status IS NULL;
 
 ALTER TABLE public.lista
